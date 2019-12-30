@@ -1,7 +1,6 @@
 {
     "name": "uujia/pet-base",
     "description": "simple framework base",
-    "type": "library",
     "license": "MIT",
     "authors": [
         {
@@ -9,7 +8,6 @@
             "email": "jtddsoft@qq.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
         "php": ">=7.1.0"
     },
