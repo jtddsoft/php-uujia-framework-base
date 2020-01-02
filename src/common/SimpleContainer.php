@@ -20,6 +20,7 @@ class SimpleContainer implements ContainerInterface {
 	}
 	
 	/**
+	 * 获取
 	 * @inheritDoc
 	 */
 	public function get($id) {
@@ -27,14 +28,24 @@ class SimpleContainer implements ContainerInterface {
 	}
 	
 	/**
+	 * 是否存在
 	 * @inheritDoc
 	 */
 	public function has($id) {
 		return array_key_exists($id, $this->c);
 	}
 	
+	/**
+	 * 设置
+	 *
+	 * @param $id
+	 * @param $c
+	 *
+	 * @return $this
+	 */
 	public function set($id, $c) {
-		return $this->$id = $c;
+		$this->$id = $c;
+		return $this;
 	}
 }
 

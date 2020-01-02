@@ -18,17 +18,27 @@ class Base {
 		$this->ret = $ret;
 	}
 	
-	// public static function call($name) {
-	// 	return app('painter_logic_' . $name);
-	// }
+	public function __call($method, $args) {
+		if ($this->getRet()->isErr()) { return $this->getRet()->return_error(); }
+		
+		// 从ret中查找方法
+		if (is_callable([$this->getRet(), $method])) {
+			return call_user_func_array([$this->getRet(), $method], $args);
+		}
+		
+		// 方法不存在
+		$this->getRet()->error('方法不存在', 1000);
+		return $this;
+	}
 	
-	// public function __get($name) {
-	// 	return $this->$name;
-	// }
+	/**
+	 * 获取返回值
+	 * @return Result
+	 */
+	public function getRet(): Result {
+		return $this->ret;
+	}
 	
-	// public function __set($name, $value) {
-	// 	$this->$name = $value;
-	// }
 	
 	
 }

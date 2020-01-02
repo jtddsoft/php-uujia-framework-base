@@ -5,6 +5,8 @@ namespace uujia\framework\base\common;
 
 
 class ErrorCodeList {
+	public static $_ERROR_CODE_NAME = 'error_code';
+	
 	/**
 	 * 加入多组error_code
 	 *  每组格式：[
@@ -15,7 +17,7 @@ class ErrorCodeList {
 	 */
 	public static $errCodeList = [];
 	
-	public function __construct($err) {
+	public function __construct($err = []) {
 		if (!empty($err)) {
 			self::$errCodeList[] = $err;
 		}
@@ -39,8 +41,9 @@ class ErrorCodeList {
 		$msg = '未知异常';
 		
 		foreach (self::$errCodeList as $errItem) {
-			if (in_array($code, $errItem)) {
-				$msg = $errItem[$code];
+			$_err = $errItem[self::$_ERROR_CODE_NAME];
+			if (in_array($code, $_err)) {
+				$msg = $_err[$code];
 				break;
 			}
 		}
