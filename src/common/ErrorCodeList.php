@@ -18,8 +18,11 @@ class ErrorCodeList {
 	public static $errCodeList = [];
 	
 	public function __construct($err = []) {
+		// 自身code
+		self::$errCodeList[] = include "./config/error_code.php";
+		
 		if (!empty($err)) {
-			self::$errCodeList[] = $err;
+			self::unshift($err);
 		}
 	}
 	

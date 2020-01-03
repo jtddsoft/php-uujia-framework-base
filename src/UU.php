@@ -3,25 +3,13 @@
 namespace uujia\framework\base;
 
 use uujia\framework\base\common\SimpleContainer;
+use uujia\framework\base\traits\InstanceBase;
 
 class UU {
-	protected static $instance;
+	use InstanceBase;
 	
 	/** @var $ret SimpleContainer */
 	protected static $container;
-	
-	protected function __clone() {
-	}
-	
-	/**
-	 * 单例模式获取实例
-	 */
-	public static function getInstance() {
-		if (null === static::$instance) {
-			static::$instance = new static;
-		}
-		return static::$instance;
-	}
 	
 	/**
 	 * Base constructor.

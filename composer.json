@@ -10,7 +10,8 @@
     ],
     "require": {
         "php": ">=7.1.0",
-        "psr/container": "^1.0"
+        "psr/container": "^1.0",
+        "bluerhinos/phpmqtt": "dev-master"
     },
     "autoload": {
         "psr-4": {

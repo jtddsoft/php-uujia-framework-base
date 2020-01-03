@@ -8,9 +8,13 @@ abstract class AbstractLog {
 	protected $log = '';
 	protected $logs = [];
 	
-	public function __construct() {
+	protected $flagMQTT = false;
+	
+	public function __construct($flagMQTT = false) {
 		$this->log = '';
 		$this->logs = [];
+		
+		$this->flagMQTT = $flagMQTT;
 	}
 	
 	/**
