@@ -3,7 +3,11 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\traits\ResultBase;
+
 class Result {
+	use ResultBase;
+	
 	// 配置对象 依赖于配置管理class 必须事先初始化
 	/** @var $configObj ErrorCodeList */
 	protected $configObj;
@@ -19,42 +23,10 @@ class Result {
 			'json' => 2, // 返回json
 		];
 	
-	// 返回ok模板
-	public static $_RESULT_OK
-		= [
-			'code'   => 200,
-			'status' => 'success',
-			'msg'    => '操作完成',
-			'data'   => [],
-		];
-	
-	// 返回error模板
-	public static $_RESULT_ERROR
-		= [
-			'code'   => 1000,
-			'status' => 'error',
-			'msg'    => '操作失败',
-			'data'   => [],
-		];
-	
-	// 验证正确的依据code = 200
-	public static $_OK_CODE = 200;
-	
 	// 返回类型
 	private $return_type = 1;
 	// 如果出错直接exit返回
 	private $return_die = true;
-	
-	/**
-	 * 缓存返回值
-	 */
-	private $code = 200;
-	private $status = 'success';
-	private $msg = '操作完成';
-	private $data = [];
-	
-	// 缓存最后一次返回值 包括code msg。。。
-	private $last_return = [];
 	
 	/**
 	 * 初始化依赖注入
@@ -65,28 +37,6 @@ class Result {
 	public function __construct(ErrorCodeList $configObj, AbstractLog $logObj) {
 		$this->configObj = $configObj;
 		$this->logObj = $logObj;
-	}
-	
-	/**
-	 * json_encode
-	 *
-	 * @param $value
-	 *
-	 * @return false|string
-	 */
-	public static function je($value) {
-		return json_encode($value, JSON_UNESCAPED_UNICODE);
-	}
-	
-	/**
-	 * json_decode
-	 *
-	 * @param $json
-	 *
-	 * @return mixed
-	 */
-	public static function jd($json) {
-		return json_decode($json, true);
 	}
 	
 	/**
@@ -140,10 +90,8 @@ class Result {
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
 		
-		$this->setCode($_ret['code']);
-		$this->setMsg($_ret['msg']);
-		$this->setStatus($_ret['status']);
-		$this->setData($_ret['data']);
+		// 写入日志
+		$this->getLogObj()->error($_ret);
 		
 		if ($this->isReturnDie()) {
 			exit();
@@ -173,10 +121,8 @@ class Result {
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
 		
-		$this->setCode($_ret['code']);
-		$this->setMsg($_ret['msg']);
-		$this->setStatus($_ret['status']);
-		$this->setData($_ret['data']);
+		// 写入日志
+		$this->getLogObj()->error($_ret);
 		
 		if ($this->isReturnDie()) {
 			exit();
@@ -197,10 +143,8 @@ class Result {
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
 		
-		$this->setCode($_ret['code']);
-		$this->setMsg($_ret['msg']);
-		$this->setStatus($_ret['status']);
-		$this->setData($_ret['data']);
+		// 写入日志
+		$this->getLogObj()->info($_ret);
 		
 		switch ($this->getReturnType()) {
 			case self::$_RETURN_TYPE['json']:
@@ -214,6 +158,12 @@ class Result {
 	public function data($data = []) {
 		$_ret           = self::$_RESULT_OK;
 		$_ret['result'] = $data;
+		
+		// 记录最后的错误信息
+		$this->setLastReturn($_ret);
+		
+		// 写入日志
+		$this->getLogObj()->info($_ret);
 		
 		switch ($this->getReturnType()) {
 			case self::$_RETURN_TYPE['json']:
@@ -236,98 +186,6 @@ class Result {
 		}
 		
 		return $this->getLastReturn();
-	}
-	
-	/**************************************************************
-	 * 验证输出
-	 **************************************************************/
-	
-	/**
-	 * 是否正确
-	 * @return bool
-	 */
-	public function isOk() {
-		if ($this->getCode() == self::$_OK_CODE) {
-			return true;
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * 是否出错
-	 * @return bool
-	 */
-	public function isErr() {
-		return !$this->isOk();
-	}
-	
-	/**************************************************************
-	 * get set
-	 **************************************************************/
-	
-	/**
-	 * 获取code
-	 * @return int
-	 */
-	public function getCode(): int {
-		return $this->code;
-	}
-	
-	/**
-	 * 设置code
-	 * @param int $code
-	 */
-	public function setCode(int $code) {
-		$this->code = $code;
-	}
-	
-	/**
-	 * 获取状态status
-	 * @return string
-	 */
-	public function getStatus(): string {
-		return $this->status;
-	}
-	
-	/**
-	 * 设置状态status
-	 * @param string $status
-	 */
-	public function setStatus(string $status) {
-		$this->status = $status;
-	}
-	
-	/**
-	 * 获取消息msg
-	 * @return string
-	 */
-	public function getMsg(): string {
-		return $this->msg;
-	}
-	
-	/**
-	 * 设置消息msg
-	 * @param string $msg
-	 */
-	public function setMsg(string $msg) {
-		$this->msg = $msg;
-	}
-	
-	/**
-	 * 获取数据data
-	 * @return array
-	 */
-	public function getData(): array {
-		return $this->data;
-	}
-	
-	/**
-	 * 设置数据data
-	 * @param array $data
-	 */
-	public function setData(array $data) {
-		$this->data = $data;
 	}
 	
 	/**
@@ -360,22 +218,6 @@ class Result {
 	 */
 	public function setReturnDie(bool $return_die) {
 		$this->return_die = $return_die;
-	}
-	
-	/**
-	 * 获取最后一次返回值
-	 * @return array
-	 */
-	public function getLastReturn(): array {
-		return $this->last_return;
-	}
-	
-	/**
-	 * 设置最后一次返回值
-	 * @param array $last_return
-	 */
-	public function setLastReturn(array $last_return) {
-		$this->last_return = $last_return;
 	}
 	
 	/**

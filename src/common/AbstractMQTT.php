@@ -5,13 +5,25 @@ namespace uujia\framework\base\common;
 
 
 use Bluerhinos\phpMQTT;
+use uujia\framework\base\traits\ResultBase;
 
-abstract class AbstractMQTT extends AbstractBase {
+abstract class AbstractMQTT {
+	use ResultBase;
+	
 	// public static $_CLIENT_TYPE = [
 	// 	'unknow'    => 0,   // 未知
 	// 	'publish'   => 1,   // 发布者
 	// 	'subscribe' => 2,   // 订阅者
 	// ];
+	
+	public static $_ERROR_CODE = [
+		'0'   => 'ok',
+		'100' => '未知错误',
+		
+		// MQTT
+		'101' => '未成功初始化',
+		'102' => '连接失败',
+	];
 	
 	// MQTT 对象
 	/** @var $mqttObj phpMQTT */
@@ -31,13 +43,15 @@ abstract class AbstractMQTT extends AbstractBase {
 		'topics'    => '',              // 主题
 	];
 	
+	protected $_init = false;
 	
-	public function __construct(Result $ret, $config = []) {
-		parent::__construct($ret);
+	
+	public function __construct($config = []) {
+		if (!empty($config)) {
+			$this->_config = array_merge($this->_config, $config);
+		}
 		
-		$this->_config = $config;
-		
-		$this->init();
+		// $this->init();
 	}
 	
 	/**
@@ -52,9 +66,11 @@ abstract class AbstractMQTT extends AbstractBase {
 			                             $this->_config['client_id'],
 			                             $this->_config['cafile']);
 			
+			$this->setInit(true);
 			return true;
 		}
 		
+		$this->setInit(false);
 		return false;
 	}
 	
@@ -70,7 +86,7 @@ abstract class AbstractMQTT extends AbstractBase {
 		if ($config === null) {
 			return $this->_config;
 		} else {
-			$this->_config = $config;
+			$this->_config = array_merge($this->_config, $config);
 		}
 		
 		return $this;
@@ -221,6 +237,31 @@ abstract class AbstractMQTT extends AbstractBase {
 	}
 	
 	/**
+	 * 自动连接服务端
+	 *
+	 * @param bool $clean
+	 * @param null $will
+	 *
+	 * @return $this|array|mixed|string|\think\response\Json
+	 */
+	public function connect_auto($clean = true, $will = NULL) {
+		if ($this->isErr()) { return $this->return_error(); }
+		
+		if (!$this->isInit()) {
+			if (!$this->init()) {
+				return $this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+			}
+		}
+		
+		$re = $this->mqttObj->connect_auto($clean, $will, $this->_config['username'], $this->_config['password']);
+		if ($re === false) {
+			return $this->error(self::$_ERROR_CODE[102], 102); // 连接失败
+		}
+		
+		return $this;
+	}
+	
+	/**
 	 * 连接服务端
 	 *
 	 * @param bool $clean
@@ -229,15 +270,17 @@ abstract class AbstractMQTT extends AbstractBase {
 	 * @return $this|array|mixed|string|\think\response\Json
 	 */
 	public function connect($clean = true, $will = NULL) {
-		if ($this->ret()->isErr()) { return $this->ret()->return_error(); }
+		if ($this->isErr()) { return $this->return_error(); }
 		
-		if (!$this->init()) {
-			return $this->ret()->code(101); // 未成功初始化
+		if (!$this->isInit()) {
+			if (!$this->init()) {
+				return $this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+			}
 		}
 		
 		$re = $this->mqttObj->connect($clean, $will, $this->_config['username'], $this->_config['password']);
 		if ($re === false) {
-			return $this->ret()->code(102); // 连接失败
+			return $this->error(self::$_ERROR_CODE[102], 102); // 连接失败
 		}
 		
 		return $this;
@@ -249,11 +292,11 @@ abstract class AbstractMQTT extends AbstractBase {
 	 * @return array|string|\think\response\Json
 	 */
 	public function close() {
-		if ($this->ret()->isErr()) { return $this->ret()->return_error(); }
+		if ($this->isErr()) { return $this->return_error(); }
 		
 		$this->mqttObj->close();
 		
-		return $this->ret()->ok();
+		return $this->ok();
 	}
 	
 	/**
@@ -264,7 +307,7 @@ abstract class AbstractMQTT extends AbstractBase {
 	 * @return array|\think\response\Json|AbstractMQTT
 	 */
 	public function subscribe($qos = 0) {
-		if ($this->ret()->isErr()) { return $this->ret()->return_error(); }
+		if ($this->isErr()) { return $this->return_error(); }
 		
 		$this->mqttObj->subscribe($this->_config['topics'], $qos);
 
@@ -283,7 +326,7 @@ abstract class AbstractMQTT extends AbstractBase {
 	 * @return array|\think\response\Json|AbstractMQTT
 	 */
 	public function publish($content, $qos = 0, $retain = 0) {
-		if ($this->ret()->isErr()) { return $this->ret()->return_error(); }
+		if ($this->isErr()) { return $this->return_error(); }
 		
 		$this->mqttObj->publish($this->_config['topics'], $content, $qos, $retain);
 		
@@ -302,6 +345,20 @@ abstract class AbstractMQTT extends AbstractBase {
 	 */
 	public function setMqttObj(phpMQTT $mqttObj) {
 		$this->mqttObj = $mqttObj;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isInit(): bool {
+		return $this->_init;
+	}
+	
+	/**
+	 * @param bool $init
+	 */
+	public function setInit(bool $init) {
+		$this->_init = $init;
 	}
 	
 	

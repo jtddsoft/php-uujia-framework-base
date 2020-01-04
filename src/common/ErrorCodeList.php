@@ -19,7 +19,7 @@ class ErrorCodeList {
 	
 	public function __construct($err = []) {
 		// 自身code
-		self::$errCodeList[] = include "./config/error_code.php";
+		self::$errCodeList[] = include __DIR__ . "./config/error_code.php";
 		
 		if (!empty($err)) {
 			self::unshift($err);
