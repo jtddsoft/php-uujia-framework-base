@@ -2,14 +2,14 @@
 
 namespace uujia\framework\base;
 
-use uujia\framework\base\common\AbstractBase;
-use uujia\framework\base\common\AbstractLog;
-use uujia\framework\base\common\AbstractMQTT;
+use uujia\framework\base\common\Base;
+use uujia\framework\base\common\SimpleLog;
+use uujia\framework\base\common\SimpleMQTT;
 use uujia\framework\base\common\ErrorCodeList;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\SimpleContainer;
 
-class Base {
+class BaseService {
 	
 	public function __construct() {
 		$this->init();
@@ -24,35 +24,29 @@ class Base {
 		});
 		
 		// 实例化MQTT
-		UU::C(AbstractMQTT::class, function (SimpleContainer $c) {
-			$obj = new class() extends AbstractMQTT {
-			
-			};
-			$c->cache(AbstractMQTT::class, $obj);
+		UU::C(SimpleMQTT::class, function (SimpleContainer $c) {
+			$obj = new SimpleMQTT();
+			$c->cache(SimpleMQTT::class, $obj);
 			return $obj;
 		});
 		// 实例化Log
-		UU::C(AbstractLog::class, function (SimpleContainer $c) {
-			$obj = new class($c->get(AbstractMQTT::class)) extends AbstractLog {
-			
-			};
-			$c->cache(AbstractLog::class, $obj);
+		UU::C(SimpleLog::class, function (SimpleContainer $c) {
+			$obj = new SimpleLog($c->get(SimpleMQTT::class));
+			$c->cache(SimpleLog::class, $obj);
 			return $obj;
 		});
 		
 		// 实例化Result
 		UU::C(Result::class, function (SimpleContainer $c) {
-			$obj = new Result($c->get(ErrorCodeList::class), $c->get(AbstractLog::class));
+			$obj = new Result($c->get(ErrorCodeList::class), $c->get(SimpleLog::class));
 			$c->cache(Result::class, $obj);
 			return $obj;
 		});
 		
 		// 实例化Base
-		UU::C(AbstractBase::class, function (SimpleContainer $c) {
-			$obj = new class($c->get(Result::class)) extends AbstractBase {
-			
-			};
-			$c->cache(AbstractBase::class, $obj);
+		UU::C(Base::class, function (SimpleContainer $c) {
+			$obj = new Base($c->get(Result::class));
+			$c->cache(Base::class, $obj);
 			return $obj;
 		});
 		

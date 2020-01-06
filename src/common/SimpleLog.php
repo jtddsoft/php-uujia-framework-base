@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common;
 
 
-abstract class AbstractLog {
+class SimpleLog {
 	
 	public static $_MQTT_CLIENT_ID = 'Logger_2019';
 	public static $_MQTT_TOPICS = 'Logger_2019';
@@ -12,7 +12,7 @@ abstract class AbstractLog {
 	protected $log = '';
 	protected $logs = [];
 	
-	/** @var $mqttObj AbstractMQTT */
+	/** @var $mqttObj SimpleMQTT */
 	protected $mqttObj;
 	protected $_enabledMQTT = false;
 	
@@ -23,10 +23,10 @@ abstract class AbstractLog {
 	/**
 	 * AbstractLog constructor.
 	 *
-	 * @param AbstractMQTT $mqttObj     MQTT对象依赖
-	 * @param bool         $enabledMQTT 是否启用MQTT实时输出
+	 * @param SimpleMQTT $mqttObj     MQTT对象依赖
+	 * @param bool       $enabledMQTT 是否启用MQTT实时输出
 	 */
-	public function __construct(AbstractMQTT $mqttObj, $enabledMQTT = false) {
+	public function __construct(SimpleMQTT $mqttObj, $enabledMQTT = false) {
 		$this->log = '';
 		$this->logs = [];
 	
@@ -144,7 +144,7 @@ abstract class AbstractLog {
 	 *
 	 * @param string|null $enabledMQTT
 	 *
-	 * @return bool|AbstractLog
+	 * @return bool|SimpleLog
 	 */
 	public function enabledMQTT($enabledMQTT = null) {
 		if ($enabledMQTT === null) {
@@ -162,7 +162,7 @@ abstract class AbstractLog {
 	 *
 	 * @param string|null $flagMQTTConnected
 	 *
-	 * @return bool|AbstractLog
+	 * @return bool|SimpleLog
 	 */
 	public function flagMQTTConnected($flagMQTTConnected = null) {
 		if ($flagMQTTConnected === null) {
@@ -175,9 +175,9 @@ abstract class AbstractLog {
 	}
 	
 	/**
-	 * @return AbstractMQTT
+	 * @return SimpleMQTT
 	 */
-	public function getMqttObj(): AbstractMQTT {
+	public function getMqttObj(): SimpleMQTT {
 		return $this->mqttObj;
 	}
 	

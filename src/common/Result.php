@@ -13,7 +13,7 @@ class Result {
 	protected $configObj;
 	
 	// 日志对象 默认为抽象类 需要子类继承
-	/** @var $logObj AbstractLog */
+	/** @var $logObj SimpleLog */
 	protected $logObj;
 	
 	// 返回类型
@@ -32,9 +32,9 @@ class Result {
 	 * 初始化依赖注入
 	 *
 	 * @param ErrorCodeList $configObj
-	 * @param AbstractLog   $logObj
+	 * @param SimpleLog     $logObj
 	 */
-	public function __construct(ErrorCodeList $configObj, AbstractLog $logObj) {
+	public function __construct(ErrorCodeList $configObj, SimpleLog $logObj) {
 		$this->configObj = $configObj;
 		$this->logObj = $logObj;
 	}
@@ -241,17 +241,19 @@ class Result {
 	/**
 	 * 获取日志对象
 	 *  抽象类需要子类继承
-	 * @return AbstractLog
+	 *
+	 * @return SimpleLog
 	 */
-	public function getLogObj(): AbstractLog {
+	public function getLogObj(): SimpleLog {
 		return $this->logObj;
 	}
 	
 	/**
 	 * 设置日志对象
-	 * @param AbstractLog $logObj
+	 *
+	 * @param SimpleLog $logObj
 	 */
-	public function setLogObj(AbstractLog $logObj) {
+	public function setLogObj(SimpleLog $logObj) {
 		$this->logObj = $logObj;
 	}
 }

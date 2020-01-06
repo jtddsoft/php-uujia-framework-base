@@ -7,7 +7,7 @@ namespace uujia\framework\base\common;
 use Bluerhinos\phpMQTT;
 use uujia\framework\base\traits\ResultBase;
 
-abstract class AbstractMQTT {
+class SimpleMQTT {
 	use ResultBase;
 	
 	// public static $_CLIENT_TYPE = [
@@ -304,7 +304,7 @@ abstract class AbstractMQTT {
 	 *
 	 * @param int $qos
 	 *
-	 * @return array|\think\response\Json|AbstractMQTT
+	 * @return array|\think\response\Json|SimpleMQTT
 	 */
 	public function subscribe($qos = 0) {
 		if ($this->isErr()) { return $this->return_error(); }
@@ -323,7 +323,7 @@ abstract class AbstractMQTT {
 	 * @param int $qos
 	 * @param int $retain
 	 *
-	 * @return array|\think\response\Json|AbstractMQTT
+	 * @return array|\think\response\Json|SimpleMQTT
 	 */
 	public function publish($content, $qos = 0, $retain = 0) {
 		if ($this->isErr()) { return $this->return_error(); }

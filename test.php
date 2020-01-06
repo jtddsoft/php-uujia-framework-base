@@ -5,7 +5,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	
 	$demo = new uujia\framework\base\test\Demo();
 	
-	var_dump($demo->test());
+	for($i = 0; $i < 10; $i++) {
+		var_dump($demo->test());
+	}
+	
 	
 }
 

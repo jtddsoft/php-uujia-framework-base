@@ -3,7 +3,7 @@
 namespace uujia\framework\base\common;
 
 
-abstract class AbstractBase {
+class Base {
 	/** @var $_ret Result */
 	protected $_ret;
 	
