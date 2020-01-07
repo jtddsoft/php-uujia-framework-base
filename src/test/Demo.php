@@ -19,11 +19,17 @@ class Demo extends BaseService {
 	public function init() {
 		parent::init();
 		
-		$mqttConfigFile = __DIR__ . "/config/mqtt_config.php";
-		if (file_exists($mqttConfigFile)) {
-			$mqttConfig = include $mqttConfigFile;
-			UU::C(SimpleLog::class)->getMqttObj()->config($mqttConfig['mqtt']);
-			UU::C(SimpleLog::class)->setEnabledMQTT(true);
+		$fileMQTTConfig = __DIR__ . '/config/mqtt_config.php';
+		
+		$arrMQTTConfig = [];
+		if (file_exists($fileMQTTConfig)) {
+			$arrMQTTConfig = include $fileMQTTConfig;
+			
+			/** @var $logObj SimpleLog */
+			$logObj = UU::C(SimpleLog::class);
+			$logObj->getMqttObj()->config($arrMQTTConfig['mqtt']);
+			$logObj->setEnabledMQTT(true);
+			
 		}
 	}
 	
