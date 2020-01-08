@@ -8,9 +8,19 @@ class SimpleLog {
 	
 	public static $_MQTT_CLIENT_ID = 'Logger_2019';
 	public static $_MQTT_TOPICS = 'Logger_2019';
+	public static $_MQTT_TOPICS_LIST = 'Logger_2019_List';
 	
 	protected $log = '';
 	protected $logs = [];
+	
+	// protected $log_info = [
+	// 	'html' => '',
+	// 	'text' => '',
+	// ];
+	// protected $logs_info = [
+	// 	'header' => '',
+	// 	'logs' => [], // log_info的集合
+	// ];
 	
 	/** @var $mqttObj SimpleMQTT */
 	protected $mqttObj;
@@ -55,14 +65,14 @@ class SimpleLog {
 	 * Record
 	 * @param string|array $text
 	 */
-	public function record($text) {
+	public function record($text, $tag = 'INFO') {
 		if (is_array($text)) {
 			$text = Result::je($text);
 		}
 		
 		$_time = date('Y-m-d H:i:s');
 		
-		$this->setLog("[INFO] [{$_time}] {$text}");
+		$this->setLog("[{$tag}] [{$_time}] {$text}");
 		
 		$this->printMQTT($this->log);
 	}
@@ -72,7 +82,7 @@ class SimpleLog {
 	 * @param string|array $text
 	 */
 	public function info($text) {
-		$this->record($text);
+		$this->record($text, 'INFO');
 	}
 	
 	/**
@@ -89,6 +99,23 @@ class SimpleLog {
 		$this->setLog("[ERROR] [{$_time}] {$text}");
 		
 		$this->printMQTT($this->log);
+	}
+	
+	/**
+	 * 响应
+	 * @param $list
+	 */
+	public function response($logs) {
+		if (empty($logs)) {
+			$logs = $this->logs;
+		}
+		
+		$list = [
+			'type' => 'response',
+			'logs' => $logs,
+		];
+		
+		$this->printMQTTList($list);
 	}
 	
 	/**
@@ -134,6 +161,33 @@ class SimpleLog {
 		
 		$this->getMqttObj()->topics(self::$_MQTT_TOPICS);
 		$this->getMqttObj()->publish($text);
+		
+		return true;
+	}
+	
+	/**
+	 * 打印信息到MQTT
+	 *
+	 * @param $text
+	 *
+	 * @return bool
+	 */
+	public function printMQTTList($list) {
+		// 出错默认会直接exit 如果配置了禁用die就要判断是否出错了
+		if ($this->getMqttObj()->isErr()) {
+			return false;
+		}
+		
+		if (!$this->isEnabledMQTT()) {
+			return true;
+		}
+		
+		if (!$this->isFlagMQTTConnected()) {
+			$this->connectMQTT();
+		}
+		
+		$this->getMqttObj()->topics(self::$_MQTT_TOPICS_LIST);
+		$this->getMqttObj()->publish($list);
 		
 		return true;
 	}

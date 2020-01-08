@@ -52,4 +52,40 @@ class BaseService {
 		
 	}
 	
+	/**
+	 * @return ErrorCodeList
+	 */
+	public function getErrorCodeList(): ErrorCodeList {
+		return UU::C(ErrorCodeList::class);
+	}
+	
+	/**
+	 * @return SimpleMQTT
+	 */
+	public function getSimpleMQTT(): SimpleMQTT {
+		return UU::C(SimpleMQTT::class);
+	}
+	
+	/**
+	 * @return SimpleLog
+	 */
+	public function getSimpleLog(): SimpleLog {
+		return UU::C(SimpleLog::class);
+	}
+	
+	/**
+	 * @return Result
+	 */
+	public function getResult(): Result {
+		return UU::C(Result::class);
+	}
+	
+	/**
+	 * @return Base
+	 */
+	public function getBase(): Base {
+		return UU::C(Base::class);
+	}
+	
+	
 }
