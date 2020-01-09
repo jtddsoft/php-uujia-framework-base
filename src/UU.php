@@ -4,8 +4,10 @@ namespace uujia\framework\base;
 
 use uujia\framework\base\common\SimpleContainer;
 use uujia\framework\base\traits\InstanceBase;
+use uujia\framework\base\traits\NameBase;
 
 class UU {
+	use NameBase;
 	use InstanceBase;
 	
 	/** @var $ret SimpleContainer */
@@ -19,6 +21,21 @@ class UU {
 	 */
 	public function __construct() {
 		self::$container = new SimpleContainer();
+	}
+	
+	/**
+	 * 初始化
+	 */
+	public function init() {
+		$this->initNameInfo();
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = '容器总管';
 	}
 	
 	/**

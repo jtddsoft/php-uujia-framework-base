@@ -189,7 +189,7 @@ class SimpleLog {
 	/**
 	 * 打印信息到MQTT
 	 *
-	 * @param $text
+	 * @param $list
 	 *
 	 * @return bool
 	 */

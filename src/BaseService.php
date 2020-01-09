@@ -8,14 +8,21 @@ use uujia\framework\base\common\SimpleMQTT;
 use uujia\framework\base\common\ErrorCodeList;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\SimpleContainer;
+use uujia\framework\base\traits\NameBase;
 
 class BaseService {
+	use NameBase;
 	
 	public function __construct() {
 		$this->init();
 	}
 	
+	/**
+	 * 初始化
+	 */
 	public function init() {
+		$this->initNameInfo();
+		
 		// 设置对象准实例化 实例化只能调用一次 之后使用直接UU::C(ErrorCodeList::class)->dosomething()
 		UU::C(ErrorCodeList::class, function (SimpleContainer $c) {
 			$obj = new ErrorCodeList();
@@ -50,6 +57,14 @@ class BaseService {
 			return $obj;
 		});
 		
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = '基础服务类';
 	}
 	
 	/**
