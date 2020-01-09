@@ -3,9 +3,11 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
 class Result {
+	use NameBase;
 	use ResultBase;
 	
 	// 配置对象 依赖于配置管理class 必须事先初始化
@@ -37,6 +39,23 @@ class Result {
 	public function __construct(ErrorCodeList $configObj, SimpleLog $logObj) {
 		$this->configObj = $configObj;
 		$this->logObj = $logObj;
+		
+		$this->init();
+	}
+	
+	/**
+	 * 初始化
+	 */
+	public function init() {
+		$this->initNameInfo();
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = '返回值管理';
 	}
 	
 	/**

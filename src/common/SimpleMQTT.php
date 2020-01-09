@@ -5,9 +5,11 @@ namespace uujia\framework\base\common;
 
 
 use Bluerhinos\phpMQTT;
+use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
 class SimpleMQTT {
+	use NameBase;
 	use ResultBase;
 	
 	// public static $_CLIENT_TYPE = [
@@ -51,7 +53,22 @@ class SimpleMQTT {
 			$this->_config = array_merge($this->_config, $config);
 		}
 		
-		// $this->init();
+		$this->init();
+	}
+	
+	/**
+	 * 初始化
+	 */
+	public function init() {
+		$this->initNameInfo();
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = 'MQTT通讯管理';
 	}
 	
 	/**
@@ -59,7 +76,7 @@ class SimpleMQTT {
 	 *
 	 * @return bool
 	 */
-	public function init() {
+	public function initMQTT() {
 		if ($this->_config['enabled']) {
 			$this->mqttObj = new phpMQTT($this->_config['server'],
 			                             $this->_config['port'],
@@ -248,7 +265,7 @@ class SimpleMQTT {
 		if ($this->isErr()) { return $this->return_error(); }
 		
 		if (!$this->isInit()) {
-			if (!$this->init()) {
+			if (!$this->initMQTT()) {
 				return $this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
 			}
 		}
@@ -273,7 +290,7 @@ class SimpleMQTT {
 		if ($this->isErr()) { return $this->return_error(); }
 		
 		if (!$this->isInit()) {
-			if (!$this->init()) {
+			if (!$this->initMQTT()) {
 				return $this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
 			}
 		}

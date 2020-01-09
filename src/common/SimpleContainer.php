@@ -7,11 +7,33 @@ namespace uujia\framework\base\common;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use uujia\framework\base\traits\NameBase;
 
 class SimpleContainer implements ContainerInterface {
+	use NameBase;
+	
 	private $c = [];
 	// 每次实例化都会存入对象实例 如果已存在就覆盖
 	private $lastObj = [];
+	
+	public function __construct() {
+		$this->init();
+	}
+	
+	/**
+	 * 初始化
+	 */
+	public function init() {
+		$this->initNameInfo();
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = '容器管理';
+	}
 	
 	function __set($k, $c) {
 		$this->c[$k] = $c;

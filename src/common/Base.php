@@ -3,7 +3,11 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\traits\NameBase;
+
 class Base {
+	use NameBase;
+	
 	/** @var $_ret Result */
 	protected $_ret;
 	
@@ -15,6 +19,23 @@ class Base {
 	 */
 	public function __construct(Result $ret) {
 		$this->_ret = $ret;
+		
+		$this->init();
+	}
+	
+	/**
+	 * 初始化
+	 */
+	public function init() {
+		$this->initNameInfo();
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = '基础类';
 	}
 	
 	public function __call($method, $args) {

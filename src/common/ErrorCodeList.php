@@ -4,7 +4,11 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\traits\NameBase;
+
 class ErrorCodeList {
+	use NameBase;
+	
 	public static $_ERROR_CODE_NAME = 'error_code';
 	
 	/**
@@ -24,6 +28,23 @@ class ErrorCodeList {
 		if (!empty($err)) {
 			self::unshift($err);
 		}
+		
+		$this->init();
+	}
+	
+	/**
+	 * 初始化
+	 */
+	public function init() {
+		$this->initNameInfo();
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = '错误码列表管理';
 	}
 	
 	/**

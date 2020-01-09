@@ -4,7 +4,10 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\traits\NameBase;
+
 class SimpleLog {
+	use NameBase;
 	
 	public static $_MQTT_CLIENT_ID = 'Logger_2019';
 	public static $_MQTT_TOPICS = 'Logger_2019';
@@ -25,6 +28,7 @@ class SimpleLog {
 	/** @var $mqttObj SimpleMQTT */
 	protected $mqttObj;
 	protected $_enabledMQTT = false;
+	protected $_enabledMQTTList = false;
 	
 	// MQTT是否连接
 	protected $_flagMQTTConnected = false;
@@ -43,6 +47,23 @@ class SimpleLog {
 		$this->mqttObj = $mqttObj;
 		$this->_enabledMQTT = $enabledMQTT;
 		$this->_flagMQTTConnected = false;
+		
+		$this->init();
+	}
+	
+	/**
+	 * 初始化
+	 */
+	public function init() {
+		$this->initNameInfo();
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = '日志管理';
 	}
 	
 	/**
@@ -178,7 +199,7 @@ class SimpleLog {
 			return false;
 		}
 		
-		if (!$this->isEnabledMQTT()) {
+		if (!$this->isEnabledMQTTList()) {
 			return true;
 		}
 		
@@ -205,6 +226,24 @@ class SimpleLog {
 			return $this->_enabledMQTT;
 		} else {
 			$this->_enabledMQTT = $enabledMQTT;
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * enabledMQTTList
+	 * get set
+	 *
+	 * @param string|null $enabledMQTTList
+	 *
+	 * @return bool|SimpleLog
+	 */
+	public function enabledMQTTList($enabledMQTTList = null) {
+		if ($enabledMQTTList === null) {
+			return $this->_enabledMQTTList;
+		} else {
+			$this->_enabledMQTTList = $enabledMQTTList;
 		}
 		
 		return $this;
@@ -247,6 +286,20 @@ class SimpleLog {
 	 */
 	public function setEnabledMQTT(bool $enabledMQTT) {
 		$this->_enabledMQTT = $enabledMQTT;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isEnabledMQTTList(): bool {
+		return $this->_enabledMQTTList;
+	}
+	
+	/**
+	 * @param bool $enabledMQTTList
+	 */
+	public function setEnabledMQTTList(bool $enabledMQTTList) {
+		$this->_enabledMQTTList = $enabledMQTTList;
 	}
 	
 	/**
