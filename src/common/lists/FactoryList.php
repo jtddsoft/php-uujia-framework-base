@@ -4,9 +4,38 @@ namespace uujia\framework\base\common\lists;
 
 use uujia\framework\base\traits\NameBase;
 
+/**
+ * Class FactoryList
+ *
+ * @package uujia\framework\base\common\lists
+ */
 class FactoryList {
 	use NameBase;
 	
+	public static $_WORK_MODE = [
+		'unknow' => 0,  // 未知
+		'key'    => 1,  // key
+		'weight' => 2,  // 权重
+	];
+	
+	/**
+	 * 构造方法func 需要时才加载
+	 *
+	 * 工作模式
+	 *  1、[key] 有具体key 类似容器中使用
+	 *  $_l => [
+	 *      'default' => [
+	 *          '\Base': function($this) {
+	 *              return new XXX();
+	 *          },
+	 *          '\Log': function($this) {
+	 *              return new XXX();
+	 *          },
+	 *      ]
+	 *  ];
+	 *
+	 *  2、[weight] 权重 当存在多个相同子项
+	 */
 	protected $_l = [
 		// 'default' => []
 	];
@@ -48,7 +77,7 @@ class FactoryList {
 	 */
 	public function l($l = null) {
 		if ($l === null) {
-			return $this->_l[$this->name()] ?? null;
+			return isset($this->_l[$this->name()]) ? $this->_l[$this->name()] : [];
 		} else {
 			$this->_l[$this->name()] = $l;
 		}
@@ -64,7 +93,7 @@ class FactoryList {
 	 */
 	public function c($c = null) {
 		if ($c === null) {
-			return $this->_c[$this->name()] ?? null;
+			return $this->_c[$this->name()] ?? [];
 		} else {
 			$this->_c[$this->name()] = $c;
 		}
@@ -108,12 +137,17 @@ class FactoryList {
 	 * 获取
 	 * @inheritDoc
 	 */
-	public function get($k) {
+	public function get($k, $param = []) {
 		if ($this->hasCache($k)) {
 			return $this->cache($k);
 		}
 		
-		$v = $this->l()[$k]($this);
+		if (empty($this->l()[$k]) || !($this->l()[$k] instanceof \Closure)) {
+			return null;
+		}
+		
+		// $v = call_user_func_array($this->_l[$this->name()][$k], $param);
+		$v = call_user_func_array($this->l()[$k], $param);
 		
 		if ($this->autoCache()) {
 			$this->cache($k, $v);
@@ -149,7 +183,8 @@ class FactoryList {
 	 * @return $this
 	 */
 	public function set($k, \Closure $f) {
-		$this->l()[$k] = $f;
+		$this->_l[$this->name()][$k] = $f;
+		
 		return $this;
 	}
 	
@@ -164,10 +199,10 @@ class FactoryList {
 		if ($v === null) {
 			return $this->c()[$k];
 		} else {
-			$this->c()[$k] = $v;
+			$this->_c[$this->name()][$k] = $v;
 		}
 		
-		return $v;
+		return $this;
 	}
 	
 	/**
@@ -187,7 +222,7 @@ class FactoryList {
 	 * @return FactoryList
 	 */
 	public function removeCache($k) {
-		unset($this->c()[$k]);
+		unset($this->_c[$this->name()][$k]);
 		return $this;
 	}
 }

@@ -5,6 +5,7 @@ namespace uujia\framework\base\traits;
 
 
 trait ResultBase{
+	
 	// 返回ok模板
 	public static $_RESULT_OK
 		= [
@@ -26,6 +27,10 @@ trait ResultBase{
 	// 验证正确的依据code = 200
 	public static $_OK_CODE = 200;
 	
+	// 错误代码构造方法工厂（构造回调Func） 用时才加载
+	private $_errCodeFactory = null;
+	// 已构造的缓存
+	private $_errCodeCache = null;
 	
 	/**
 	 * 缓存返回值
@@ -63,6 +68,31 @@ trait ResultBase{
 	/**************************************************************
 	 * 返回输出
 	 **************************************************************/
+	
+	/**
+	 * 返回错误
+	 *
+	 * @param int $code
+	 *
+	 * @return array|\think\response\Json
+	 */
+	public function code($code = 1000) {
+		$_ret         = self::$_RESULT_ERROR;
+		$_ret['code'] = $code;
+		
+		if (empty($this->_errCodeCache)) {
+			if (!empty($this->_errCodeFactory) && $this->_errCodeFactory instanceof \Closure) {
+				$this->_errCodeCache = call_user_func_array($this->_errCodeFactory, [$this]);
+			}
+		}
+		
+		$_ret['msg']  = $this->_errCodeCache[$code]['error_code'] ?? '未知错误';
+		
+		// 记录最后的错误信息
+		$this->setLastReturn($_ret);
+		
+		return rsErrCode($code);
+	}
 	
 	/**
 	 * 返回错误
@@ -217,6 +247,34 @@ trait ResultBase{
 		$this->setMsg($this->last_return['msg']);
 		$this->setStatus($this->last_return['status']);
 		$this->setData($this->last_return['data']);
+	}
+	
+	/**
+	 * @return null|\Closure
+	 */
+	public function getErrCodeFactory() {
+		return $this->_errCodeFactory;
+	}
+	
+	/**
+	 * @param null|\Closure $errCodeFactory
+	 */
+	public function setErrCodeFactory($errCodeFactory) {
+		$this->_errCodeFactory = $errCodeFactory;
+	}
+	
+	/**
+	 * @return null|array
+	 */
+	public function getErrCodeCache() {
+		return $this->_errCodeCache;
+	}
+	
+	/**
+	 * @param null|array $errCodeCache
+	 */
+	public function setErrCodeCache($errCodeCache) {
+		$this->_errCodeCache = $errCodeCache;
 	}
 	
 }

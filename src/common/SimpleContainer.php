@@ -67,7 +67,7 @@ class SimpleContainer implements ContainerInterface {
 	 */
 	public function get($id) {
 		// return $this->$id;
-		return $this->list()->name('default')->get($id);
+		return $this->list()->name('default')->get($id, [$this]);
 	}
 	
 	/**

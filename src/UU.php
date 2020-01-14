@@ -2,6 +2,7 @@
 
 namespace uujia\framework\base;
 
+use uujia\framework\base\common\lists\FactoryList;
 use uujia\framework\base\common\SimpleContainer;
 use uujia\framework\base\traits\InstanceBase;
 use uujia\framework\base\traits\NameBase;
@@ -14,13 +15,11 @@ class UU {
 	protected static $container;
 	
 	/**
-	 * Base constructor.
-	 * 依赖Result
-	 *
-	 * @param String $name
+	 * UU constructor.
+	 * 依赖SimpleContainer
 	 */
 	public function __construct() {
-		self::$container = new SimpleContainer();
+		self::$container = new SimpleContainer(new FactoryList());
 	}
 	
 	/**
