@@ -7,7 +7,7 @@ namespace uujia\framework\base\common;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use uujia\framework\base\common\lists\FactoryList;
+use uujia\framework\base\common\lists\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
@@ -15,8 +15,8 @@ use uujia\framework\base\traits\ResultBase;
  * Class SimpleContainer
  *
  * @package uujia\framework\base\common
- * @mixin FactoryList
- * @method \uujia\framework\base\common\lists\FactoryList set($k, \Closure $f) 设置list
+ * @mixin FactoryCacheTree
+ * @method \uujia\framework\base\common\lists\FactoryCacheTree set($k, \Closure $f) 设置list
  */
 class SimpleContainer implements ContainerInterface {
 	use NameBase;
@@ -26,10 +26,10 @@ class SimpleContainer implements ContainerInterface {
 	// // 每次实例化都会存入对象实例 如果已存在就覆盖
 	// private $lastObj = [];
 	
-	/** @var $_list FactoryList */
+	/** @var $_list FactoryCacheTree */
 	protected $_list;
 	
-	public function __construct(FactoryList $list) {
+	public function __construct(FactoryCacheTree $list) {
 		$this->_list = $list;
 		
 		$this->init();
@@ -83,9 +83,9 @@ class SimpleContainer implements ContainerInterface {
 	 * 获取or设置 list
 	 *
 	 * @param null $list
-	 * @return $this|FactoryList
+	 * @return $this|FactoryCacheTree
 	 */
-	public function list($list = null): FactoryList {
+	public function list($list = null): FactoryCacheTree {
 		if ($list === null) {
 			return $this->_list;
 		} else {

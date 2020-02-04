@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
@@ -12,14 +13,19 @@ class Config {
 	use ResultBase;
 	
 	// 配置构建工厂 只是文件路径的方法集合
-	public $_config_list_path = [
-		// 'app_config' => [''],
-	];
+	// public $_config_list_path = [
+	// 	// 'app_config' => [''],
+	// ];
+	//
+	// // 配置列表 文件加载后的内容集合
+	// public $_config_list = [
+	// 	// 'app_config' => [],
+	// ];
 	
-	// 配置列表 文件加载后的内容集合
-	public $_config_list = [
-		// 'app_config' => [],
-	];
+	/**
+	 * @var $_data FactoryCacheTree
+	 */
+	public $_list;
 	
 	// 配置类型 type = app表示name = type . '_config' = 'app_config'
 	public $_type = ''; // app
@@ -28,6 +34,8 @@ class Config {
 	public $_name = '';
 	
 	public function __construct() {
+		$this->_data = new FactoryCacheTree($this);
+		
 		$this->init();
 	}
 	
@@ -83,17 +91,34 @@ class Config {
 	}
 	
 	/**
-	 * @param        $func
+	 * set or add 配置文件路径
+	 *
+	 *  对于已存在type直接覆盖 不存在的添加
+	 *
+	 *  例如：配置type = app; 路径为/config/app_config.php
+	 *       path('/config/app_config.php', 'app');
+	 *
+	 * @param        $path
 	 * @param string $type
 	 * @param string $name
 	 *
 	 * @return array
 	 */
 	public function path($path, $type = '', $name = '') {
+		// type转换为全名 例如：type = 'app' 转为name = 'app_config'
 		$name = $this->getConfigName($type, $name);
 		
-		$configFactory = $this->getConfigListPath();
-		$configFactory[$name] = $path;
+		$item = new FactoryCacheTree();
+		$item->getData()->set(function () use ($path, $type, $name) {
+			$config = include $path;
+			
+			return $config;
+		});
+		
+		$this->getList()->set($name, $item);
+		
+		// $configFactory = $this->getConfigListPath();
+		// $configFactory[$name] = $path;
 		
 		return $this->ok();
 	}
@@ -107,6 +132,7 @@ class Config {
 	 * @return $this
 	 */
 	public function load($type = '', $name = '') {
+		// type转换为全名 例如：type = 'app' 转为name = 'app_config'
 		$name = $this->getConfigName($type, $name);
 		
 		
@@ -139,36 +165,10 @@ class Config {
 	}
 	
 	/**
-	 * config list
-	 *
-	 * @return array
+	 * @return FactoryCacheTree
 	 */
-	public function getConfigList(): array {
-		return $this->_config_list;
+	public function getList(): FactoryCacheTree {
+		return $this->_list;
 	}
-	
-	/**
-	 * config list
-	 *
-	 * @param array $config_list
-	 */
-	protected function setConfigList(array $config_list) {
-		$this->_config_list = $config_list;
-	}
-	
-	/**
-	 * @return array
-	 */
-	public function getConfigListPath(): array {
-		return $this->_config_list_path;
-	}
-	
-	/**
-	 * @param array $config_list_path
-	 */
-	public function setConfigListPath(array $config_list_path) {
-		$this->_config_list_path = $config_list_path;
-	}
-	
 	
 }

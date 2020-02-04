@@ -2,7 +2,7 @@
 
 namespace uujia\framework\base;
 
-use uujia\framework\base\common\lists\FactoryList;
+use uujia\framework\base\common\lists\FactoryCacheTree;
 use uujia\framework\base\common\SimpleContainer;
 use uujia\framework\base\traits\InstanceBase;
 use uujia\framework\base\traits\NameBase;
@@ -19,7 +19,7 @@ class UU {
 	 * 依赖SimpleContainer
 	 */
 	public function __construct() {
-		self::$container = new SimpleContainer(new FactoryList());
+		self::$container = new SimpleContainer(new FactoryCacheTree());
 	}
 	
 	/**
