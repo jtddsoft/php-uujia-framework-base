@@ -11,11 +11,11 @@ class Result {
 	use ResultBase;
 	
 	// 配置对象 依赖于配置管理class 必须事先初始化
-	/** @var $configObj ErrorCodeList */
-	protected $configObj;
+	/** @var $errObj ErrorCodeList */
+	protected $errObj;
 	
 	// 日志对象 默认为抽象类 需要子类继承
-	/** @var $logObj SimpleLog */
+	/** @var $logObj Log */
 	protected $logObj;
 	
 	// 返回类型
@@ -26,18 +26,18 @@ class Result {
 		];
 	
 	// 返回类型
-	private $return_type = 1;
+	protected $return_type = 1;
 	// 如果出错直接exit返回
-	private $return_die = true;
+	protected $return_die = true;
 	
 	/**
 	 * 初始化依赖注入
 	 *
-	 * @param ErrorCodeList $configObj
-	 * @param SimpleLog     $logObj
+	 * @param ErrorCodeList $errObj
+	 * @param Log           $logObj
 	 */
-	public function __construct(ErrorCodeList $configObj, SimpleLog $logObj) {
-		$this->configObj = $configObj;
+	public function __construct(ErrorCodeList $errObj, Log $logObj) {
+		$this->errObj = $errObj;
 		$this->logObj = $logObj;
 		
 		$this->init();
@@ -118,6 +118,7 @@ class Result {
 		
 		switch ($this->getReturnType()) {
 			case self::$_RETURN_TYPE['json']:
+				$this->getLogObj()->response();
 				return json($_ret);
 				break;
 		}
@@ -135,7 +136,7 @@ class Result {
 	public function code($code = 1000) {
 		$_ret         = self::$_RESULT_ERROR;
 		$_ret['code'] = $code;
-		$_ret['msg']  = $this->getConfigObj()->find($code);
+		$_ret['msg']  = $this->getErrObj()->find($code);
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
@@ -149,6 +150,7 @@ class Result {
 		
 		switch ($this->getReturnType()) {
 			case self::$_RETURN_TYPE['json']:
+				$this->getLogObj()->response();
 				return rjErrCode($code);
 				break;
 		}
@@ -167,11 +169,12 @@ class Result {
 		
 		switch ($this->getReturnType()) {
 			case self::$_RETURN_TYPE['json']:
+				$this->getLogObj()->response();
 				return join($_ret);
 				break;
 		}
 		
-		return self::$_RESULT_OK;
+		return $_ret;
 	}
 	
 	public function data($data = []) {
@@ -186,6 +189,7 @@ class Result {
 		
 		switch ($this->getReturnType()) {
 			case self::$_RETURN_TYPE['json']:
+				$this->getLogObj()->response();
 				return json($_ret);
 				break;
 		}
@@ -200,6 +204,7 @@ class Result {
 		
 		switch ($this->getReturnType()) {
 			case self::$_RETURN_TYPE['json']:
+				$this->getLogObj()->response();
 				return json($this->getLastReturn());
 				break;
 		}
@@ -245,34 +250,34 @@ class Result {
 	 *
 	 * @return ErrorCodeList
 	 */
-	public function getConfigObj(): ErrorCodeList {
-		return $this->configObj;
+	public function getErrObj(): ErrorCodeList {
+		return $this->errObj;
 	}
 	
 	/**
 	 * 设置配置对象（一般不要更改）*
-	 * @param ErrorCodeList $configObj
+	 * @param ErrorCodeList $errObj
 	 */
-	public function setConfigObj(ErrorCodeList $configObj) {
-		$this->configObj = $configObj;
+	public function setErrObj(ErrorCodeList $errObj) {
+		$this->errObj = $errObj;
 	}
 	
 	/**
 	 * 获取日志对象
 	 *  抽象类需要子类继承
 	 *
-	 * @return SimpleLog
+	 * @return Log
 	 */
-	public function getLogObj(): SimpleLog {
+	public function getLogObj(): Log {
 		return $this->logObj;
 	}
 	
 	/**
 	 * 设置日志对象
 	 *
-	 * @param SimpleLog $logObj
+	 * @param Log $logObj
 	 */
-	public function setLogObj(SimpleLog $logObj) {
+	public function setLogObj(Log $logObj) {
 		$this->logObj = $logObj;
 	}
 }

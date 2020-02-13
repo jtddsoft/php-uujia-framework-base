@@ -3,7 +3,8 @@
 
 namespace uujia\framework\base\common\lib\Tree;
 
-use PhpParser\Node\Expr\Empty_;
+
+use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
 
 /**
@@ -11,7 +12,7 @@ use uujia\framework\base\traits\NameBase;
  *
  * @package uujia\framework\base\common\lib\Tree
  */
-class TreeNode {
+class TreeNode implements \Iterator, \ArrayAccess {
 	use NameBase;
 	
 	// 默认权重
@@ -28,6 +29,11 @@ class TreeNode {
 	 * 子节点
 	 */
 	protected $_children = [];
+	
+	/**
+	 * 迭代器游标位置
+	 */
+	protected $_position = 0;
 	
 	/**
 	 * 权重排序索引
@@ -59,11 +65,36 @@ class TreeNode {
 	protected $_level = 0;
 	
 	/**
-	 * 标题
+	 * id *
+	 *  （并非一定会用到）
+	 *
+	 * @var int|string $_id
+	 */
+	protected $_id = '';
+	
+	/**
+	 * 标题 *
+	 *  （并非一定会用到）
 	 *
 	 * @var string $_title
 	 */
 	protected $_title = '';
+	
+	/**
+	 * 是否启用 *
+	 *  （并非一定会用到）
+	 *
+	 * @var bool $_enabled
+	 */
+	protected $_enabled = true;
+	
+	/**
+	 * 附加参数 *
+	 *  （并非一定会用到）
+	 *
+	 * @var array $_param
+	 */
+	protected $_param = [];
 	
 	
 	/**
@@ -83,8 +114,15 @@ class TreeNode {
 	public function init() {
 		$this->initNameInfo();
 		
+		// 初始化迭代器游标
+		$this->_position = 0;
+		
 		$this->_weight = self::$_DEFAULT_WEIGHT;
+		$this->_level = 0;
+		$this->_id = uniqid();
 		$this->_title = '';
+		$this->_enabled = true;
+		$this->_param = [];
 	}
 	
 	/**
@@ -93,6 +131,99 @@ class TreeNode {
 	public function initNameInfo() {
 		$this->name_info['name']  = self::class;
 		$this->name_info['intro'] = '树节点';
+	}
+	
+	/**************************************************
+	 * Iterator 迭代器方法实现
+	 **************************************************/
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function current() {
+		$_key = $this->key();
+		
+		return $this->_children[$_key] ?? null;
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function next() {
+		++$this->_position;
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function key() {
+		$_keys = array_keys($this->_children);
+		
+		if ($this->_position >= count($_keys)) {
+			return null;
+		}
+		
+		$_key = $_keys[$this->_position];
+		
+		return $_key;
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function valid() {
+		$_keys = array_keys($this->_children);
+		
+		if ($this->_position >= count($_keys)) {
+			return false;
+		}
+		
+		$_key = $_keys[$this->_position];
+		
+		return isset($this->_children[$_key]);
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function rewind() {
+		$this->_position = 0;
+	}
+	
+	/**************************************************
+	 * ArrayAccess 方法实现
+	 **************************************************/
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetExists($offset) {
+		return $this->has($offset);
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetGet($offset) {
+		return $this->get($offset);
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetSet($offset, $value) {
+		return $this->set($offset, $value);
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetUnset($offset) {
+		if (is_numeric($offset)) {
+			$this->delete($offset);
+		} elseif (is_string($offset)) {
+			$this->remove($offset);
+		}
 	}
 	
 	/**************************************************
@@ -263,6 +394,19 @@ class TreeNode {
 	}
 	
 	/**
+	 * 清空
+	 *
+	 * @param string $key
+	 * @return $this
+	 */
+	public function clear() {
+		$this->_children = [];
+		$this->_position = 0;
+		
+		return $this;
+	}
+	
+	/**
 	 * 获取
 	 *
 	 * @param string $key
@@ -340,8 +484,8 @@ class TreeNode {
 	 * @param \Closure $func
 	 */
 	public function forEach(\Closure $func) {
-		foreach ($this->_children as $i => &$item) {
-			$re = call_user_func_array($func, [&$item, $i, $this]);
+		foreach ($this->_children as $k => &$item) {
+			$re = call_user_func_array($func, [&$item, $k, $this]);
 			if ($re === false) {
 				break;
 			}
@@ -362,16 +506,38 @@ class TreeNode {
 	public function map(\Closure $func) {
 		$_arr = $this->_children;
 		
-		foreach ($_arr as $i => $item) {
-			$re = call_user_func_array($func, [$item, $i, $this]);
+		foreach ($_arr as $k => $item) {
+			$re = call_user_func_array($func, [$item, $k, $this]);
 			if ($re === false) {
 				break;
 			}
 			
-			$arr[$i] = $re;
+			$arr[$k] = $re;
 		}
 		
 		return $_arr;
+	}
+	
+	/**
+	 * 遍历（权重）
+	 *  wForEach(function ($item, $i, $obj) {
+	 *      $item->data = 123;
+	 *  })
+	 *
+	 * @param \Closure $func
+	 */
+	public function wForEach(\Closure $func) {
+		// 如果权值排序索引映射表为空 就做一次重新排序映射
+		$this->_weight_index === null && $this->weight();
+		
+		foreach ($this->_weight_index as $i => $index) {
+			$item = &$this->_children[$index];
+			
+			$re = call_user_func_array($func, [&$item, $index, $this]);
+			if ($re === false) {
+				break;
+			}
+		}
 	}
 	
 	/**
@@ -507,6 +673,99 @@ class TreeNode {
 		$this->_children = $children;
 	}
 	
+	/**
+	 * @return bool
+	 */
+	public function isEnabled(): bool {
+		return $this->_enabled;
+	}
 	
+	/**
+	 * @param bool $enabled
+	 */
+	public function setEnabled(bool $enabled) {
+		$this->_enabled = $enabled;
+	}
+	
+	/**
+	 * 指定key项是否启用
+	 *
+	 * @param $key
+	 * @return bool
+	 */
+	public function isEnabledKey($key): bool {
+		/** @var FactoryCacheTree $item */
+		$item = $this->get($key);
+		if (empty($item)) {
+			return false;
+		}
+		
+		return $item->isEnabled();
+	}
+	
+	/**
+	 * 设置指定key项是否启用
+	 *
+	 * @param      $key
+	 * @param bool $enabled
+	 * @return $this
+	 */
+	public function setEnabledKey($key, bool $enabled) {
+		/** @var FactoryCacheTree $item */
+		$item = $this->get($key);
+		if (empty($item)) {
+			return $this;
+		}
+		
+		$item->setEnabled($enabled);
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getParam(): array {
+		return $this->_param;
+	}
+	
+	/**
+	 * @param array $param
+	 */
+	public function setParam(array $param) {
+		$this->_param = $param;
+	}
+	
+	/**
+	 * @return int|string
+	 */
+	public function getId() {
+		return $this->_id;
+	}
+	
+	/**
+	 * @param int|string $id
+	 */
+	public function setId($id) {
+		$this->_id = $id;
+	}
+	
+	/**
+	 * 返回父级id
+	 *
+	 * @param int $rootReturn
+	 * @return int|string
+	 */
+	public function getPid($rootReturn = 0) {
+		try {
+			if (empty($this->getParent()) ||
+			    !method_exists($this->getParent(), 'getId')) {
+				return $rootReturn;
+			}
+			
+			return $this->getParent()->getId();
+		} catch (\Exception $e) {
+			return $rootReturn;
+		}
+	}
 	
 }

@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\FactoryCache\Data;
 use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
@@ -23,18 +24,20 @@ class Config {
 	// ];
 	
 	/**
-	 * @var $_data FactoryCacheTree
+	 * 配置列表
+	 *
+	 * @var $_list FactoryCacheTree
 	 */
-	public $_list;
+	protected $_list;
 	
 	// 配置类型 type = app表示name = type . '_config' = 'app_config'
-	public $_type = ''; // app
+	protected $_type = ''; // app
 	
 	// 如果type是空 name=name 如果type不为空 name=type . '_config'
-	public $_name = '';
+	protected $_name = '';
 	
 	public function __construct() {
-		$this->_data = new FactoryCacheTree($this);
+		$this->_list = new FactoryCacheTree();
 		
 		$this->init();
 	}
@@ -45,7 +48,10 @@ class Config {
 	public function init() {
 		$this->initNameInfo();
 		
-		$this->path(__DIR__ . "./config/app_config.php", 'app');
+		// $this->path(__DIR__ . "/../config/app_config.php", 'app');
+		
+		$paths = glob(__DIR__ . "/../config/*_config.php", GLOB_BRACE);
+		$this->path($paths);
 	}
 	
 	/**
@@ -98,29 +104,48 @@ class Config {
 	 *  例如：配置type = app; 路径为/config/app_config.php
 	 *       path('/config/app_config.php', 'app');
 	 *
-	 * @param        $path
-	 * @param string $type
-	 * @param string $name
+	 * @param string|array $path
+	 * @param string       $type
+	 * @param string       $name
 	 *
-	 * @return array
+	 * @return Config
 	 */
 	public function path($path, $type = '', $name = '') {
-		// type转换为全名 例如：type = 'app' 转为name = 'app_config'
-		$name = $this->getConfigName($type, $name);
+		$_paths = [];
+		if (is_string($path)) {
+			$_paths[] = $path;
+		} elseif (is_array($path)) {
+			$_paths = $path;
+		}
 		
-		$item = new FactoryCacheTree();
-		$item->getData()->set(function () use ($path, $type, $name) {
-			$config = include $path;
+		if (empty($_paths)) {
+			return $this;
+		}
+		
+		foreach ($_paths as $_path) {
+			// type转换为全名 例如：type = 'app' 转为name = 'app_config'
+			$_name = $this->getConfigName($type, $name);
 			
-			return $config;
-		});
-		
-		$this->getList()->set($name, $item);
+			if (empty($_name)) {
+				$_name = basename($_path, '.php');
+			}
+			
+			$this->unshift($_name, $_path);
+			
+			// $item = new FactoryCacheTree();
+			// $item->getData()->set(function ($data, $it) use ($_path, $type, $name) {
+			// 	$config = include $_path;
+			//
+			// 	return $config;
+			// });
+			//
+			// $this->getList()->set($name, $item);
+		}
 		
 		// $configFactory = $this->getConfigListPath();
-		// $configFactory[$name] = $path;
+		// $configFactory[$name] = $_path;
 		
-		return $this->ok();
+		return $this;
 	}
 	
 	/**
@@ -129,15 +154,120 @@ class Config {
 	 * @param string $type
 	 * @param string $name
 	 *
-	 * @return $this
+	 * @return array|string|null
 	 */
 	public function load($type = '', $name = '') {
+		$this->loadValue($type, $name);
+		
+		return $this;
+	}
+	
+	/**
+	 * 加载配置并返回值
+	 *
+	 * @param string $type
+	 * @param string $name
+	 *
+	 * @return array|string|int|null
+	 */
+	public function loadValue($type = '', $name = '') {
 		// type转换为全名 例如：type = 'app' 转为name = 'app_config'
-		$name = $this->getConfigName($type, $name);
+		$_name = $this->getConfigName($type, $name);
 		
+		// $config = include __DIR__ . "./config/error_code.php";
 		
+		/** @var array|string|null $config */
+		$config = $this->getListValue($_name)->getDataValue();
 		
-		$config = include __DIR__ . "./config/error_code.php";
+		return $config;
+	}
+	
+	/**
+	 * 开头插入
+	 *
+	 * @param string|int   $key
+	 * @param string|array $path
+	 * @return $this
+	 */
+	public function unshift($key, $path) {
+		$factoryItemFunc = function ($data, $it) {
+			$_config = [];
+			
+			// 获取汇总列表中所有配置
+			/** @var FactoryCacheTree $it */
+			$it->wForEach(function ($_item, $index, $me) use (&$_config) {
+				/** @var FactoryCacheTree $_item */
+				$_it_config = $_item->getDataValue();
+				$_config    = array_merge($_it_config, $_config);
+			});
+			
+			return $_config;
+		};
+		
+		if (is_string($path)) {
+			$this->getList()->unshiftKeyItemData($key,
+				function ($data, $it) use ($path) {
+					$_config = include $path;
+					
+					return $_config;
+				}, $factoryItemFunc
+			);
+		} elseif (is_array($path)) {
+			foreach ($path as $row) {
+				$this->getList()->unshiftKeyItemData($key,
+					function ($data, $it) use ($row) {
+						$_config = include $row;
+						
+						return $_config;
+					}, $factoryItemFunc
+				);
+			}
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 尾部添加
+	 *
+	 * @param string|int   $key
+	 * @param string|array $path
+	 * @return $this
+	 */
+	public function add($key, $path) {
+		$factoryItemFunc = function ($data, $it) {
+			$_config = [];
+			
+			// 获取汇总列表中所有配置
+			/** @var FactoryCacheTree $it */
+			$it->wForEach(function ($_item, $index, $me) use (&$_config) {
+				/** @var FactoryCacheTree $_item */
+				$_it_config = $_item->getDataValue();
+				$_config    = array_merge($_config, $_it_config);
+			});
+			
+			return $_config;
+		};
+		
+		if (is_string($path)) {
+			$this->getList()->addKeyItemData($key,
+				function ($data, $it) use ($path) {
+					$_config = include $path;
+					
+					return $_config;
+				}, $factoryItemFunc
+			);
+		} elseif (is_array($path)) {
+			foreach ($path as $row) {
+				$this->getList()->addKeyItemData($key,
+					function ($data, $it) use ($row) {
+						$_config = include $row;
+						
+						return $_config;
+					}, $factoryItemFunc
+				);
+			}
+		}
 		
 		return $this;
 	}
@@ -165,10 +295,42 @@ class Config {
 	}
 	
 	/**
+	 * 获取列表
+	 *
 	 * @return FactoryCacheTree
 	 */
 	public function getList(): FactoryCacheTree {
 		return $this->_list;
+	}
+	
+	/**
+	 * 获取列表项
+	 *
+	 * @param string $key
+	 * @return Data
+	 */
+	public function getListData(string $key): Data {
+		return $this->getList()->getData();
+	}
+	
+	/**
+	 * 获取列表项值
+	 *
+	 * @param string $key
+	 * @return array|string|int|null
+	 */
+	public function getListDataValue(string $key) {
+		return $this->getListValue($key)->getDataValue();
+	}
+	
+	/**
+	 * 获取列表项
+	 *
+	 * @param string $key
+	 * @return FactoryCacheTree
+	 */
+	public function getListValue(string $key): FactoryCacheTree {
+		return $this->getList()->get($key);
 	}
 	
 }

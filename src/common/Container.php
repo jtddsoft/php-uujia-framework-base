@@ -7,18 +7,17 @@ namespace uujia\framework\base\common;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use uujia\framework\base\common\lists\FactoryCacheTree;
+use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
 /**
- * Class SimpleContainer
+ * Class Container
+ * 基础容器
  *
  * @package uujia\framework\base\common
- * @mixin FactoryCacheTree
- * @method \uujia\framework\base\common\lists\FactoryCacheTree set($k, \Closure $f) 设置list
  */
-class SimpleContainer implements ContainerInterface {
+class Container implements ContainerInterface {
 	use NameBase;
 	use ResultBase;
 	
@@ -63,20 +62,46 @@ class SimpleContainer implements ContainerInterface {
 	
 	/**
 	 * 获取
+	 *
+	 * @param $id
+	 * @return mixed
 	 * @inheritDoc
 	 */
 	public function get($id) {
 		// return $this->$id;
-		return $this->list()->name('default')->get($id, [$this]);
+		// return $this->list()->get($id, [$this]);
+		return $this->list()->get($id)->getDataValue();
 	}
 	
 	/**
 	 * 是否存在
+	 *
+	 * @param $id
+	 *
+	 * @return bool
 	 * @inheritDoc
 	 */
 	public function has($id) {
 		// return array_key_exists($id, $this->c);
-		return $this->list()->name('default')->has($id);
+		return $this->list()->has($id);
+	}
+	
+	/**
+	 * 设置
+	 *
+	 * @param $id
+	 * @param \Closure $c
+	 *
+	 * @return $this
+	 */
+	public function set($id, \Closure $c) {
+		$item = new FactoryCacheTree();
+		$item->getData()->set(function ($data, $it) use ($c) {
+			return call_user_func_array($c, [$data, $it, $this]);
+		});
+		
+		$this->list()->set($id, $item);
+		return $this;
 	}
 	
 	/**
@@ -95,18 +120,18 @@ class SimpleContainer implements ContainerInterface {
 		return $this;
 	}
 	
-	public function __call($method, $args) {
-		if ($this->isErr()) { return $this->return_error(); }
-		
-		// 从list中查找方法
-		if (is_callable([$this->list()->name('default'), $method])) {
-			return call_user_func_array([$this->list()->name('default'), $method], $args);
-		}
-		
-		// 方法不存在
-		$this->error('方法不存在', 1000);
-		return $this;
-	}
+	// public function __call($method, $args) {
+	// 	if ($this->isErr()) { return $this->return_error(); }
+	//
+	// 	// 从list中查找方法
+	// 	if (is_callable([$this->list(), $method])) {
+	// 		return call_user_func_array([$this->list(), $method], $args);
+	// 	}
+	//
+	// 	// 方法不存在
+	// 	$this->error('方法不存在', 1000);
+	// 	return $this;
+	// }
 	
 	// /**
 	//  * 设置

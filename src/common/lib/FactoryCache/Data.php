@@ -34,6 +34,14 @@ class Data {
 	 */
 	protected $_cache = null;
 	
+	/**
+	 * 自动缓存
+	 *
+	 * @var bool $_isAutoCache
+	 */
+	protected $_isAutoCache = true;
+	
+	
 	
 	/**
 	 * ItemData constructor.
@@ -66,21 +74,13 @@ class Data {
 	}
 	
 	/**
-	 * 自动缓存
-	 *
-	 * @return $this|bool
-	 */
-	public function isAutoCache(): bool {
-		return $this->getParent()->isAutoCache();
-	}
-	
-	/**
 	 * 获取
 	 *
 	 * @param array $param
+	 * @param bool  $doNotCache
 	 * @return mixed|null
 	 */
-	public function get($param = []) {
+	public function get($param = [], $doNotCache = false) {
 		if ($this->hasCache()) {
 			return $this->cache();
 		}
@@ -89,7 +89,13 @@ class Data {
 			return null;
 		}
 		
+		$param = array_merge([$this, $this->_parent], $param);
+		
 		$v = call_user_func_array($this->_factoryFunc, $param);
+		
+		if (!$doNotCache && $this->isAutoCache()) {
+			$this->cache($v);
+		}
 		
 		return $v;
 	}
@@ -102,7 +108,7 @@ class Data {
 	 */
 	public function getAndCache($param = []) {
 		$v = $this->get($param);
-		$this->cache($v);
+		!$this->isAutoCache() && $this->cache($v);
 		
 		return $v;
 	}
@@ -118,6 +124,9 @@ class Data {
 	
 	/**
 	 * 设置
+	 *  set(function ($data, $item) {
+	 *
+	 *  });
 	 *
 	 * @param \Closure $f
 	 * @return $this
@@ -171,6 +180,21 @@ class Data {
 		return $this->_parent;
 	}
 	
+	/**
+	 * 自动缓存
+	 *
+	 * @return $this|bool
+	 */
+	public function isAutoCache(): bool {
+		return $this->_isAutoCache;
+	}
+	
+	/**
+	 * @param bool $isAutoCache
+	 */
+	public function setIsAutoCache(bool $isAutoCache) {
+		$this->_isAutoCache = $isAutoCache;
+	}
 	
 	
 }

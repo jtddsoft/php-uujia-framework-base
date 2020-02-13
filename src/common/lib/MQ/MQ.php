@@ -1,14 +1,12 @@
 <?php
 
 
-namespace uujia\framework\base\common;
+namespace uujia\framework\base\common\lib\MQ;
 
-
-use Bluerhinos\phpMQTT;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
-class SimpleMQTT {
+abstract class MQ implements MQInterface {
 	use NameBase;
 	use ResultBase;
 	
@@ -22,31 +20,38 @@ class SimpleMQTT {
 		'0'   => 'ok',
 		'100' => '未知错误',
 		
-		// MQTT
+		// MQ
 		'101' => '未成功初始化',
 		'102' => '连接失败',
+		'103' => '自动连接超时',
+		'104' => '未连接服务端',
 	];
 	
-	// MQTT 对象
-	/** @var $mqttObj phpMQTT */
-	protected $mqttObj;
+	// MQ 对象
+	protected $_mqObj;
 	
 	// 配置
 	protected $_config = [
 		// 'client_type' => 0,
-		'enabled' => true,              // 启用
+		'enabled' => false,              // 启用
 		
 		'server'    => "localhost",     // change if necessary
 		'port'      => 1883,            // change if necessary
 		'username'  => "hello",         // set your username
 		'password'  => "123456",        // set your password
-		'client_id' => '',              // make sure this is unique for connecting to sever - you could use uniqid()
-		'cafile'    => null,            // 证书
-		'topics'    => '',              // 主题
 	];
 	
+	// 是否已初始化
 	protected $_init = false;
 	
+	// 是否已建立连接
+	protected $_connected = false;
+	
+	// 自动连接超时时间（秒）
+	protected $_autoConnectTimeOut = 10;
+	
+	// 订阅回调
+	protected $_callbackSubscribe = null;
 	
 	public function __construct($config = []) {
 		if (!empty($config)) {
@@ -68,7 +73,7 @@ class SimpleMQTT {
 	 */
 	public function initNameInfo() {
 		$this->name_info['name'] = self::class;
-		$this->name_info['intro'] = 'MQTT通讯管理';
+		$this->name_info['intro'] = 'MQ基础类';
 	}
 	
 	/**
@@ -76,12 +81,9 @@ class SimpleMQTT {
 	 *
 	 * @return bool
 	 */
-	public function initMQTT() {
+	public function initMQ() {
 		if ($this->_config['enabled']) {
-			$this->mqttObj = new phpMQTT($this->_config['server'],
-			                             $this->_config['port'],
-			                             $this->_config['client_id'],
-			                             $this->_config['cafile']);
+			// 需要具体初始化
 			
 			$this->setInit(true);
 			return true;
@@ -200,79 +202,42 @@ class SimpleMQTT {
 	}
 	
 	/**
-	 * client_id
-	 * get set
-	 *
-	 * @param string|null $client_id
-	 *
-	 * @return $this|array
-	 */
-	public function client_id($client_id = null) {
-		if ($client_id === null) {
-			return $this->_config['client_id'];
-		} else {
-			$this->_config['client_id'] = $client_id;
-		}
-		
-		return $this;
-	}
-	
-	/**
-	 * cafile
-	 * get set
-	 *
-	 * @param string|null $cafile
-	 *
-	 * @return $this|array
-	 */
-	public function cafile($cafile = null) {
-		if ($cafile === null) {
-			return $this->_config['cafile'];
-		} else {
-			$this->_config['cafile'] = $cafile;
-		}
-		
-		return $this;
-	}
-	
-	/**
-	 * topics
-	 * get set
-	 *
-	 * @param string|null $topics
-	 *
-	 * @return $this|array
-	 */
-	public function topics($topics = null) {
-		if ($topics === null) {
-			return $this->_config['topics'];
-		} else {
-			$this->_config['topics'] = $topics;
-		}
-		
-		return $this;
-	}
-	
-	/**
 	 * 自动连接服务端
-	 *
-	 * @param bool $clean
-	 * @param null $will
 	 *
 	 * @return $this|array|mixed|string|\think\response\Json
 	 */
-	public function connect_auto($clean = true, $will = NULL) {
-		if ($this->isErr()) { return $this->return_error(); }
+	public function connect_auto() {
+		// if ($this->isErr()) { return $this; } // return $this->return_error();
+		//
+		// if (!$this->isInit()) {
+		// 	if (!$this->initMQ()) {
+		// 		$this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+		//      return $this;
+		// 	}
+		// }
 		
-		if (!$this->isInit()) {
-			if (!$this->initMQTT()) {
-				return $this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+		// $re = $this->getMqObj()->connect_auto($clean, $will, $this->_config['username'], $this->_config['password']);
+		// if ($re === false) {
+		// 	    $this->error(self::$_ERROR_CODE[102], 102); // 连接失败
+		//      return $this;
+		// }
+		
+		$_time = time();
+		
+		while(!$this->isConnected()) {
+			$this->connect();
+			
+			if (time() - $_time > $this->getAutoConnectTimeOut()) {
+				break;
 			}
+			
+			sleep(1);
 		}
 		
-		$re = $this->mqttObj->connect_auto($clean, $will, $this->_config['username'], $this->_config['password']);
-		if ($re === false) {
-			return $this->error(self::$_ERROR_CODE[102], 102); // 连接失败
+		// 验证是否连接成功
+		if (!$this->isConnected()) {
+			$this->error(self::$_ERROR_CODE[103], 103); // 连接失败
+			return $this;
 		}
 		
 		return $this;
@@ -281,24 +246,25 @@ class SimpleMQTT {
 	/**
 	 * 连接服务端
 	 *
-	 * @param bool $clean
-	 * @param null $will
-	 *
 	 * @return $this|array|mixed|string|\think\response\Json
 	 */
-	public function connect($clean = true, $will = NULL) {
-		if ($this->isErr()) { return $this->return_error(); }
+	public function connect() {
+		if ($this->isErr()) { return $this; } // return $this->return_error();
 		
 		if (!$this->isInit()) {
-			if (!$this->initMQTT()) {
+			if (!$this->initMQ()) {
 				return $this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
 			}
 		}
 		
-		$re = $this->mqttObj->connect($clean, $will, $this->_config['username'], $this->_config['password']);
-		if ($re === false) {
-			return $this->error(self::$_ERROR_CODE[102], 102); // 连接失败
-		}
+		$this->setConnected(false);
+		
+		// $re = $this->getMqObj()->connect($clean, $will, $this->_config['username'], $this->_config['password']);
+		// if ($re === false) {
+		// 	return $this->error(self::$_ERROR_CODE[102], 102); // 连接失败
+		// }
+		
+		$this->setConnected(true);
 		
 		return $this;
 	}
@@ -311,7 +277,7 @@ class SimpleMQTT {
 	public function close() {
 		if ($this->isErr()) { return $this->return_error(); }
 		
-		$this->mqttObj->close();
+		// $this->mqttObj->close();
 		
 		return $this->ok();
 	}
@@ -319,16 +285,18 @@ class SimpleMQTT {
 	/**
 	 * 订阅
 	 *
-	 * @param int $qos
-	 *
-	 * @return array|\think\response\Json|SimpleMQTT
+	 * @return array|\think\response\Json|MQ
 	 */
-	public function subscribe($qos = 0) {
-		if ($this->isErr()) { return $this->return_error(); }
+	public function subscribe() {
+		if ($this->isErr()) { return $this; } // return $this->return_error();
 		
-		$this->mqttObj->subscribe($this->_config['topics'], $qos);
-
-		while($this->mqttObj->proc()){}
+		if ($this->isConnected()) {
+			// $this->mqObj->subscribe($this->_config['topics'], $this->qos());
+			//
+			// while($this->mqObj->proc()){}
+		} else {
+			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+		}
 		
 		return $this;
 	}
@@ -337,31 +305,29 @@ class SimpleMQTT {
 	 * 发布
 	 *
 	 * @param     $content
-	 * @param int $qos
-	 * @param int $retain
-	 *
-	 * @return array|\think\response\Json|SimpleMQTT
+	 * @return array|\think\response\Json|MQ
 	 */
-	public function publish($content, $qos = 0, $retain = 0) {
-		if ($this->isErr()) { return $this->return_error(); }
+	public function publish($content) {
+		if ($this->isErr()) { return $this; }
 		
-		$this->mqttObj->publish($this->_config['topics'], $content, $qos, $retain);
+		if ($this->isConnected()) {
+			// $this->mqObj->publish($this->_config['topics'], $content, $this->qos(), $this->retain());
+		} else {
+			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+		}
 		
 		return $this;
 	}
 	
-	/**
-	 * @return phpMQTT
-	 */
-	public function getMqttObj(): phpMQTT {
-		return $this->mqttObj;
+	public function getMqObj() {
+		return $this->_mqObj;
 	}
 	
 	/**
-	 * @param phpMQTT $mqttObj
+	 * @param $mqObj
 	 */
-	public function setMqttObj(phpMQTT $mqttObj) {
-		$this->mqttObj = $mqttObj;
+	public function setMqObj($mqObj) {
+		$this->_mqObj = $mqObj;
 	}
 	
 	/**
@@ -377,6 +343,49 @@ class SimpleMQTT {
 	public function setInit(bool $init) {
 		$this->_init = $init;
 	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isConnected(): bool {
+		return $this->_connected;
+	}
+	
+	/**
+	 * @param bool $connect
+	 */
+	public function setConnected(bool $connected) {
+		$this->_connected = $connected;
+	}
+	
+	/**
+	 * @return int
+	 */
+	public function getAutoConnectTimeOut(): int {
+		return $this->_autoConnectTimeOut;
+	}
+	
+	/**
+	 * @param int $autoConnectTimeOut
+	 */
+	public function setAutoConnectTimeOut(int $autoConnectTimeOut) {
+		$this->_autoConnectTimeOut = $autoConnectTimeOut;
+	}
+	
+	/**
+	 * @return null|\Closure
+	 */
+	public function getCallbackSubscribe() {
+		return $this->_callbackSubscribe;
+	}
+	
+	/**
+	 * @param null|\Closure $callbackSubscribe
+	 */
+	public function setCallbackSubscribe(\Closure $callbackSubscribe) {
+		$this->_callbackSubscribe = $callbackSubscribe;
+	}
+	
 	
 	
 }
