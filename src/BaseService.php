@@ -91,16 +91,16 @@ class BaseService {
 	}
 	
 	/**
-	 * @return MQTT
+	 * @return MQCollection
 	 */
-	public function getSimpleMQTT(): MQTT {
-		return UU::C(MQTT::class);
+	public function getMQCollection(): MQCollection {
+		return UU::C(MQCollection::class);
 	}
 	
 	/**
 	 * @return Log
 	 */
-	public function getSimpleLog(): Log {
+	public function getLog(): Log {
 		return UU::C(Log::class);
 	}
 	

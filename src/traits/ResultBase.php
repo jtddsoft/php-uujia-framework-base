@@ -43,28 +43,6 @@ trait ResultBase{
 	// 缓存最后一次返回值 包括code msg。。。
 	private $last_return = [];
 	
-	/**
-	 * json_encode
-	 *
-	 * @param $value
-	 *
-	 * @return false|string
-	 */
-	public static function je($value) {
-		return json_encode($value, JSON_UNESCAPED_UNICODE);
-	}
-	
-	/**
-	 * json_decode
-	 *
-	 * @param $json
-	 *
-	 * @return mixed
-	 */
-	public static function jd($json) {
-		return json_decode($json, true);
-	}
-	
 	/**************************************************************
 	 * 返回输出
 	 **************************************************************/

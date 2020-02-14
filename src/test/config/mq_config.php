@@ -34,9 +34,9 @@ return [
 	],
 	
 	'RabbitMQ' => [
-		'enabled' => false,              // 启用
+		'enabled' => true,              // 启用
 		
-		'server'    => "localhost",     // change if necessary
+		'server'    => "59.110.217.60",     // change if necessary
 		'port'      => 5672,            // change if necessary
 		'username'  => "hello",         // set your username
 		'password'  => "123456",        // set your password
@@ -58,10 +58,13 @@ return [
 		'no_ack'       => false,
 		
 		// publish
-		'exchange'    => '',
-		'routing_key' => 'hello',
-		'mandatory'   => true,
-		'immediate'   => false,
+		'internal'         => false,
+		'exchange'         => 'amq.topic',
+		'exchange_type'    => 'topic',
+		'routing_key'      => 'hello.hello',
+		'routing_key_bind' => 'hello.*',
+		'mandatory'        => true,
+		'immediate'        => false,
 	],
 	
 ];

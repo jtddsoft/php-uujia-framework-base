@@ -58,10 +58,13 @@ return [
 		'no_ack'       => false,
 		
 		// publish
-		'exchange'    => '',
-		'routing_key' => 'hello',
-		'mandatory'   => true,
-		'immediate'   => false,
+		'internal'         => false,
+		'exchange'         => '',
+		'exchange_type'    => 'topic',
+		'routing_key'      => 'routingKey.hello',
+		'routing_key_bind' => 'routingKey.*',
+		'mandatory'        => true,
+		'immediate'        => false,
 	],
 	
 ];

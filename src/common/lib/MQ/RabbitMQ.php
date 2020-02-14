@@ -5,8 +5,11 @@ namespace uujia\framework\base\common\lib\MQ;
 
 
 use Bluerhinos\phpMQTT;
+use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use uujia\framework\base\common\lib\Utils\JsonUtils;
 
 class RabbitMQ extends MQ {
 	
@@ -37,10 +40,13 @@ class RabbitMQ extends MQ {
 		'no_ack'       => false,
 		
 		// publish
-		'exchange'    => '',
-		'routing_key' => 'hello',
-		'mandatory'   => true,
-		'immediate'   => false,
+		'internal'            => false,
+		'exchange'            => '',
+		'exchange_type'       => 'topic',
+		'routing_key'         => 'routingKey.hello',
+		'routing_key_binding' => 'routingKey.*',
+		'mandatory'           => true,
+		'immediate'           => false,
 	];
 	
 	// 连接的实例
@@ -149,15 +155,15 @@ class RabbitMQ extends MQ {
 	 * auto_delete
 	 * get set
 	 *
-	 * @param bool|null $auto_delete
+	 * @param bool|null $autoDelete
 	 *
 	 * @return $this|bool
 	 */
-	public function auto_delete($auto_delete = null) {
-		if ($auto_delete === null) {
+	public function autoDelete($autoDelete = null) {
+		if ($autoDelete === null) {
 			return $this->_config['auto_delete'];
 		} else {
-			$this->_config['auto_delete'] = $auto_delete;
+			$this->_config['auto_delete'] = $autoDelete;
 		}
 		
 		return $this;
@@ -218,6 +224,24 @@ class RabbitMQ extends MQ {
 	}
 	
 	/**
+	 * internal
+	 * get set
+	 *
+	 * @param bool|null $internal
+	 *
+	 * @return $this|bool
+	 */
+	public function internal($internal = null) {
+		if ($internal === null) {
+			return $this->_config['internal'];
+		} else {
+			$this->_config['internal'] = $internal;
+		}
+		
+		return $this;
+	}
+	
+	/**
 	 * exchange
 	 * get set
 	 *
@@ -236,18 +260,54 @@ class RabbitMQ extends MQ {
 	}
 	
 	/**
+	 * exchange_type
+	 * get set
+	 *
+	 * @param string|null $exchangeType
+	 *
+	 * @return $this|string
+	 */
+	public function exchangeType($exchangeType = null) {
+		if ($exchangeType === null) {
+			return $this->_config['exchange_type'];
+		} else {
+			$this->_config['exchange_type'] = $exchangeType;
+		}
+		
+		return $this;
+	}
+	
+	/**
 	 * routing_key
 	 * get set
 	 *
-	 * @param int|null $routing_key
+	 * @param string|null $routingKey
 	 *
-	 * @return $this|int
+	 * @return $this|string
 	 */
-	public function routing_key($routing_key = null) {
-		if ($routing_key === null) {
+	public function routingKey($routingKey = null) {
+		if ($routingKey === null) {
 			return $this->_config['routing_key'];
 		} else {
-			$this->_config['routing_key'] = $routing_key;
+			$this->_config['routing_key'] = $routingKey;
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * routing_key_binding
+	 * get set
+	 *
+	 * @param string|null $routingKeyBinding
+	 *
+	 * @return $this|string
+	 */
+	public function routingKeyBinding($routingKeyBinding = null) {
+		if ($routingKeyBinding === null) {
+			return $this->_config['routing_key_binding'];
+		} else {
+			$this->_config['routing_key_binding'] = $routingKeyBinding;
 		}
 		
 		return $this;
@@ -316,27 +376,24 @@ class RabbitMQ extends MQ {
 		$this->setConnected(false);
 		
 		//建立一个连接通道，声明一个可以发送消息的队列hello
-		$connection = new AMQPStreamConnection($this->_config['server'],
-		                                       $this->_config['port'],
-		                                       $this->_config['username'],
-		                                       $this->_config['password']);
+		// $connection = new AMQPStreamConnection($this->_config['server'],
+		//                                        $this->_config['port'],
+		//                                        $this->_config['username'],
+		//                                        $this->_config['password']);
+		
+		$connection = new AMQPConnection($this->_config['server'],
+		                                 $this->_config['port'],
+		                                 $this->_config['username'],
+		                                 $this->_config['password']);
 		$this->setConnection($connection);
 		
 		$channel = $connection->channel();
-		$re = $channel->queue_declare($this->_config['queue'],
-		                        $this->_config['passive'],
-								$this->_config['durable'],
-								$this->_config['exclusive'],
-								$this->_config['auto_delete'],
-								$this->_config['nowait'],
-								$this->_config['arguments'],
-								$this->_config['ticket']);
 		$this->setChannel($channel);
 		
-		if ($re === null) {
-			$this->error(self::$_ERROR_CODE[102], 102); // 连接失败
-			return $this;
-		}
+		// if ($re === null) {
+		// 	$this->error(self::$_ERROR_CODE[102], 102); // 连接失败
+		// 	return $this;
+		// }
 		
 		$this->setConnected(true);
 		
@@ -360,9 +417,8 @@ class RabbitMQ extends MQ {
 	/**
 	 * 订阅
 	 *
-	 * @param int $qos
-	 *
 	 * @return array|\think\response\Json|RabbitMQ
+	 * @throws \ErrorException
 	 */
 	public function subscribe() {
 		if ($this->isErr()) { return $this; }
@@ -409,8 +465,37 @@ class RabbitMQ extends MQ {
 		if ($this->isErr()) { return $this; }
 		
 		if ($this->isConnected()) {
+			$re = $this->getChannel()->exchange_declare($this->_config['exchange'],
+			                                            $this->_config['exchange_type'],
+			                                            $this->_config['passive'],
+			                                            $this->_config['durable'],
+			                                            $this->_config['auto_delete'],
+			                                            $this->_config['internal'],
+			                                            $this->_config['nowait'],
+			                                            $this->_config['arguments'],
+			                                            $this->_config['ticket']);
+			
+			$re = $this->getChannel()->queue_declare($this->_config['queue'],
+						                              $this->_config['passive'],
+						                              $this->_config['durable'],
+						                              $this->_config['exclusive'],
+						                              $this->_config['auto_delete'],
+						                              $this->_config['nowait'],
+						                              $this->_config['arguments'],
+						                              $this->_config['ticket']);
+			
+			$re = $this->getChannel()->queue_bind($this->_config['queue'],
+			                                      $this->_config['exchange'],
+			                                      $this->_config['routing_key_binding'],
+			                                      $this->_config['nowait'],
+			                                      $this->_config['arguments'],
+			                                      $this->_config['ticket']);
+			
 			//定义一个消息，消息内容为Hello World!
-			$msgObj = new AMQPMessage($content);
+			$msgText = $content;
+			is_array($msgText) && $msgText = JsonUtils::je($content);
+			
+			$msgObj = new AMQPMessage($msgText);
 			$this->getChannel()->basic_publish($msgObj,
 			                                   $this->_config['exchange'],
 			                                   $this->_config['routing_key'],
@@ -439,7 +524,7 @@ class RabbitMQ extends MQ {
 	}
 	
 	/**
-	 * @return mixed
+	 * @return AMQPChannel
 	 */
 	public function getChannel() {
 		return $this->_channel;

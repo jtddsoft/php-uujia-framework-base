@@ -258,7 +258,7 @@ class Result {
 	 * 设置配置对象（一般不要更改）*
 	 * @param ErrorCodeList $errObj
 	 */
-	public function setErrObj(ErrorCodeList $errObj) {
+	public function _setErrObj(ErrorCodeList $errObj) {
 		$this->errObj = $errObj;
 	}
 	
@@ -277,7 +277,7 @@ class Result {
 	 *
 	 * @param Log $logObj
 	 */
-	public function setLogObj(Log $logObj) {
+	public function _setLogObj(Log $logObj) {
 		$this->logObj = $logObj;
 	}
 }

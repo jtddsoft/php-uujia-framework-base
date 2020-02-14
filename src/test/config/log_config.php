@@ -15,18 +15,20 @@ return [
 	],
 	
 	'RabbitMQ' => [
-		'enabled'     => true,              // 启用
+		'enabled'             => true,              // 启用
 		
 		// connect
-		'queue'       => 'Logger_2019',
+		'queue'               => 'Logger_2019.one',
 		
 		// publish
-		'exchange'    => 'Logger_2019',
-		'routing_key' => 'Logger_2019',
+		'exchange'            => 'amq.topic',
+		'routing_key'         => 'Logger_2019.one',
+		'routing_key_binding' => 'Logger_2019.one',
 		
-		'queue_list'       => 'Logger_2019_List',
-		'exchange_list'    => 'Logger_2019_List',
-		'routing_key_list' => 'Logger_2019_List',
+		'queue_list'               => 'Logger_2019.list',
+		'exchange_list'            => 'amq.topic',
+		'routing_key_list'         => 'Logger_2019.list',
+		'routing_key_binding_list' => 'Logger_2019.list',
 	],
 
 ];

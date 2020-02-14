@@ -42,6 +42,6 @@ class Demo extends BaseService {
 	
 	public function test() {
 		// return glob(__DIR__ . "/../config/*_config.php", GLOB_BRACE);
-		return UU::C(Base::class)->ok();
+		return UU::C(Base::class)->rt()->ok();
 	}
 }
