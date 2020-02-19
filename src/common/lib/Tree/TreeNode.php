@@ -143,7 +143,8 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	public function current() {
 		$_key = $this->key();
 		
-		return $this->_children[$_key] ?? null;
+		// return $this->_children[$_key] ?? null;
+		return $this->get($_key);
 	}
 	
 	/**

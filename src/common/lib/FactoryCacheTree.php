@@ -102,6 +102,10 @@ class FactoryCacheTree extends TreeNode {
 	 * @return FactoryCacheTree|null
 	 */
 	public function get(string $key): FactoryCacheTree {
+		if (!parent::has($key)) {
+			return null;
+		}
+		
 		/** @var FactoryCacheTree $v */
 		$v = parent::get($key);
 		

@@ -14,4 +14,8 @@ trait NameBase {
 	public function initNameInfo() {
 		$this->name_info['name'] = self::class;
 	}
+	
+	public function getNameInfo() {
+		return $this->name_info;
+	}
 }

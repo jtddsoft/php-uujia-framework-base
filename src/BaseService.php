@@ -26,52 +26,54 @@ class BaseService {
 	public function init() {
 		$this->initNameInfo();
 		
-		// 实例化Config
-		UU::C(Config::class, function (Data $data, FactoryCacheTree $it, Container $c) {
-			$obj = new Config();
-			// $c->cache(ErrorCodeList::class, $obj);
-			// $data->cache($obj);
-			return $obj;
-		});
+		UU::C([Config::class, ErrorCodeList::class, MQCollection::class, Log::class, Result::class, Base::class]);
 		
-		// 设置对象准实例化 实例化只能调用一次 之后使用直接UU::C(ErrorCodeList::class)->dosomething()
-		UU::C(ErrorCodeList::class, function (Data $data, FactoryCacheTree $it, Container $c) {
-			$obj = new ErrorCodeList($c->get(Config::class));
-			// $c->cache(ErrorCodeList::class, $obj);
-			// $data->cache($obj);
-			return $obj;
-		});
-		
-		// 实例化MQTT
-		UU::C(MQCollection::class, function (Data $data, FactoryCacheTree $it, Container $c) {
-			$obj = new MQCollection($c->get(Config::class));
-			// $c->cache(MQTT::class, $obj);
-			// $data->cache($obj);
-			return $obj;
-		});
-		// 实例化Log
-		UU::C(Log::class, function (Data $data, FactoryCacheTree $it, Container $c) {
-			$obj = new Log($c->get(Config::class), $c->get(MQCollection::class));
-			// $c->cache(Log::class, $obj);
-			// $data->cache($obj);
-			return $obj;
-		});
-		
-		// 实例化Result
-		UU::C(Result::class, function (Data $data, FactoryCacheTree $it, Container $c) {
-			$obj = new Result($c->get(ErrorCodeList::class), $c->get(Log::class));
-			// $c->cache(Result::class, $obj);
-			// $data->cache($obj);
-			return $obj;
-		});
-		
-		// 实例化Base
-		UU::C(Base::class, function (Data $data, FactoryCacheTree $it, Container $c) {
-			$obj = new Base($c->get(Result::class));
-			// $c->cache(Base::class, $obj);
-			// $data->cache($obj);
-			return $obj;
-		});
+		// // 实例化Config
+		// UU::C(Config::class, function (Data $data, FactoryCacheTree $it, Container $c) {
+		// 	$obj = new Config();
+		// 	// $c->cache(ErrorCodeList::class, $obj);
+		// 	// $data->cache($obj);
+		// 	return $obj;
+		// });
+		//
+		// // 设置对象准实例化 实例化只能调用一次 之后使用直接UU::C(ErrorCodeList::class)->dosomething()
+		// UU::C(ErrorCodeList::class, function (Data $data, FactoryCacheTree $it, Container $c) {
+		// 	$obj = new ErrorCodeList($c->get(Config::class));
+		// 	// $c->cache(ErrorCodeList::class, $obj);
+		// 	// $data->cache($obj);
+		// 	return $obj;
+		// });
+		//
+		// // 实例化MQTT
+		// UU::C(MQCollection::class, function (Data $data, FactoryCacheTree $it, Container $c) {
+		// 	$obj = new MQCollection($c->get(Config::class));
+		// 	// $c->cache(MQTT::class, $obj);
+		// 	// $data->cache($obj);
+		// 	return $obj;
+		// });
+		// // 实例化Log
+		// UU::C(Log::class, function (Data $data, FactoryCacheTree $it, Container $c) {
+		// 	$obj = new Log($c->get(Config::class), $c->get(MQCollection::class));
+		// 	// $c->cache(Log::class, $obj);
+		// 	// $data->cache($obj);
+		// 	return $obj;
+		// });
+		//
+		// // 实例化Result
+		// UU::C(Result::class, function (Data $data, FactoryCacheTree $it, Container $c) {
+		// 	$obj = new Result($c->get(ErrorCodeList::class), $c->get(Log::class));
+		// 	// $c->cache(Result::class, $obj);
+		// 	// $data->cache($obj);
+		// 	return $obj;
+		// });
+		//
+		// // 实例化Base
+		// UU::C(Base::class, function (Data $data, FactoryCacheTree $it, Container $c) {
+		// 	$obj = new Base($c->get(Result::class));
+		// 	// $c->cache(Base::class, $obj);
+		// 	// $data->cache($obj);
+		// 	return $obj;
+		// });
 		
 	}
 	

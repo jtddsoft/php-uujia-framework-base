@@ -196,5 +196,19 @@ class Data {
 		$this->_isAutoCache = $isAutoCache;
 	}
 	
+	/**
+	 * @return null
+	 */
+	public function _getFactoryFunc() {
+		return $this->_factoryFunc;
+	}
+	
+	/**
+	 * @param null $factoryFunc
+	 */
+	public function _setFactoryFunc($factoryFunc) {
+		$this->_factoryFunc = $factoryFunc;
+	}
+	
 	
 }

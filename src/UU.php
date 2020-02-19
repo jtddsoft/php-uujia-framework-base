@@ -11,15 +11,31 @@ class UU {
 	use NameBase;
 	use InstanceBase;
 	
-	/** @var $ret Container */
-	protected static $container;
+	/** @var $_container Container */
+	protected static $_container;
 	
 	/**
 	 * UU constructor.
-	 * 依赖SimpleContainer
+	 * 依赖Container
 	 */
 	public function __construct() {
-		self::$container = new Container(new FactoryCacheTree()); // $this
+		self::$_container = new Container(new FactoryCacheTree()); // $this
+	}
+	
+	/**
+	 * @return Container
+	 */
+	public static function getContainer(): Container {
+		$me = static::getInstance();
+		
+		return self::$_container;
+	}
+	
+	/**
+	 * @param Container $container
+	 */
+	public static function _setContainer(Container $container) {
+		self::$_container = $container;
 	}
 	
 	/**
@@ -40,20 +56,29 @@ class UU {
 	/**
 	 * 返回从容器中获取对象实例
 	 *
-	 * @param      $objName
-	 * @param null $obj
+	 * @param string|array  $objName
+	 * @param null|\Closure $obj
 	 *
 	 * @return mixed
 	 */
 	public static function C($objName, $obj = null) {
 		$me = static::getInstance();
 		
+		// 【注意】如果为数组 则批量注入（并非是获取 只有为字符串类名时才是获取）
+		if (is_array($objName)) {
+			foreach ($objName as $key => $row) {
+				self::getContainer()->set($row, $obj);
+			}
+			
+			return self::getContainer();
+		}
+		
 		if ($obj === null) {
 			// 读取
-			return self::$container->get($objName);
+			return self::getContainer()->get($objName);
 		} else {
 			// 设置
-			return self::$container->set($objName, $obj);
+			return self::getContainer()->set($objName, $obj);
 		}
 	}
 	

@@ -7,6 +7,8 @@ namespace uujia\framework\base\common;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionMethod;
+use uujia\framework\base\common\lib\FactoryCache\Data;
 use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
@@ -17,7 +19,7 @@ use uujia\framework\base\traits\ResultBase;
  *
  * @package uujia\framework\base\common
  */
-class Container implements ContainerInterface {
+class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	use NameBase;
 	use ResultBase;
 	
@@ -49,6 +51,83 @@ class Container implements ContainerInterface {
 		$this->name_info['intro'] = '容器管理';
 	}
 	
+	/**************************************************
+	 * Iterator 迭代器方法实现
+	 **************************************************/
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function current() {
+		$_key = $this->key();
+		
+		return $this->get($_key);
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function next() {
+		$this->list()->next();
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function key() {
+		return $this->list()->key();
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function valid() {
+		return $this->list()->valid();
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function rewind() {
+		$this->list()->rewind();
+	}
+	
+	/**************************************************
+	 * ArrayAccess 方法实现
+	 **************************************************/
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetExists($offset) {
+		return $this->has($offset);
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetGet($offset) {
+		return $this->get($offset);
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetSet($offset, $value) {
+		return $this->set($offset, $value);
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetUnset($offset) {
+		return $this->list()->offsetUnset($offset);
+	}
+	
+	/**************************************************
+	 * 节点操作
+	 **************************************************/
+	
 	// function __set($k, $c) {
 	// 	$this->c[$k] = $c;
 	// }
@@ -70,7 +149,83 @@ class Container implements ContainerInterface {
 	public function get($id) {
 		// return $this->$id;
 		// return $this->list()->get($id, [$this]);
-		return $this->list()->get($id)->getDataValue();
+		
+		$_list = $this->list();
+		if (!$_list->has($id)) {
+			return null;
+		}
+		
+		$item = $_list->get($id);
+		$data = $item->getData();
+		
+		if ($data === null) {
+			return null;
+		}
+		
+		// 工厂函数$c为空 自动注入
+		if ($data->_getFactoryFunc() === null) {
+			// 构建工厂
+			$_factoryFunc = function (Data $data, FactoryCacheTree $it, Container $c) use ($id) {
+				if(is_string($id) && class_exists($id)){
+					try {
+						$class_name = $id;
+						
+						if (method_exists($class_name,  '__construct') === false) {
+							// todo: 报错类构造函数未找到
+							return null;
+						}
+						
+						// 反射获取类的构造函数
+						$refMethod = new ReflectionMethod($class_name,  '__construct');
+						// 获取构造函数参数列表
+						$refParams = $refMethod->getParameters();
+						
+						$_args = [];
+						foreach ($refParams as $key => $param) {
+							// if ($param->isPassedByReference()) {
+							// 	$re_args[$key] = &$args[$key];
+							// } else {
+							// 	$re_args[$key] = $args[$key];
+							// }
+							
+							$_arg = null;
+							
+							// 如果有类型约束 并且是个类 就构建这个依赖
+							if ($param->hasType() && $param->getClass() !== null) {
+								$newClass = $c->get($param->getClass()->getName());
+								$_arg = $newClass;
+							} elseif ($param->isDefaultValueAvailable()) {
+								$_arg = $param->getDefaultValue();
+							}
+							
+							$_args[$key] = $_arg;
+						}
+						
+						$reflection = new \ReflectionClass ($id);
+						$ins = $reflection->newInstanceArgs($_args); // 传入的是关联数组
+						
+						return $ins;
+					} catch (\ReflectionException $e) {
+						// todo: 报错反射异常
+						return null;
+					}
+				} else {
+					// todo: 报错类未找到
+					return null;
+				}
+			};
+			
+			// 将工厂加入到Data
+			$item->getData()->set(function ($data, $it) use ($_factoryFunc) {
+				return call_user_func_array($_factoryFunc, [$data, $it, $this]);
+			});
+		}
+		
+		if ($item->getData() === null) {
+			return null;
+		}
+		
+		return $item->getDataValue();
 	}
 	
 	/**
@@ -94,11 +249,14 @@ class Container implements ContainerInterface {
 	 *
 	 * @return $this
 	 */
-	public function set($id, \Closure $c) {
+	public function set($id, \Closure $c = null) {
 		$item = new FactoryCacheTree();
-		$item->getData()->set(function ($data, $it) use ($c) {
-			return call_user_func_array($c, [$data, $it, $this]);
-		});
+		
+		if ($c !== null && $c instanceof \Closure) {
+			$item->getData()->set(function ($data, $it) use ($c) {
+				return call_user_func_array($c, [$data, $it, $this]);
+			});
+		}
 		
 		$this->list()->set($id, $item);
 		return $this;
@@ -119,6 +277,8 @@ class Container implements ContainerInterface {
 		
 		return $this;
 	}
+	
+	
 	
 	// public function __call($method, $args) {
 	// 	if ($this->isErr()) { return $this->return_error(); }
