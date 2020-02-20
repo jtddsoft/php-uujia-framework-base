@@ -1,6 +1,7 @@
 <?php
 
 
+use uujia\framework\base\common\Base;
 use uujia\framework\base\UU;
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
@@ -13,9 +14,11 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 		case 'demo':
 			$demo = new \uujia\framework\base\test\Demo();
 			
-			for($i = 0; $i < 1; $i++) {
+			for($i = 0; $i < 10; $i++) {
 				var_dump($demo->test());
 			}
+			
+			var_dump(UU::C(Base::class)->rt()->ok());
 			break;
 			
 		case 'config':

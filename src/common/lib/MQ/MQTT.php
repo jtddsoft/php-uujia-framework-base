@@ -5,7 +5,7 @@ namespace uujia\framework\base\common\lib\MQ;
 
 
 use Bluerhinos\phpMQTT;
-use uujia\framework\base\common\lib\Utils\JsonUtils;
+use uujia\framework\base\common\lib\Utils\Json;
 
 class MQTT extends MQ {
 	
@@ -350,7 +350,7 @@ class MQTT extends MQ {
 		
 		if ($this->isConnected()) {
 			$msgText = $content;
-			is_array($msgText) && $msgText = JsonUtils::je($content);
+			is_array($msgText) && $msgText = Json::je($content);
 			
 			$this->getMqObj()->publish($this->_config['topics'],
 			                           $msgText,

@@ -25,6 +25,7 @@ abstract class MQ implements MQInterface {
 		'102' => '连接失败',
 		'103' => '自动连接超时',
 		'104' => '未连接服务端',
+		'105' => '断开失败',
 	];
 	
 	// MQ 对象

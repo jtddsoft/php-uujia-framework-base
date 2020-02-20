@@ -6,6 +6,7 @@ namespace uujia\framework\base\common;
 use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\common\lib\MQ\MQTT;
 use uujia\framework\base\common\lib\MQ\RabbitMQ;
+use uujia\framework\base\common\lib\MQ\RabbitMQExt;
 
 /**
  * Class MQCollection
@@ -62,7 +63,7 @@ class MQCollection extends FactoryCacheTree {
 			$_config_list = $this->getMQConfigList();
 			$_config = $_config_list[self::$_MQ_KEY['rabbitmq']] ?? [];
 			
-			$_rabbitMQObj = new RabbitMQ($_config);
+			$_rabbitMQObj = defined('EXT_AMQP_ENABLED') ? new RabbitMQExt($_config) : new RabbitMQ($_config);
 			
 			return $_rabbitMQObj;
 		});

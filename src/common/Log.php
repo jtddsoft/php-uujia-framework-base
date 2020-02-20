@@ -6,7 +6,7 @@ namespace uujia\framework\base\common;
 
 use uujia\framework\base\common\lib\MQ\MQTT;
 use uujia\framework\base\common\lib\MQ\RabbitMQ;
-use uujia\framework\base\common\lib\Utils\JsonUtils;
+use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\traits\NameBase;
 
 class Log {
@@ -109,7 +109,7 @@ class Log {
 		
 		$_enabledResponse = $this->getConfigMQ(self::$_LOG_CONFIG_KEY_MQ['enabled_response']) ?? false;
 		$_enabledMQTT = $this->getConfigMQTT(self::$_LOG_CONFIG_KEY_MQTT['enabled']) ?? false;
-		$_enabledRabbitMQ = $this->getConfigMQTT(self::$_LOG_CONFIG_KEY_RABBITMQ['enabled']) ?? false;
+		$_enabledRabbitMQ = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['enabled']) ?? false;
 		
 		$this->setEnabledResponse($_enabledResponse);
 		$this->setEnabledMQTT($_enabledMQTT);
@@ -126,11 +126,13 @@ class Log {
 	
 	/**
 	 * Debug
+	 *
 	 * @param $text
+	 * @return Log
 	 */
 	public function debug($text) {
 		if (is_array($text)) {
-			$text = JsonUtils::je($text);
+			$text = Json::je($text);
 		}
 		
 		$_time = date('Y-m-d H:i:s');
@@ -144,15 +146,19 @@ class Log {
 		
 		// $this->printMQ($this->log);
 		$this->printMQ($list);
+		
+		return $this;
 	}
 	
 	/**
 	 * Record
+	 *
 	 * @param string|array $text
+	 * @return Log
 	 */
 	public function record($text, $tag = 'INFO') {
 		if (is_array($text)) {
-			$text = JsonUtils::je($text);
+			$text = Json::je($text);
 		}
 		
 		$_time = date('Y-m-d H:i:s');
@@ -166,6 +172,8 @@ class Log {
 		
 		// $this->printMQ($this->log);
 		$this->printMQ($list);
+		
+		return $this;
 	}
 	
 	/**
@@ -178,11 +186,13 @@ class Log {
 	
 	/**
 	 * Error
+	 *
 	 * @param $text
+	 * @return Log
 	 */
 	public function error($text) {
 		if (is_array($text)) {
-			$text = JsonUtils::je($text);
+			$text = Json::je($text);
 		}
 		
 		$_time = date('Y-m-d H:i:s');
@@ -196,12 +206,15 @@ class Log {
 		
 		// $this->printMQ($this->log);
 		$this->printMQ($list);
+		
+		return $this;
 	}
 	
 	/**
 	 * 响应
 	 *
 	 * @param array $logs
+	 * @return Log
 	 */
 	public function response($logs = []) {
 		if (empty($logs)) {
@@ -214,6 +227,8 @@ class Log {
 		];
 		
 		$this->printResponse($list);
+		
+		return $this;
 	}
 	
 	/**
@@ -393,7 +408,7 @@ class Log {
 		
 		$this->getMqttObj()->topics($_topicsList);
 		
-		$this->getMqttObj()->publish($list);
+		$this->getMqttObj()->publish(Json::je($list));
 		
 		return true;
 	}
@@ -429,7 +444,7 @@ class Log {
 		$this->getRabbitMQObj()->routingKey($_routingKeyList);
 		$this->getRabbitMQObj()->routingKeyBinding($_routingKeyBindingList);
 		
-		$this->getRabbitMQObj()->publish($list);
+		$this->getRabbitMQObj()->publish(Json::je($list));
 		
 		return true;
 	}

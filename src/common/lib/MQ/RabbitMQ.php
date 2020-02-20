@@ -3,13 +3,12 @@
 
 namespace uujia\framework\base\common\lib\MQ;
 
-
 use Bluerhinos\phpMQTT;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
-use uujia\framework\base\common\lib\Utils\JsonUtils;
+use uujia\framework\base\common\lib\Utils\Json;
 
 class RabbitMQ extends MQ {
 	
@@ -50,9 +49,11 @@ class RabbitMQ extends MQ {
 	];
 	
 	// 连接的实例
+	/** @var $_connection AMQPConnection */
 	protected $_connection;
 	
 	// 通道的实例
+	/** @var $_channel AMQPChannel */
 	protected $_channel;
 	
 	
@@ -116,18 +117,36 @@ class RabbitMQ extends MQ {
 	}
 	
 	/**
-	 * durable
+	 * durableExchange
 	 * get set
 	 *
-	 * @param bool|null $durable
+	 * @param bool|null $durableExchange
 	 *
 	 * @return $this|bool
 	 */
-	public function durable($durable = null) {
-		if ($durable === null) {
-			return $this->_config['durable'];
+	public function durableExchange($durableExchange = null) {
+		if ($durableExchange === null) {
+			return $this->_config['durable_exchange'];
 		} else {
-			$this->_config['durable'] = $durable;
+			$this->_config['durable_exchange'] = $durableExchange;
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * durableQueue
+	 * get set
+	 *
+	 * @param bool|null $durableQueue
+	 *
+	 * @return $this|bool
+	 */
+	public function durableQueue($durableQueue = null) {
+		if ($durableQueue === null) {
+			return $this->_config['durable_queue'];
+		} else {
+			$this->_config['durable_queue'] = $durableQueue;
 		}
 		
 		return $this;
@@ -435,6 +454,32 @@ class RabbitMQ extends MQ {
 				}
 			};
 			
+			$re = $this->getChannel()->exchange_declare($this->_config['exchange'],
+			                                            $this->_config['exchange_type'],
+			                                            $this->_config['passive'],
+			                                            $this->_config['durable_exchange'],
+			                                            $this->_config['auto_delete'],
+			                                            $this->_config['internal'],
+			                                            $this->_config['nowait'],
+			                                            $this->_config['arguments'],
+			                                            $this->_config['ticket']);
+			
+			$re = $this->getChannel()->queue_declare($this->_config['queue'],
+			                                         $this->_config['passive'],
+			                                         $this->_config['durable_queue'],
+			                                         $this->_config['exclusive'],
+			                                         $this->_config['auto_delete'],
+			                                         $this->_config['nowait'],
+			                                         $this->_config['arguments'],
+			                                         $this->_config['ticket']);
+			
+			$re = $this->getChannel()->queue_bind($this->_config['queue'],
+			                                      $this->_config['exchange'],
+			                                      $this->_config['routing_key_binding'],
+			                                      $this->_config['nowait'],
+			                                      $this->_config['arguments'],
+			                                      $this->_config['ticket']);
+			
 			$this->getChannel()->basic_consume($this->_config['queue'],
 			                                   $this->_config['consumer_tag'],
 			                                   $this->_config['no_local'],
@@ -468,7 +513,7 @@ class RabbitMQ extends MQ {
 			$re = $this->getChannel()->exchange_declare($this->_config['exchange'],
 			                                            $this->_config['exchange_type'],
 			                                            $this->_config['passive'],
-			                                            $this->_config['durable'],
+			                                            $this->_config['durable_exchange'],
 			                                            $this->_config['auto_delete'],
 			                                            $this->_config['internal'],
 			                                            $this->_config['nowait'],
@@ -477,7 +522,7 @@ class RabbitMQ extends MQ {
 			
 			$re = $this->getChannel()->queue_declare($this->_config['queue'],
 						                              $this->_config['passive'],
-						                              $this->_config['durable'],
+						                              $this->_config['durable_queue'],
 						                              $this->_config['exclusive'],
 						                              $this->_config['auto_delete'],
 						                              $this->_config['nowait'],
@@ -492,16 +537,23 @@ class RabbitMQ extends MQ {
 			                                      $this->_config['ticket']);
 			
 			//定义一个消息，消息内容为Hello World!
-			$msgText = $content;
-			is_array($msgText) && $msgText = JsonUtils::je($content);
+			// $msgText = $content;
+			// is_array($msgText) && $msgText = Json::je($content);
 			
-			$msgObj = new AMQPMessage($msgText);
-			$this->getChannel()->basic_publish($msgObj,
-			                                   $this->_config['exchange'],
-			                                   $this->_config['routing_key'],
-			                                   $this->_config['mandatory'],
-			                                   $this->_config['immediate'],
-			                                   $this->_config['ticket']);
+			$msgTexts = $content;
+			if (!is_array($content)) {
+				$msgTexts = [$content];
+			}
+			
+			foreach ($msgTexts as $item) {
+				$msgObj = new AMQPMessage($item);
+				$this->getChannel()->basic_publish($msgObj,
+				                                   $this->_config['exchange'],
+				                                   $this->_config['routing_key'],
+				                                   $this->_config['mandatory'],
+				                                   $this->_config['immediate'],
+				                                   $this->_config['ticket']);
+			}
 		} else {
 			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
 		}
@@ -510,16 +562,16 @@ class RabbitMQ extends MQ {
 	}
 	
 	/**
-	 * @return mixed
+	 * @return AMQPConnection
 	 */
 	public function getConnection() {
 		return $this->_connection;
 	}
 	
 	/**
-	 * @param mixed $connection
+	 * @param AMQPConnection $connection
 	 */
-	public function setConnection($connection) {
+	public function setConnection(AMQPConnection $connection): void {
 		$this->_connection = $connection;
 	}
 	
@@ -531,9 +583,9 @@ class RabbitMQ extends MQ {
 	}
 	
 	/**
-	 * @param mixed $channel
+	 * @param AMQPChannel $channel
 	 */
-	public function setChannel($channel) {
+	public function setChannel(AMQPChannel $channel): void {
 		$this->_channel = $channel;
 	}
 	

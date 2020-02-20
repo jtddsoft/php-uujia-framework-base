@@ -8,8 +8,10 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionMethod;
+use ReflectionParameter;
 use uujia\framework\base\common\lib\FactoryCache\Data;
 use uujia\framework\base\common\lib\FactoryCacheTree;
+use uujia\framework\base\common\lib\Utils\Reflection;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
@@ -168,41 +170,28 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 			$_factoryFunc = function (Data $data, FactoryCacheTree $it, Container $c) use ($id) {
 				if(is_string($id) && class_exists($id)){
 					try {
-						$class_name = $id;
+						$className = $id;
 						
-						if (method_exists($class_name,  '__construct') === false) {
+						if (method_exists($className,  '__construct') === false) {
 							// todo: 报错类构造函数未找到
 							return null;
 						}
 						
-						// 反射获取类的构造函数
-						$refMethod = new ReflectionMethod($class_name,  '__construct');
-						// 获取构造函数参数列表
-						$refParams = $refMethod->getParameters();
+						// 自动依赖注入
+						$ins = Reflection::invokeInjection($className,
+							function (ReflectionMethod $refMethod, array $refParams, ReflectionParameter $param) use ($c) {
+								$_arg = null;
 						
-						$_args = [];
-						foreach ($refParams as $key => $param) {
-							// if ($param->isPassedByReference()) {
-							// 	$re_args[$key] = &$args[$key];
-							// } else {
-							// 	$re_args[$key] = $args[$key];
-							// }
-							
-							$_arg = null;
-							
-							// 如果有类型约束 并且是个类 就构建这个依赖
-							if ($param->hasType() && $param->getClass() !== null) {
-								$newClass = $c->get($param->getClass()->getName());
-								$_arg = $newClass;
-							} elseif ($param->isDefaultValueAvailable()) {
-								$_arg = $param->getDefaultValue();
-							}
-							
-							$_args[$key] = $_arg;
-						}
+								// 如果有类型约束 并且是个类 就构建这个依赖
+								if ($param->hasType() && $param->getClass() !== null) {
+									$newClass = $c->get($param->getClass()->getName());
+									$_arg     = $newClass;
+								} elseif ($param->isDefaultValueAvailable()) {
+									$_arg = $param->getDefaultValue();
+								}
 						
-						$reflection = new \ReflectionClass ($id);
-						$ins = $reflection->newInstanceArgs($_args); // 传入的是关联数组
+								return $_arg;
+							});
 						
 						return $ins;
 					} catch (\ReflectionException $e) {

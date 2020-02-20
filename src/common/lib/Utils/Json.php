@@ -3,7 +3,7 @@
 namespace uujia\framework\base\common\lib\Utils;
 
 
-class JsonUtils {
+class Json {
 	
 	/**
 	 * json_encode

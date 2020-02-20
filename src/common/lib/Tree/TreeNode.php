@@ -38,9 +38,16 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	/**
 	 * 权重排序索引
 	 *
-	 * @var array|null $_weight_index
+	 * @var array|null $_weightIndex
 	 */
-	protected $_weight_index = null;
+	protected $_weightIndex = null;
+	
+	/**
+	 * 迭代时启用权重
+	 *
+	 * @var bool $_iteratorWeight
+	 */
+	protected $_iteratorWeight = false;
 	
 	/**
 	 * 节点数据
@@ -158,13 +165,17 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @inheritDoc
 	 */
 	public function key() {
-		$_keys = array_keys($this->_children);
-		
-		if ($this->_position >= count($_keys)) {
-			return null;
+		if ($this->isIteratorWeight()) {
+			$_key = $this->wkeys();
+		} else {
+			$_keys = array_keys($this->_children);
+			
+			if ($this->_position >= count($_keys)) {
+				return null;
+			}
+			
+			$_key = $_keys[$this->_position];
 		}
-		
-		$_key = $_keys[$this->_position];
 		
 		return $_key;
 	}
@@ -274,16 +285,29 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 */
 	public function witem(int $wi) {
 		// 如果权值排序索引映射表为空 就做一次重新排序映射
-		$this->_weight_index === null && $this->weight();
+		$this->_weightIndex === null && $this->weight();
 		
-		if (!array_key_exists($wi, $this->_weight_index)) {
+		if (!array_key_exists($wi, $this->_weightIndex)) {
 			return null;
 		}
 		
 		// 索引映射
-		$i = $this->_weight_index[$wi];
+		$i = $this->_weightIndex[$wi];
 		
 		return $this->_children[$i] ?? null;
+	}
+	
+	/**
+	 * 获取权值排序后key
+	 *
+	 * @param int $wi
+	 * @return mixed|null
+	 */
+	public function wkeys() {
+		// 如果权值排序索引映射表为空 就做一次重新排序映射
+		$this->_weightIndex === null && $this->weight();
+		
+		return $this->_weightIndex;
 	}
 	
 	/**
@@ -348,7 +372,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		array_splice($this->_children, $index, 1);
 		
 		// 清空权值映射表 再用时会重新排序映射
-		$this->_weight_index = null;
+		$this->_weightIndex = null;
 		
 		return $this;
 	}
@@ -359,12 +383,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * 构建权值排序索引表
-	 *  _weight_index
+	 *  _weightIndex
 	 *
 	 * @return $this
 	 */
 	public function weight() {
-		$this->_weight_index = [];
+		$this->_weightIndex = [];
 		$tmp = [];
 		
 		// 生成权值索引
@@ -377,7 +401,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		asort($tmp);
 		
 		// 只保留索引
-		$this->_weight_index = array_keys($tmp);
+		$this->_weightIndex = array_keys($tmp);
 		
 		return $this;
 	}
@@ -529,9 +553,9 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 */
 	public function wForEach(\Closure $func) {
 		// 如果权值排序索引映射表为空 就做一次重新排序映射
-		$this->_weight_index === null && $this->weight();
+		$this->_weightIndex === null && $this->weight();
 		
-		foreach ($this->_weight_index as $i => $index) {
+		foreach ($this->_weightIndex as $i => $index) {
 			$item = &$this->_children[$index];
 			
 			$re = call_user_func_array($func, [&$item, $index, $this]);
@@ -650,14 +674,14 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @return array
 	 */
 	public function getWeightIndex(): array {
-		return $this->_weight_index;
+		return $this->_weightIndex;
 	}
 	
 	/**
 	 * @param array $weight_index
 	 */
 	public function _setWeightIndex(array $weight_index) {
-		$this->_weight_index = $weight_index;
+		$this->_weightIndex = $weight_index;
 	}
 	
 	/**
@@ -767,6 +791,20 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		} catch (\Exception $e) {
 			return $rootReturn;
 		}
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isIteratorWeight(): bool {
+		return $this->_iteratorWeight;
+	}
+	
+	/**
+	 * @param bool $iteratorWeight
+	 */
+	public function setIteratorWeight(bool $iteratorWeight): void {
+		$this->_iteratorWeight = $iteratorWeight;
 	}
 	
 }
