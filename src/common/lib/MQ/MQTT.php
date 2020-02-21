@@ -372,9 +372,12 @@ class MQTT extends MQ {
 	
 	/**
 	 * @param phpMQTT $mqObj
+	 * @return $this
 	 */
 	public function setMqObj($mqObj) {
 		$this->_mqObj = $mqObj;
+		
+		return $this;
 	}
 	
 	

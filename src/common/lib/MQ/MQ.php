@@ -326,9 +326,12 @@ abstract class MQ implements MQInterface {
 	
 	/**
 	 * @param $mqObj
+	 * @return $this
 	 */
 	public function setMqObj($mqObj) {
 		$this->_mqObj = $mqObj;
+		
+		return $this;
 	}
 	
 	/**
@@ -340,9 +343,12 @@ abstract class MQ implements MQInterface {
 	
 	/**
 	 * @param bool $init
+	 * @return $this
 	 */
 	public function setInit(bool $init) {
 		$this->_init = $init;
+		
+		return $this;
 	}
 	
 	/**
@@ -353,10 +359,13 @@ abstract class MQ implements MQInterface {
 	}
 	
 	/**
-	 * @param bool $connect
+	 * @param bool $connected
+	 * @return $this
 	 */
 	public function setConnected(bool $connected) {
 		$this->_connected = $connected;
+		
+		return $this;
 	}
 	
 	/**
@@ -368,9 +377,12 @@ abstract class MQ implements MQInterface {
 	
 	/**
 	 * @param int $autoConnectTimeOut
+	 * @return $this
 	 */
 	public function setAutoConnectTimeOut(int $autoConnectTimeOut) {
 		$this->_autoConnectTimeOut = $autoConnectTimeOut;
+		
+		return $this;
 	}
 	
 	/**
@@ -382,9 +394,12 @@ abstract class MQ implements MQInterface {
 	
 	/**
 	 * @param null|\Closure $callbackSubscribe
+	 * @return $this
 	 */
 	public function setCallbackSubscribe(\Closure $callbackSubscribe) {
 		$this->_callbackSubscribe = $callbackSubscribe;
+		
+		return $this;
 	}
 	
 	

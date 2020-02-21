@@ -99,7 +99,7 @@ class MQCollection extends FactoryCacheTree {
 	/**
 	 * 获取RabbitMQ对象
 	 *
-	 * @return RabbitMQ
+	 * @return RabbitMQ|RabbitMQExt
 	 */
 	public function getRabbitMQObj() {
 		return $this->getKeyDataValue(self::$_MQ_KEY['rabbitmq']);

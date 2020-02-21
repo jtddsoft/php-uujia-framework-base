@@ -14,11 +14,17 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 		case 'demo':
 			$demo = new \uujia\framework\base\test\Demo();
 			
-			for($i = 0; $i < 10; $i++) {
+			for($i = 0; $i < 1; $i++) {
 				var_dump($demo->test());
 			}
 			
 			var_dump(UU::C(Base::class)->rt()->ok());
+			break;
+			
+		case 'mqs':
+			$demo = new \uujia\framework\base\test\Demo();
+			
+			$demo->subscribeRabbitMQ();
 			break;
 			
 		case 'config':

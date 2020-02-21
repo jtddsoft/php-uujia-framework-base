@@ -1,5 +1,7 @@
 <?php
 
+define('EXT_AMQP_ENABLED', 1);
+
 return [
 	'MQTT' => [
 		'enabled' => true,              // 启用

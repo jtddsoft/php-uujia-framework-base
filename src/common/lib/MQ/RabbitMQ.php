@@ -427,71 +427,83 @@ class RabbitMQ extends MQ {
 	public function close() {
 		if ($this->isErr()) { return $this->return_error(); }
 		
-		$this->getChannel()->close();
-		$this->getConnection()->close();
-		
-		return $this->ok();
+		try {
+			$this->getChannel()->close();
+			$this->getConnection()->close();
+			
+			return $this->ok();
+		} catch (\Exception $e) {
+			return $this->error(self::$_ERROR_CODE[105], 105); // 断开失败
+		}
 	}
 	
 	/**
 	 * 订阅
 	 *
 	 * @return array|\think\response\Json|RabbitMQ
-	 * @throws \ErrorException
 	 */
 	public function subscribe() {
 		if ($this->isErr()) { return $this; }
 		
 		if ($this->isConnected()) {
-			//在接收消息的时候调用$callback函数
-			$_callback = function ($msgObj) {
-				if ($this->getCallbackSubscribe() !== null && is_callable($this->getCallbackSubscribe())) {
-					$_param = [
-						'msg' => $msgObj->body,
-						'msgObj' => $msgObj,
-					];
-					call_user_func_array($this->getCallbackSubscribe(), $_param);
+			try {
+				//在接收消息的时候调用$callback函数
+				$_callback = function ($msgObj) {
+					if ($this->getCallbackSubscribe() !== null && is_callable($this->getCallbackSubscribe())) {
+						// $_param = [
+						// 	'msg' => $msgObj->body,
+						// 	'msgObj' => $msgObj,
+						// ];
+						$_param = [
+							$msgObj->body,
+							$msgObj,
+							null
+						];
+						call_user_func_array($this->getCallbackSubscribe(), $_param);
+					}
+				};
+				
+				$re = $this->getChannel()->exchange_declare($this->_config['exchange'],
+				                                            $this->_config['exchange_type'],
+				                                            $this->_config['passive'],
+				                                            $this->_config['durable_exchange'],
+				                                            $this->_config['auto_delete'],
+				                                            $this->_config['internal'],
+				                                            $this->_config['nowait'],
+				                                            $this->_config['arguments'],
+				                                            $this->_config['ticket']);
+				
+				$re = $this->getChannel()->queue_declare($this->_config['queue'],
+				                                         $this->_config['passive'],
+				                                         $this->_config['durable_queue'],
+				                                         $this->_config['exclusive'],
+				                                         $this->_config['auto_delete'],
+				                                         $this->_config['nowait'],
+				                                         $this->_config['arguments'],
+				                                         $this->_config['ticket']);
+				
+				$re = $this->getChannel()->queue_bind($this->_config['queue'],
+				                                      $this->_config['exchange'],
+				                                      $this->_config['routing_key_binding'],
+				                                      $this->_config['nowait'],
+				                                      $this->_config['arguments'],
+				                                      $this->_config['ticket']);
+				
+				$this->getChannel()->basic_consume($this->_config['queue'],
+				                                   $this->_config['consumer_tag'],
+				                                   $this->_config['no_local'],
+				                                   $this->_config['no_ack'],
+				                                   $this->_config['exclusive'],
+				                                   $this->_config['nowait'],
+				                                   $_callback,
+				                                   $this->_config['ticket'],
+				                                   $this->_config['arguments']);
+				
+				while(count($this->getChannel()->callbacks)) {
+					$this->getChannel()->wait();
 				}
-			};
-			
-			$re = $this->getChannel()->exchange_declare($this->_config['exchange'],
-			                                            $this->_config['exchange_type'],
-			                                            $this->_config['passive'],
-			                                            $this->_config['durable_exchange'],
-			                                            $this->_config['auto_delete'],
-			                                            $this->_config['internal'],
-			                                            $this->_config['nowait'],
-			                                            $this->_config['arguments'],
-			                                            $this->_config['ticket']);
-			
-			$re = $this->getChannel()->queue_declare($this->_config['queue'],
-			                                         $this->_config['passive'],
-			                                         $this->_config['durable_queue'],
-			                                         $this->_config['exclusive'],
-			                                         $this->_config['auto_delete'],
-			                                         $this->_config['nowait'],
-			                                         $this->_config['arguments'],
-			                                         $this->_config['ticket']);
-			
-			$re = $this->getChannel()->queue_bind($this->_config['queue'],
-			                                      $this->_config['exchange'],
-			                                      $this->_config['routing_key_binding'],
-			                                      $this->_config['nowait'],
-			                                      $this->_config['arguments'],
-			                                      $this->_config['ticket']);
-			
-			$this->getChannel()->basic_consume($this->_config['queue'],
-			                                   $this->_config['consumer_tag'],
-			                                   $this->_config['no_local'],
-			                                   $this->_config['no_ack'],
-			                                   $this->_config['exclusive'],
-			                                   $this->_config['nowait'],
-			                                   $_callback,
-			                                   $this->_config['ticket'],
-			                                   $this->_config['arguments']);
-			
-			while(count($this->getChannel()->callbacks)) {
-				$this->getChannel()->wait();
+			} catch (\Exception $e) {
+				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
 			}
 		} else {
 			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
@@ -510,49 +522,53 @@ class RabbitMQ extends MQ {
 		if ($this->isErr()) { return $this; }
 		
 		if ($this->isConnected()) {
-			$re = $this->getChannel()->exchange_declare($this->_config['exchange'],
-			                                            $this->_config['exchange_type'],
-			                                            $this->_config['passive'],
-			                                            $this->_config['durable_exchange'],
-			                                            $this->_config['auto_delete'],
-			                                            $this->_config['internal'],
-			                                            $this->_config['nowait'],
-			                                            $this->_config['arguments'],
-			                                            $this->_config['ticket']);
-			
-			$re = $this->getChannel()->queue_declare($this->_config['queue'],
-						                              $this->_config['passive'],
-						                              $this->_config['durable_queue'],
-						                              $this->_config['exclusive'],
-						                              $this->_config['auto_delete'],
-						                              $this->_config['nowait'],
-						                              $this->_config['arguments'],
-						                              $this->_config['ticket']);
-			
-			$re = $this->getChannel()->queue_bind($this->_config['queue'],
-			                                      $this->_config['exchange'],
-			                                      $this->_config['routing_key_binding'],
-			                                      $this->_config['nowait'],
-			                                      $this->_config['arguments'],
-			                                      $this->_config['ticket']);
-			
-			//定义一个消息，消息内容为Hello World!
-			// $msgText = $content;
-			// is_array($msgText) && $msgText = Json::je($content);
-			
-			$msgTexts = $content;
-			if (!is_array($content)) {
-				$msgTexts = [$content];
-			}
-			
-			foreach ($msgTexts as $item) {
-				$msgObj = new AMQPMessage($item);
-				$this->getChannel()->basic_publish($msgObj,
-				                                   $this->_config['exchange'],
-				                                   $this->_config['routing_key'],
-				                                   $this->_config['mandatory'],
-				                                   $this->_config['immediate'],
-				                                   $this->_config['ticket']);
+			try {
+				$re = $this->getChannel()->exchange_declare($this->_config['exchange'],
+				                                            $this->_config['exchange_type'],
+				                                            $this->_config['passive'],
+				                                            $this->_config['durable_exchange'],
+				                                            $this->_config['auto_delete'],
+				                                            $this->_config['internal'],
+				                                            $this->_config['nowait'],
+				                                            $this->_config['arguments'],
+				                                            $this->_config['ticket']);
+				
+				$re = $this->getChannel()->queue_declare($this->_config['queue'],
+							                              $this->_config['passive'],
+							                              $this->_config['durable_queue'],
+							                              $this->_config['exclusive'],
+							                              $this->_config['auto_delete'],
+							                              $this->_config['nowait'],
+							                              $this->_config['arguments'],
+							                              $this->_config['ticket']);
+				
+				$re = $this->getChannel()->queue_bind($this->_config['queue'],
+				                                      $this->_config['exchange'],
+				                                      $this->_config['routing_key_binding'],
+				                                      $this->_config['nowait'],
+				                                      $this->_config['arguments'],
+				                                      $this->_config['ticket']);
+				
+				//定义一个消息，消息内容为Hello World!
+				// $msgText = $content;
+				// is_array($msgText) && $msgText = Json::je($content);
+				
+				$msgTexts = $content;
+				if (!is_array($content)) {
+					$msgTexts = [$content];
+				}
+				
+				foreach ($msgTexts as $item) {
+					$msgObj = new AMQPMessage($item);
+					$this->getChannel()->basic_publish($msgObj,
+					                                   $this->_config['exchange'],
+					                                   $this->_config['routing_key'],
+					                                   $this->_config['mandatory'],
+					                                   $this->_config['immediate'],
+					                                   $this->_config['ticket']);
+				}
+			} catch (\Exception $e) {
+				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
 			}
 		} else {
 			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
@@ -570,9 +586,12 @@ class RabbitMQ extends MQ {
 	
 	/**
 	 * @param AMQPConnection $connection
+	 * @return $this
 	 */
-	public function setConnection(AMQPConnection $connection): void {
+	public function setConnection($connection) {
 		$this->_connection = $connection;
+		
+		return $this;
 	}
 	
 	/**
@@ -584,9 +603,12 @@ class RabbitMQ extends MQ {
 	
 	/**
 	 * @param AMQPChannel $channel
+	 * @return $this
 	 */
-	public function setChannel(AMQPChannel $channel): void {
+	public function setChannel($channel) {
 		$this->_channel = $channel;
+		
+		return $this;
 	}
 	
 	

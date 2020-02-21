@@ -1,7 +1,5 @@
 <?php
 
-define('EXT_AMQP_ENABLED', 1);
-
 return [
 	'MQ' => [
 		'enabled_response' => true,              // 启用

@@ -45,4 +45,20 @@ class Demo extends BaseService {
 		// return UU::C(Base::class)->rt()->ok();
 		return UU::C(Base::class)->ok();
 	}
+	
+	public function subscribeRabbitMQ() {
+		$mq = $this->getMQCollection()->getRabbitMQObj();
+		$mq->connect()
+			->queue(Log::$_RABBITMQ_QUEUE)
+			->exchange(Log::$_RABBITMQ_EXCHANGE)
+			->routingKey(Log::$_RABBITMQ_ROUTING_KEY)
+			->routingKeyBinding(Log::$_RABBITMQ_ROUTING_KEY_BINDING)
+			->setCallbackSubscribe(function ($body, $envelope, $queue) {
+				/** @var $envelope \AMQPEnvelope */
+				/** @var $queue \AMQPQueue */
+				echo $body . "\n";
+			})
+			->subscribe();
+		
+	}
 }

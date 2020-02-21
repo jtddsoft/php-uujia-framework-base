@@ -152,9 +152,11 @@ class RabbitMQExt extends RabbitMQ {
 			
 			return $this->ok();
 		} catch (\AMQPChannelException $e) {
+			return $this->error(self::$_ERROR_CODE[105], 105); // 断开失败
 		} catch (\AMQPConnectionException $e) {
+			return $this->error(self::$_ERROR_CODE[105], 105); // 断开失败
 		} catch (\AMQPExchangeException $e) {
-			$this->error(self::$_ERROR_CODE[105], 105); // 断开失败
+			return $this->error(self::$_ERROR_CODE[105], 105); // 断开失败
 		}
 	}
 	
@@ -162,7 +164,6 @@ class RabbitMQExt extends RabbitMQ {
 	 * 订阅
 	 *
 	 * @return array|\think\response\Json|RabbitMQ
-	 * @throws \ErrorException
 	 */
 	public function subscribe() {
 		if ($this->isErr()) {
@@ -173,16 +174,19 @@ class RabbitMQExt extends RabbitMQ {
 			try {
 				//在接收消息的时候调用$callback函数
 				$_callback = function ($envelope, $queue) {
+					/** @var $envelope \AMQPEnvelope */
+					/** @var $queue \AMQPQueue */
 					if ($this->getCallbackSubscribe() !== null && is_callable($this->getCallbackSubscribe())) {
 						// $_param = [
 						// 	'msg'    => $envelope->body,
 						// 	'msgObj' => $envelope,
 						// 	'queue'  => $queue,
 						// ];
-						$_param = [$envelope->body, $envelope, $queue];
+						$_param = [$envelope->getBody(), $envelope, $queue];
 						call_user_func_array($this->getCallbackSubscribe(), $_param);
 						// 如果是手动应答ACK 回调中需要调用ACK
 						// $queue->ack($envelope->getDeliveryTag()); //手动发送ACK应答
+						// $queue->ack($envelope->getDeliveryTag(), AMQP_AUTODELETE);
 					}
 				};
 				
@@ -231,13 +235,17 @@ class RabbitMQExt extends RabbitMQ {
 				}
 				
 				while (true) {
-					$this->getQueue()->consume('processMessage', $this->_config['ack_flags'], $this->_config['consumer_tag']);
+					$this->getQueue()->consume($_callback, $this->_config['ack_flags'], $this->_config['consumer_tag']);
 					//$this->getQueue()->consume('processMessage', AMQP_AUTOACK); //自动ACK应答
 				}
 			} catch (\AMQPConnectionException $e) {
+				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
 			} catch (\AMQPChannelException $e) {
+				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
 			} catch (\AMQPExchangeException $e) {
+				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
 			} catch (\AMQPQueueException $e) {
+				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
 			} catch (\AMQPEnvelopeException $e) {
 				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
 			}
@@ -346,9 +354,12 @@ class RabbitMQExt extends RabbitMQ {
 	
 	/**
 	 * @param \AMQPConnection $connection
+	 * @return $this
 	 */
-	public function setConnection(\AMQPConnection $connection): void {
+	public function setConnection($connection) {
 		$this->_connection = $connection;
+		
+		return $this;
 	}
 	
 	/**
@@ -360,9 +371,12 @@ class RabbitMQExt extends RabbitMQ {
 	
 	/**
 	 * @param \AMQPChannel $channel
+	 * @return $this
 	 */
-	public function setChannel(\AMQPChannel $channel): void {
+	public function setChannel($channel) {
 		$this->_channel = $channel;
+		
+		return $this;
 	}
 	
 	/**
@@ -374,9 +388,12 @@ class RabbitMQExt extends RabbitMQ {
 	
 	/**
 	 * @param \AMQPExchange $exchange
+	 * @return $this
 	 */
-	public function setExchange(\AMQPExchange $exchange): void {
+	public function setExchange($exchange) {
 		$this->_exchange = $exchange;
+		
+		return $this;
 	}
 	
 	/**
@@ -388,9 +405,12 @@ class RabbitMQExt extends RabbitMQ {
 	
 	/**
 	 * @param \AMQPQueue $queue
+	 * @return $this
 	 */
-	public function setQueue(\AMQPQueue $queue): void {
+	public function setQueue($queue) {
 		$this->_queue = $queue;
+		
+		return $this;
 	}
 	
 	
