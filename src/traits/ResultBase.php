@@ -4,28 +4,11 @@
 namespace uujia\framework\base\traits;
 
 
+use uujia\framework\base\common\consts\ResultConst;
+
 trait ResultBase{
 	
-	// 返回ok模板
-	public static $_RESULT_OK
-		= [
-			'code'   => 200,
-			'status' => 'success',
-			'msg'    => '操作完成',
-			'data'   => [],
-		];
-	
-	// 返回error模板
-	public static $_RESULT_ERROR
-		= [
-			'code'   => 1000,
-			'status' => 'error',
-			'msg'    => '操作失败',
-			'data'   => [],
-		];
-	
-	// 验证正确的依据code = 200
-	public static $_OK_CODE = 200;
+	// ResultConst
 	
 	// 错误代码构造方法工厂（构造回调Func） 用时才加载
 	private $_errCodeFactory = null;
@@ -38,10 +21,18 @@ trait ResultBase{
 	private $code = 200;
 	private $status = 'success';
 	private $msg = '操作完成';
-	private $data = [];
+	public $data = [];
 	
 	// 缓存最后一次返回值 包括code msg。。。
-	private $last_return = [];
+	public $last_return = [
+		'code' => 200,
+		'status' => 'success',
+		'msg' => '操作完成',
+		'data' => [],
+	];
+	
+	// 返回列表
+	public $_results = [];
 	
 	/**************************************************************
 	 * 返回输出
@@ -55,7 +46,7 @@ trait ResultBase{
 	 * @return array|\think\response\Json
 	 */
 	public function code($code = 1000) {
-		$_ret         = self::$_RESULT_ERROR;
+		$_ret         = ResultConst::RESULT_ERROR;
 		$_ret['code'] = $code;
 		
 		if (empty($this->_errCodeCache)) {
@@ -69,7 +60,8 @@ trait ResultBase{
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
 		
-		return rsErrCode($code);
+		// return rsErrCode($code);
+		return $_ret;
 	}
 	
 	/**
@@ -81,7 +73,7 @@ trait ResultBase{
 	 * @return array|\think\response\Json
 	 */
 	public function error($msg = 'error', $code = 1000) {
-		$_ret         = self::$_RESULT_ERROR;
+		$_ret         = ResultConst::RESULT_ERROR;
 		$_ret['code'] = $code;
 		$_ret['msg']  = $msg;
 		
@@ -92,16 +84,16 @@ trait ResultBase{
 	}
 	
 	public function ok() {
-		$_ret = self::$_RESULT_OK;
+		$_ret = ResultConst::RESULT_OK;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
 		
-		return self::$_RESULT_OK;
+		return ResultConst::RESULT_OK;
 	}
 	
 	public function data($data = []) {
-		$_ret           = self::$_RESULT_OK;
+		$_ret           = ResultConst::RESULT_OK;
 		$_ret['result'] = $data;
 		
 		// 记录最后的错误信息
@@ -123,7 +115,7 @@ trait ResultBase{
 	 * @return bool
 	 */
 	public function isOk() {
-		if ($this->getCode() == self::$_OK_CODE) {
+		if ($this->getCode() == ResultConst::OK_CODE) {
 			return true;
 		}
 		
@@ -152,10 +144,16 @@ trait ResultBase{
 	
 	/**
 	 * 设置code
+	 *
 	 * @param int $code
+	 * @return $this
 	 */
 	public function setCode(int $code) {
 		$this->code = $code;
+		
+		$this->last_return['code'] = $code;
+		
+		return $this;
 	}
 	
 	/**
@@ -168,10 +166,16 @@ trait ResultBase{
 	
 	/**
 	 * 设置状态status
+	 *
 	 * @param string $status
+	 * @return $this
 	 */
 	public function setStatus(string $status) {
 		$this->status = $status;
+		
+		$this->last_return['status'] = $status;
+		
+		return $this;
 	}
 	
 	/**
@@ -184,26 +188,38 @@ trait ResultBase{
 	
 	/**
 	 * 设置消息msg
+	 *
 	 * @param string $msg
+	 * @return $this
 	 */
 	public function setMsg(string $msg) {
 		$this->msg = $msg;
+		
+		$this->last_return['msg'] = $msg;
+		
+		return $this;
 	}
 	
 	/**
 	 * 获取数据data
 	 * @return array
 	 */
-	public function getData(): array {
+	public function getData() {
 		return $this->data;
 	}
 	
 	/**
 	 * 设置数据data
+	 *
 	 * @param array $data
+	 * @return $this
 	 */
 	public function setData(array $data) {
 		$this->data = $data;
+		
+		$this->last_return['data'] = $data;
+		
+		return $this;
 	}
 	
 	/**
@@ -216,7 +232,9 @@ trait ResultBase{
 	
 	/**
 	 * 设置最后一次返回值
+	 *
 	 * @param array $last_return
+	 * @return $this
 	 */
 	public function setLastReturn(array $last_return) {
 		$this->last_return = array_merge($this->last_return, $last_return);
@@ -225,6 +243,11 @@ trait ResultBase{
 		$this->setMsg($this->last_return['msg']);
 		$this->setStatus($this->last_return['status']);
 		$this->setData($this->last_return['data']);
+		
+		// 添加到返回值列表
+		$this->addResults($this->last_return);
+		
+		return $this;
 	}
 	
 	/**
@@ -236,9 +259,12 @@ trait ResultBase{
 	
 	/**
 	 * @param null|\Closure $errCodeFactory
+	 * @return $this
 	 */
 	public function setErrCodeFactory($errCodeFactory) {
 		$this->_errCodeFactory = $errCodeFactory;
+		
+		return $this;
 	}
 	
 	/**
@@ -250,9 +276,48 @@ trait ResultBase{
 	
 	/**
 	 * @param null|array $errCodeCache
+	 * @return $this
 	 */
 	public function setErrCodeCache($errCodeCache) {
 		$this->_errCodeCache = $errCodeCache;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getResults() {
+		return $this->_results;
+	}
+	
+	/**
+	 * @param array $returns
+	 * @return $this
+	 */
+	public function _setResults(array $results) {
+		$this->_results = $results;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return $this
+	 */
+	public function cleanResults() {
+		$this->_results = [];
+		
+		return $this;
+	}
+	
+	/**
+	 * @param array $result
+	 * @return $this
+	 */
+	public function addResults($result) {
+		$this->_results[] = $result;
+		
+		return $this;
 	}
 	
 }

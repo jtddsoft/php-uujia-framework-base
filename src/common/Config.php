@@ -6,6 +6,7 @@ namespace uujia\framework\base\common;
 
 use uujia\framework\base\common\lib\FactoryCache\Data;
 use uujia\framework\base\common\lib\FactoryCacheTree;
+use uujia\framework\base\common\lib\Tree\TreeNode;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
@@ -44,6 +45,7 @@ class Config {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
@@ -52,6 +54,8 @@ class Config {
 		
 		$paths = glob(__DIR__ . "/../config/*_config.php", GLOB_BRACE);
 		$this->path($paths);
+		
+		return $this;
 	}
 	
 	/**
@@ -66,7 +70,6 @@ class Config {
 	 * 配置类型
 	 *
 	 * @param null $type
-	 *
 	 * @return $this|string
 	 */
 	public function type($type = null) {
@@ -83,7 +86,6 @@ class Config {
 	 * 配置文件名称
 	 *
 	 * @param null $name
-	 *
 	 * @return $this|string
 	 */
 	public function name($name = null) {
@@ -107,10 +109,10 @@ class Config {
 	 * @param string|array $path
 	 * @param string       $type
 	 * @param string       $name
-	 *
+	 * @param int          $weight  权重
 	 * @return Config
 	 */
-	public function path($path, $type = '', $name = '') {
+	public function path($path, $type = '', $name = '', $weight = FactoryCacheTree::DEFAULT_WEIGHT) {
 		$_paths = [];
 		if (is_string($path)) {
 			$_paths[] = $path;
@@ -130,7 +132,7 @@ class Config {
 				$_name = basename($_path, '.php');
 			}
 			
-			$this->unshift($_name, $_path);
+			$this->unshift($_name, $_path, $weight);
 			
 			// $item = new FactoryCacheTree();
 			// $item->getData()->set(function ($data, $it) use ($_path, $type, $name) {
@@ -187,9 +189,10 @@ class Config {
 	 *
 	 * @param string|int   $key
 	 * @param string|array $path
+	 * @param int          $weight  权重
 	 * @return $this
 	 */
-	public function unshift($key, $path) {
+	public function unshift($key, $path, $weight = FactoryCacheTree::DEFAULT_WEIGHT) {
 		$factoryItemFunc = function ($data, $it) {
 			$_config = [];
 			
@@ -205,22 +208,22 @@ class Config {
 		};
 		
 		if (is_string($path)) {
-			$this->getList()->unshiftKeyItemData($key,
+			$this->getList()->unshiftKeyNewItemData($key,
 				function ($data, $it) use ($path) {
 					$_config = include $path;
 					
 					return $_config;
 				}, $factoryItemFunc
-			);
+			)->getLastSetItem()->getLastNewItem()->setWeight($weight);
 		} elseif (is_array($path)) {
 			foreach ($path as $row) {
-				$this->getList()->unshiftKeyItemData($key,
+				$this->getList()->unshiftKeyNewItemData($key,
 					function ($data, $it) use ($row) {
 						$_config = include $row;
 						
 						return $_config;
 					}, $factoryItemFunc
-				);
+				)->getLastSetItem()->getLastNewItem()->setWeight($weight);
 			}
 		}
 		
@@ -232,9 +235,10 @@ class Config {
 	 *
 	 * @param string|int   $key
 	 * @param string|array $path
+	 * @param int          $weight  权重
 	 * @return $this
 	 */
-	public function add($key, $path) {
+	public function add($key, $path, $weight = FactoryCacheTree::DEFAULT_WEIGHT) {
 		$factoryItemFunc = function ($data, $it) {
 			$_config = [];
 			
@@ -250,22 +254,22 @@ class Config {
 		};
 		
 		if (is_string($path)) {
-			$this->getList()->addKeyItemData($key,
+			$this->getList()->addKeyNewItemData($key,
 				function ($data, $it) use ($path) {
 					$_config = include $path;
 					
 					return $_config;
 				}, $factoryItemFunc
-			);
+			)->getLastSetItem()->getLastNewItem()->setWeight($weight);
 		} elseif (is_array($path)) {
 			foreach ($path as $row) {
-				$this->getList()->addKeyItemData($key,
+				$this->getList()->addKeyNewItemData($key,
 					function ($data, $it) use ($row) {
 						$_config = include $row;
 						
 						return $_config;
 					}, $factoryItemFunc
-				);
+				)->getLastSetItem()->getLastNewItem()->setWeight($weight);
 			}
 		}
 		

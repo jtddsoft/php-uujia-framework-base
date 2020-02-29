@@ -41,6 +41,8 @@ return [
 		'username'         => "hello",         // set your username
 		'password'         => "123456",        // set your password
 		
+		'vhost'            => '/',
+		
 		// connect
 		'queue'            => 'hello',
 		'passive'          => false,
@@ -57,7 +59,7 @@ return [
 		'consumer_tag'     => '',
 		'no_local'         => false,
 		'no_ack'           => false,
-		'ack_flags'        => AMQP_AUTOACK, // ext flags
+		'ack_flags'        => defined('EXT_AMQP_ENABLED') ? AMQP_AUTOACK : true, // ext flags
 		
 		// publish
 		'internal'         => false,

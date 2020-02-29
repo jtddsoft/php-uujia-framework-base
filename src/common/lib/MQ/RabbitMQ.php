@@ -17,26 +17,28 @@ class RabbitMQ extends MQ {
 		// 'client_type' => 0,
 		'enabled' => false,              // 启用
 		
-		'server'    => "localhost",     // change if necessary
-		'port'      => 5672,            // change if necessary
-		'username'  => "hello",         // set your username
-		'password'  => "123456",        // set your password
+		'server'              => "localhost",     // change if necessary
+		'port'                => 5672,            // change if necessary
+		'username'            => "hello",         // set your username
+		'password'            => "123456",        // set your password
 		
 		// connect
-		'queue'       => 'hello',
-		'passive'     => false,
-		'durable'     => true,
-		'exclusive'   => false,
-		'auto_delete' => false,
-		'nowait'      => false,
-		'arguments'   => [],
-		'ticket'      => null,
+		'queue'               => 'hello',
+		'passive'             => false,
+		'durable_exchange'    => true,
+		'durable_queue'       => true,
+		'exclusive'           => false,
+		'auto_delete'         => false,
+		'nowait'              => false,
+		'arguments'           => [],
+		'ticket'              => null,
 		
 		// subscribe
 		// 'queue'       => 'hello',
-		'consumer_tag' => '',
-		'no_local'     => false,
-		'no_ack'       => false,
+		'consumer_tag'        => '',
+		'no_local'            => false,
+		'no_ack'              => false,
+		'ack_flags'           => true,
 		
 		// publish
 		'internal'            => false,
@@ -78,6 +80,24 @@ class RabbitMQ extends MQ {
 		
 		$this->setInit(false);
 		return false;
+	}
+	
+	/**
+	 * vhost
+	 * get set
+	 *
+	 * @param string|null $vhost
+	 *
+	 * @return $this|string
+	 */
+	public function vhost($vhost = null) {
+		if ($vhost === null) {
+			return $this->_config['vhost'];
+		} else {
+			$this->_config['vhost'] = $vhost;
+		}
+		
+		return $this;
 	}
 	
 	/**
@@ -243,6 +263,24 @@ class RabbitMQ extends MQ {
 	}
 	
 	/**
+	 * ack flags
+	 * get set
+	 *
+	 * @param bool|null $ackFlags
+	 *
+	 * @return $this|bool
+	 */
+	public function ackFlags($ackFlags = null) {
+		if ($ackFlags === null) {
+			return $this->_config['ack_flags'];
+		} else {
+			$this->_config['ack_flags'] = $ackFlags;
+		}
+		
+		return $this;
+	}
+	
+	/**
 	 * internal
 	 * get set
 	 *
@@ -387,7 +425,7 @@ class RabbitMQ extends MQ {
 		
 		if (!$this->isInit()) {
 			if (!$this->initMQ()) {
-				$this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+				$this->error(self::ERROR_CODE[101], 101); // 未成功初始化
 				return $this;
 			}
 		}
@@ -403,7 +441,8 @@ class RabbitMQ extends MQ {
 		$connection = new AMQPConnection($this->_config['server'],
 		                                 $this->_config['port'],
 		                                 $this->_config['username'],
-		                                 $this->_config['password']);
+		                                 $this->_config['password'],
+		                                 $this->_config['vhost']);
 		$this->setConnection($connection);
 		
 		$channel = $connection->channel();
@@ -433,7 +472,7 @@ class RabbitMQ extends MQ {
 			
 			return $this->ok();
 		} catch (\Exception $e) {
-			return $this->error(self::$_ERROR_CODE[105], 105); // 断开失败
+			return $this->error(self::ERROR_CODE[105], 105); // 断开失败
 		}
 	}
 	
@@ -449,6 +488,7 @@ class RabbitMQ extends MQ {
 			try {
 				//在接收消息的时候调用$callback函数
 				$_callback = function ($msgObj) {
+					/** @var $msgObj AMQPMessage */
 					if ($this->getCallbackSubscribe() !== null && is_callable($this->getCallbackSubscribe())) {
 						// $_param = [
 						// 	'msg' => $msgObj->body,
@@ -459,7 +499,10 @@ class RabbitMQ extends MQ {
 							$msgObj,
 							null
 						];
+						
 						call_user_func_array($this->getCallbackSubscribe(), $_param);
+						
+						$msgObj->delivery_info['channel']->basic_ack($msgObj->delivery_info['delivery_tag']);
 					}
 				};
 				
@@ -503,10 +546,10 @@ class RabbitMQ extends MQ {
 					$this->getChannel()->wait();
 				}
 			} catch (\Exception $e) {
-				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+				$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 			}
 		} else {
-			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
 		
 		return $this;
@@ -568,10 +611,10 @@ class RabbitMQ extends MQ {
 					                                   $this->_config['ticket']);
 				}
 			} catch (\Exception $e) {
-				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+				$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 			}
 		} else {
-			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
 		
 		return $this;

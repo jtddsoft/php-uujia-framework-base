@@ -18,15 +18,18 @@ class RabbitMQExt extends RabbitMQ {
 		// 'client_type' => 0,
 		'enabled' => false,              // 启用
 		
-		'server'              => "localhost",     // change if necessary
-		'port'                => 5672,            // change if necessary
-		'username'            => "hello",         // set your username
-		'password'            => "123456",        // set your password
+		'server'   => "localhost",     // change if necessary
+		'port'     => 5672,            // change if necessary
+		'username' => "hello",         // set your username
+		'password' => "123456",        // set your password
+		
+		'vhost'               => '/',
 		
 		// connect
 		'queue'               => 'hello',
 		'passive'             => false,
-		'durable'             => true,
+		'durable_exchange'    => AMQP_DURABLE,
+		'durable_queue'       => AMQP_DURABLE,
 		'exclusive'           => false,
 		'auto_delete'         => false,
 		'nowait'              => false,
@@ -38,11 +41,12 @@ class RabbitMQExt extends RabbitMQ {
 		'consumer_tag'        => '',
 		'no_local'            => false,
 		'no_ack'              => false,
+		'ack_flags'           => AMQP_AUTOACK,
 		
 		// publish
 		'internal'            => false,
 		'exchange'            => '',
-		'exchange_type'       => 'topic',
+		'exchange_type'       => AMQP_EX_TYPE_TOPIC,
 		'routing_key'         => 'routingKey.hello',
 		'routing_key_binding' => 'routingKey.*',
 		'mandatory'           => true,
@@ -69,9 +73,9 @@ class RabbitMQExt extends RabbitMQ {
 	 * ack flags
 	 * get set
 	 *
-	 * @param string|null $ackFlags
+	 * @param int|null $ackFlags
 	 *
-	 * @return $this|string
+	 * @return $this|int
 	 */
 	public function ackFlags($ackFlags = null) {
 		if ($ackFlags === null) {
@@ -104,7 +108,7 @@ class RabbitMQExt extends RabbitMQ {
 		
 		if (!$this->isInit()) {
 			if (!$this->initMQ()) {
-				$this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+				$this->error(self::ERROR_CODE[101], 101); // 未成功初始化
 				
 				return $this;
 			}
@@ -121,6 +125,7 @@ class RabbitMQExt extends RabbitMQ {
 			$connection->setPort($this->_config['port']);
 			$connection->setLogin($this->_config['username']);
 			$connection->setPassword($this->_config['password']);
+			$connection->setVhost($this->_config['vhost']);
 			
 			if ($connection->connect()) {
 				$this->setConnected(true);
@@ -128,7 +133,7 @@ class RabbitMQExt extends RabbitMQ {
 			
 			return $this;
 		} catch (\AMQPConnectionException $e) {
-			$this->error(self::$_ERROR_CODE[102], 102); // 连接失败
+			$this->error(self::ERROR_CODE[102], 102); // 连接失败
 			
 			return $this;
 		}
@@ -152,11 +157,11 @@ class RabbitMQExt extends RabbitMQ {
 			
 			return $this->ok();
 		} catch (\AMQPChannelException $e) {
-			return $this->error(self::$_ERROR_CODE[105], 105); // 断开失败
+			return $this->error(self::ERROR_CODE[105], 105); // 断开失败
 		} catch (\AMQPConnectionException $e) {
-			return $this->error(self::$_ERROR_CODE[105], 105); // 断开失败
+			return $this->error(self::ERROR_CODE[105], 105); // 断开失败
 		} catch (\AMQPExchangeException $e) {
-			return $this->error(self::$_ERROR_CODE[105], 105); // 断开失败
+			return $this->error(self::ERROR_CODE[105], 105); // 断开失败
 		}
 	}
 	
@@ -239,18 +244,18 @@ class RabbitMQExt extends RabbitMQ {
 					//$this->getQueue()->consume('processMessage', AMQP_AUTOACK); //自动ACK应答
 				}
 			} catch (\AMQPConnectionException $e) {
-				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+				$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 			} catch (\AMQPChannelException $e) {
-				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+				$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 			} catch (\AMQPExchangeException $e) {
-				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+				$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 			} catch (\AMQPQueueException $e) {
-				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+				$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 			} catch (\AMQPEnvelopeException $e) {
-				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+				$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 			}
 		} else {
-			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
 		
 		return $this;
@@ -329,10 +334,10 @@ class RabbitMQExt extends RabbitMQ {
 			} catch (\AMQPChannelException $e) {
 			} catch (\AMQPExchangeException $e) {
 			} catch (\AMQPQueueException $e) {
-				$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+				$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 			}
 		} else {
-			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
 		
 		return $this;

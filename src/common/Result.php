@@ -3,6 +3,8 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\consts\ResultConst;
+use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
@@ -19,8 +21,7 @@ class Result {
 	protected $logObj;
 	
 	// 返回类型
-	public static $_RETURN_TYPE
-		= [
+	const RETURN_TYPE = [
 			'arr'  => 1, // 返回数组
 			'json' => 2, // 返回json
 		];
@@ -45,9 +46,12 @@ class Result {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
+		
+		return $this;
 	}
 	
 	/**
@@ -102,7 +106,7 @@ class Result {
 	 * @return array|\think\response\Json
 	 */
 	public function error($msg = 'error', $code = 1000) {
-		$_ret         = self::$_RESULT_ERROR;
+		$_ret         = ResultConst::RESULT_ERROR;
 		$_ret['code'] = $code;
 		$_ret['msg']  = $msg;
 		
@@ -113,11 +117,12 @@ class Result {
 		$this->getLogObj()->error($_ret);
 		
 		if ($this->isReturnDie()) {
-			exit();
+			$this->getLogObj()->response();
+			exit(Json::je($_ret));
 		}
 		
 		switch ($this->getReturnType()) {
-			case self::$_RETURN_TYPE['json']:
+			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
 				return json($_ret);
 				break;
@@ -134,7 +139,7 @@ class Result {
 	 * @return array|mixed|string
 	 */
 	public function code($code = 1000) {
-		$_ret         = self::$_RESULT_ERROR;
+		$_ret         = ResultConst::RESULT_ERROR;
 		$_ret['code'] = $code;
 		$_ret['msg']  = $this->getErrObj()->find($code);
 		
@@ -145,13 +150,14 @@ class Result {
 		$this->getLogObj()->error($_ret);
 		
 		if ($this->isReturnDie()) {
-			exit();
+			$this->getLogObj()->response();
+			exit(Json::je($_ret));
 		}
 		
 		switch ($this->getReturnType()) {
-			case self::$_RETURN_TYPE['json']:
+			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
-				return rjErrCode($code);
+				return json($_ret);
 				break;
 		}
 		
@@ -159,7 +165,7 @@ class Result {
 	}
 	
 	public function ok() {
-		$_ret = self::$_RESULT_OK;
+		$_ret = ResultConst::RESULT_OK;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
@@ -168,9 +174,9 @@ class Result {
 		$this->getLogObj()->info($_ret);
 		
 		switch ($this->getReturnType()) {
-			case self::$_RETURN_TYPE['json']:
+			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
-				return join($_ret);
+				return json($_ret);
 				break;
 		}
 		
@@ -178,7 +184,7 @@ class Result {
 	}
 	
 	public function data($data = []) {
-		$_ret           = self::$_RESULT_OK;
+		$_ret           = ResultConst::RESULT_OK;
 		$_ret['result'] = $data;
 		
 		// 记录最后的错误信息
@@ -188,7 +194,7 @@ class Result {
 		$this->getLogObj()->info($_ret);
 		
 		switch ($this->getReturnType()) {
-			case self::$_RETURN_TYPE['json']:
+			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
 				return json($_ret);
 				break;
@@ -203,7 +209,7 @@ class Result {
 		}
 		
 		switch ($this->getReturnType()) {
-			case self::$_RETURN_TYPE['json']:
+			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
 				return json($this->getLastReturn());
 				break;

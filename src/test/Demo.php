@@ -7,10 +7,14 @@ namespace uujia\framework\base\test;
 use uujia\framework\base\BaseService;
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
+use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
+use uujia\framework\base\traits\InstanceBase;
 use uujia\framework\base\UU;
 
 class Demo extends BaseService {
+	use InstanceBase;
 	
 	public function __construct() {
 		parent::__construct();
@@ -34,7 +38,7 @@ class Demo extends BaseService {
 		
 		/** @var $configObj Config */
 		$configObj = UU::C(Config::class);
-		$configObj->path(__DIR__ . '/config/error_code.php');
+		$configObj->path(__DIR__ . '/config/error_code.php', '', '', 99);
 		
 		$paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
 		$configObj->path($paths);
@@ -49,10 +53,10 @@ class Demo extends BaseService {
 	public function subscribeRabbitMQ() {
 		$mq = $this->getMQCollection()->getRabbitMQObj();
 		$mq->connect()
-			->queue(Log::$_RABBITMQ_QUEUE)
-			->exchange(Log::$_RABBITMQ_EXCHANGE)
-			->routingKey(Log::$_RABBITMQ_ROUTING_KEY)
-			->routingKeyBinding(Log::$_RABBITMQ_ROUTING_KEY_BINDING)
+			->queue(Log::RABBITMQ_QUEUE)
+			->exchange(Log::RABBITMQ_EXCHANGE)
+			->routingKey(Log::RABBITMQ_ROUTING_KEY)
+			->routingKeyBinding(Log::RABBITMQ_ROUTING_KEY_BINDING)
 			->setCallbackSubscribe(function ($body, $envelope, $queue) {
 				/** @var $envelope \AMQPEnvelope */
 				/** @var $queue \AMQPQueue */
@@ -60,5 +64,17 @@ class Demo extends BaseService {
 			})
 			->subscribe();
 		
+	}
+	
+	
+	public function event() {
+		$event = $this->getEvent();
+		$event->listen('a', function ($param) {
+			// echo Json::je($param);
+		
+			return $this->getResult()->ok();
+		});
+		
+		return $event->trigger('a', [1]);
 	}
 }

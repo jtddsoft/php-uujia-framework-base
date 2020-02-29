@@ -32,17 +32,28 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	/** @var $_list FactoryCacheTree */
 	protected $_list;
 	
-	public function __construct(FactoryCacheTree $list) {
-		$this->_list = $list;
+	/**
+	 * key不存在时尝试自动new实例
+	 * @var bool $_keyNotExistAutoCreate
+	 */
+	protected $_keyNotExistAutoCreate = true;
+	
+	public function __construct(FactoryCacheTree $list = null) {
+		$this->_list = $list ?? new FactoryCacheTree();
 		
 		$this->init();
 	}
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
+		
+		$this->setKeyNotExistAutoCreate(true);
+		
+		return $this;
 	}
 	
 	/**
@@ -154,7 +165,11 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 		
 		$_list = $this->list();
 		if (!$_list->has($id)) {
-			return null;
+			if ($this->isKeyNotExistAutoCreate()) {
+				$this->set($id);
+			} else {
+				return null;
+			}
 		}
 		
 		$item = $_list->get($id);
@@ -267,7 +282,22 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 		return $this;
 	}
 	
+	/**
+	 * @return bool
+	 */
+	public function isKeyNotExistAutoCreate(): bool {
+		return $this->_keyNotExistAutoCreate;
+	}
 	
+	/**
+	 * @param bool $keyNotExistAutoCreate
+	 * @return $this
+	 */
+	public function setKeyNotExistAutoCreate(bool $keyNotExistAutoCreate) {
+		$this->_keyNotExistAutoCreate = $keyNotExistAutoCreate;
+		
+		return $this;
+	}
 	
 	// public function __call($method, $args) {
 	// 	if ($this->isErr()) { return $this->return_error(); }
@@ -331,6 +361,7 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	// public function removeCache($id) {
 	// 	unset($this->lastObj[$id]);
 	// }
+	
 }
 
 // demo

@@ -236,7 +236,7 @@ class MQTT extends MQ {
 		
 		if (!$this->isInit()) {
 			if (!$this->initMQ()) {
-				$this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+				$this->error(self::ERROR_CODE[101], 101); // 未成功初始化
 				return $this;
 			}
 		}
@@ -248,7 +248,7 @@ class MQTT extends MQ {
 		                                      $this->_config['username'],
 		                                      $this->_config['password']);
 		if ($re === false) {
-			$this->error(self::$_ERROR_CODE[102], 102); // 连接失败
+			$this->error(self::ERROR_CODE[102], 102); // 连接失败
 			return $this;
 		}
 		
@@ -267,7 +267,7 @@ class MQTT extends MQ {
 		
 		if (!$this->isInit()) {
 			if (!$this->initMQ()) {
-				$this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+				$this->error(self::ERROR_CODE[101], 101); // 未成功初始化
 				return $this;
 			}
 		}
@@ -279,7 +279,7 @@ class MQTT extends MQ {
 		                                 $this->_config['username'],
 		                                 $this->_config['password']);
 		if ($re === false) {
-			$this->error(self::$_ERROR_CODE[102], 102); // 连接失败
+			$this->error(self::ERROR_CODE[102], 102); // 连接失败
 			return $this;
 		}
 		
@@ -333,7 +333,7 @@ class MQTT extends MQ {
 			
 			while($this->getMqObj()->proc()){}
 		} else {
-			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
 		
 		return $this;
@@ -357,7 +357,7 @@ class MQTT extends MQ {
 			                           $this->_config['qos'],
 			                           $this->_config['retain']);
 		} else {
-			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
 		
 		return $this;

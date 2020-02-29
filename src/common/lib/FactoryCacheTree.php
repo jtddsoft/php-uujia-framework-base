@@ -12,7 +12,6 @@ use uujia\framework\base\traits\NameBase;
  * @package uujia\framework\base\common\lib
  */
 class FactoryCacheTree extends TreeNode {
-	use NameBase;
 	
 	/**
 	 * 父级FactoryCacheTree
@@ -20,6 +19,24 @@ class FactoryCacheTree extends TreeNode {
 	 * @var $_parent FactoryCacheTree
 	 */
 	protected $_parent = null;
+	
+	/**
+	 * 缓存最后一次实例化的FactoryCacheTree对象
+	 *  一般为add或unshift操作时新生产的FactoryCacheTree对象
+	 *  以便后续对新对象自定义操作
+	 *
+	 * @var FactoryCacheTree $_lastNewItem
+	 */
+	protected $_lastNewItem = null;
+	
+	/**
+	 * 缓存最后一次set实例化的FactoryCacheTree对象
+	 *  一般为set操作时新生产的FactoryCacheTree对象
+	 *  以便后续对新对象自定义操作
+	 *
+	 * @var FactoryCacheTree $_lastSetItem
+	 */
+	protected $_lastSetItem = null;
 	
 	/**
 	 * 节点数据
@@ -30,11 +47,14 @@ class FactoryCacheTree extends TreeNode {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		parent::init();
 		
 		$this->_data = new Data($this);
+		
+		return $this;
 	}
 	
 	/**
@@ -101,7 +121,7 @@ class FactoryCacheTree extends TreeNode {
 	 * @param string $key
 	 * @return FactoryCacheTree|null
 	 */
-	public function get(string $key): FactoryCacheTree {
+	public function get(string $key) {
 		if (!parent::has($key)) {
 			return null;
 		}
@@ -122,8 +142,9 @@ class FactoryCacheTree extends TreeNode {
 	 * @param \Closure $factoryFunc
 	 * @return FactoryCacheTree
 	 */
-	public function setItemData(\Closure $factoryFunc) {
+	public function newItemData(\Closure $factoryFunc) {
 		$item = new FactoryCacheTree();
+		// $this->_setLastNewItem($item);
 		// $item->getData()->set(function ($data, $it) use () {
 		// 	$config = include $path;
 		//
@@ -146,8 +167,9 @@ class FactoryCacheTree extends TreeNode {
 	 * @param \Closure   $factoryFunc
 	 * @return FactoryCacheTree
 	 */
-	public function setKeyItemData($key, \Closure $factoryFunc) {
-		$item = $this->setItemData($factoryFunc);
+	public function setKeyNewItemData($key, \Closure $factoryFunc) {
+		$item = $this->newItemData($factoryFunc);
+		$this->_setLastSetItem($item);
 		
 		$this->set($key, $item);
 		
@@ -164,8 +186,9 @@ class FactoryCacheTree extends TreeNode {
 	 * @param \Closure $factorySubFunc
 	 * @return FactoryCacheTree
 	 */
-	public function unshiftItemData(\Closure $factorySubFunc) {
+	public function unshiftNewItemData(\Closure $factorySubFunc) {
 		$item = new FactoryCacheTree();
+		$this->_setLastNewItem($item);
 		
 		$item->getData()->set($factorySubFunc);
 		
@@ -186,16 +209,17 @@ class FactoryCacheTree extends TreeNode {
 	 * @param \Closure   $factorySubFunc
 	 * @return FactoryCacheTree
 	 */
-	public function unshiftKeyItemData($key, \Closure $factorySubFunc, \Closure $factoryItemFunc = null) {
+	public function unshiftKeyNewItemData($key, \Closure $factorySubFunc, \Closure $factoryItemFunc = null) {
 		if ($this->has($key)) {
 			$item = $this->get($key);
 		} else {
-			$item = $this->setItemData($factoryItemFunc);
+			$item = $this->newItemData($factoryItemFunc);
 			
 			$this->set($key, $item);
 		}
 		
-		$item->unshiftItemData($factorySubFunc);
+		$this->_setLastSetItem($item);
+		$item->unshiftNewItemData($factorySubFunc);
 		
 		return $this;
 	}
@@ -210,8 +234,9 @@ class FactoryCacheTree extends TreeNode {
 	 * @param \Closure $factorySubFunc
 	 * @return FactoryCacheTree
 	 */
-	public function addItemData(\Closure $factorySubFunc) {
+	public function addNewItemData(\Closure $factorySubFunc) {
 		$item = new FactoryCacheTree();
+		$this->_setLastNewItem($item);
 		
 		$item->getData()->set($factorySubFunc);
 		
@@ -238,16 +263,16 @@ class FactoryCacheTree extends TreeNode {
 	 * @param \Closure   $factorySubFunc
 	 * @return FactoryCacheTree
 	 */
-	public function addKeyItemData($key, \Closure $factorySubFunc, \Closure $factoryItemFunc = null) {
+	public function addKeyNewItemData($key, \Closure $factorySubFunc, \Closure $factoryItemFunc = null) {
 		if ($this->has($key)) {
 			$item = $this->get($key);
 		} else {
-			$item = $this->setItemData($factoryItemFunc);
+			$item = $this->newItemData($factoryItemFunc);
 			
 			$this->set($key, $item);
 		}
 		
-		$item->addItemData($factorySubFunc);
+		$item->addNewItemData($factorySubFunc);
 		
 		return $this;
 	}
@@ -287,6 +312,42 @@ class FactoryCacheTree extends TreeNode {
 		return $item->getDataValue($param);
 	}
 	
+	/**************************************************
+	 * getter setter
+	 **************************************************/
 	
+	/**
+	 * @return FactoryCacheTree
+	 */
+	public function getLastNewItem() {
+		return $this->_lastNewItem;
+	}
+	
+	/**
+	 * @param FactoryCacheTree $lastNewItem
+	 * @return $this
+	 */
+	public function _setLastNewItem($lastNewItem) {
+		$this->_lastNewItem = $lastNewItem;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return FactoryCacheTree
+	 */
+	public function getLastSetItem() {
+		return $this->_lastSetItem;
+	}
+	
+	/**
+	 * @param FactoryCacheTree $lastSetItem
+	 * @return $this
+	 */
+	public function _setLastSetItem($lastSetItem) {
+		$this->_lastSetItem = $lastSetItem;
+		
+		return $this;
+	}
 	
 }

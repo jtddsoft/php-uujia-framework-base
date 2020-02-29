@@ -6,6 +6,7 @@ namespace uujia\framework\base\common\lib\Tree;
 
 use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\traits\ResultBase;
 
 /**
  * Class ItemKeys
@@ -14,9 +15,10 @@ use uujia\framework\base\traits\NameBase;
  */
 class TreeNode implements \Iterator, \ArrayAccess {
 	use NameBase;
+	use ResultBase;
 	
 	// 默认权重
-	public static $_DEFAULT_WEIGHT = 100;
+	const DEFAULT_WEIGHT = 100;
 	
 	/**
 	 * 父级TreeNode
@@ -28,7 +30,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	/**
 	 * 子节点
 	 */
-	protected $_children = [];
+	public $_children = [];
 	
 	/**
 	 * 迭代器游标位置
@@ -48,6 +50,24 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @var bool $_iteratorWeight
 	 */
 	protected $_iteratorWeight = false;
+	
+	/**
+	 * 缓存最后一次实例化的TreeNode对象
+	 *  一般为add或unshift操作时新生产的TreeNode对象
+	 *  以便后续对新对象自定义操作
+	 *
+	 * @var TreeNode $_lastNewItem
+	 */
+	protected $_lastNewItem = null;
+	
+	/**
+	 * 缓存最后一次set实例化的TreeNode对象
+	 *  一般为set操作时新生产的TreeNode对象
+	 *  以便后续对新对象自定义操作
+	 *
+	 * @var TreeNode $_lastSetItem
+	 */
+	protected $_lastSetItem = null;
 	
 	/**
 	 * 节点数据
@@ -101,7 +121,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 *
 	 * @var array $_param
 	 */
-	protected $_param = [];
+	public $_param = [];
 	
 	
 	/**
@@ -117,6 +137,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
@@ -124,12 +145,14 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		// 初始化迭代器游标
 		$this->_position = 0;
 		
-		$this->_weight = self::$_DEFAULT_WEIGHT;
+		$this->_weight = self::DEFAULT_WEIGHT;
 		$this->_level = 0;
 		$this->_id = uniqid();
 		$this->_title = '';
 		$this->_enabled = true;
 		$this->_param = [];
+		
+		return $this;
 	}
 	
 	/**
@@ -319,6 +342,10 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	public function unshift(TreeNode $item = null) {
 		// 如果item传空就创建
 		($item === null) && $item = new TreeNode($this->getParent());
+		$this->_setLastNewItem($item);
+		
+		// 判断item父级是否为空
+		($item->getParent() === null) && $item->_setParent($this);
 		
 		// 设置层级
 		$item->_setLevel($this->getLevel() + 1);
@@ -338,6 +365,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	public function add(TreeNode $item = null) {
 		// 如果item传空就创建
 		($item === null) && $item = new TreeNode($this);
+		$this->_setLastNewItem($item);
 		
 		// 判断item父级是否为空
 		($item->getParent() === null) && $item->_setParent($this);
@@ -463,6 +491,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	public function set(string $key, TreeNode $item) {
 		// 如果item传空就创建
 		($item === null) && $item = new TreeNode($this);
+		$this->_setLastSetItem($item);
 		
 		// 判断item父级是否为空
 		($item->getParent() === null) && $item->_setParent($this);
@@ -507,10 +536,11 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 *  })
 	 *
 	 * @param \Closure $func
+	 * @param array    $params
 	 */
-	public function forEach(\Closure $func) {
+	public function forEach(\Closure $func, $params = []) {
 		foreach ($this->_children as $k => &$item) {
-			$re = call_user_func_array($func, [&$item, $k, $this]);
+			$re = call_user_func_array($func, [&$item, $k, $this, $params]);
 			if ($re === false) {
 				break;
 			}
@@ -526,13 +556,14 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 *  })
 	 *
 	 * @param \Closure $func
+	 * @param array    $params
 	 * @return array
 	 */
-	public function map(\Closure $func) {
+	public function map(\Closure $func, $params = []) {
 		$_arr = $this->_children;
 		
 		foreach ($_arr as $k => $item) {
-			$re = call_user_func_array($func, [$item, $k, $this]);
+			$re = call_user_func_array($func, [$item, $k, $this, $params]);
 			if ($re === false) {
 				break;
 			}
@@ -550,15 +581,16 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 *  })
 	 *
 	 * @param \Closure $func
+	 * @param array    $params
 	 */
-	public function wForEach(\Closure $func) {
+	public function wForEach(\Closure $func, $params = []) {
 		// 如果权值排序索引映射表为空 就做一次重新排序映射
 		$this->_weightIndex === null && $this->weight();
 		
 		foreach ($this->_weightIndex as $i => $index) {
 			$item = &$this->_children[$index];
 			
-			$re = call_user_func_array($func, [&$item, $index, $this]);
+			$re = call_user_func_array($func, [&$item, $index, $this, $params]);
 			if ($re === false) {
 				break;
 			}
@@ -585,6 +617,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 				if ($notExistCreate) {
 					$_class = self::class; // todo: 待验证
 					$_item = new $_class;
+					$this->_setLastSetItem($_item);
 					$_t->set($key, $_item);
 					
 					$_t = $_item;
@@ -614,9 +647,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param TreeNode $parent
+	 * @return $this
 	 */
 	public function _setParent(TreeNode $parent) {
 		$this->_parent = $parent;
+		
+		return $this;
 	}
 	
 	/**
@@ -637,9 +673,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param string $title
+	 * @return $this
 	 */
 	public function setTitle(string $title) {
 		$this->_title = $title;
+		
+		return $this;
 	}
 	
 	/**
@@ -651,9 +690,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param int $level
+	 * @return $this
 	 */
 	public function _setLevel(int $level) {
 		$this->_level = $level;
+		
+		return $this;
 	}
 	
 	/**
@@ -665,9 +707,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param int $weight
+	 * @return $this
 	 */
 	public function setWeight(int $weight) {
 		$this->_weight = $weight;
+		
+		return $this;
 	}
 	
 	/**
@@ -679,9 +724,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param array $weight_index
+	 * @return $this
 	 */
 	public function _setWeightIndex(array $weight_index) {
 		$this->_weightIndex = $weight_index;
+		
+		return $this;
 	}
 	
 	/**
@@ -693,9 +741,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param array $children
+	 * @return $this
 	 */
 	public function _setChildren(array $children) {
 		$this->_children = $children;
+		
+		return $this;
 	}
 	
 	/**
@@ -707,9 +758,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param bool $enabled
+	 * @return $this
 	 */
 	public function setEnabled(bool $enabled) {
 		$this->_enabled = $enabled;
+		
+		return $this;
 	}
 	
 	/**
@@ -755,9 +809,33 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param array $param
+	 * @return $this
 	 */
 	public function setParam(array $param) {
 		$this->_param = $param;
+		
+		return $this;
+	}
+	
+	/**
+	 * @param $value
+	 * @return $this
+	 */
+	public function addParam($value) {
+		$this->_param[] = $value;
+		
+		return $this;
+	}
+	
+	/**
+	 * @param $key
+	 * @param $value
+	 * @return $this
+	 */
+	public function addKeyParam($key, $value) {
+		$this->_param[$key][] = $value;
+		
+		return $this;
 	}
 	
 	/**
@@ -769,9 +847,12 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param int|string $id
+	 * @return $this
 	 */
 	public function setId($id) {
 		$this->_id = $id;
+		
+		return $this;
 	}
 	
 	/**
@@ -802,9 +883,46 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * @param bool $iteratorWeight
+	 * @return $this
 	 */
-	public function setIteratorWeight(bool $iteratorWeight): void {
+	public function setIteratorWeight(bool $iteratorWeight) {
 		$this->_iteratorWeight = $iteratorWeight;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return TreeNode
+	 */
+	public function getLastNewItem() {
+		return $this->_lastNewItem;
+	}
+	
+	/**
+	 * @param TreeNode $lastNewItem
+	 * @return $this
+	 */
+	public function _setLastNewItem($lastNewItem) {
+		$this->_lastNewItem = $lastNewItem;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return TreeNode
+	 */
+	public function getLastSetItem() {
+		return $this->_lastSetItem;
+	}
+	
+	/**
+	 * @param TreeNode $lastSetItem
+	 * @return $this
+	 */
+	public function _setLastSetItem($lastSetItem) {
+		$this->_lastSetItem = $lastSetItem;
+		
+		return $this;
 	}
 	
 }

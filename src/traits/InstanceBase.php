@@ -22,4 +22,5 @@ trait InstanceBase{
 		}
 		return static::$instance;
 	}
+	
 }

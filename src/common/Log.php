@@ -12,25 +12,25 @@ use uujia\framework\base\traits\NameBase;
 class Log {
 	use NameBase;
 	
-	public static $_MQTT_CLIENT_ID   = 'Logger_2019';
-	public static $_MQTT_TOPICS      = 'Logger_2019';
-	public static $_MQTT_TOPICS_LIST = 'Logger_2019_List';
+	const MQTT_CLIENT_ID   = 'Logger_2019';
+	const MQTT_TOPICS      = 'Logger_2019';
+	const MQTT_TOPICS_LIST = 'Logger_2019_List';
 	
-	public static $_RABBITMQ_QUEUE                    = 'Logger_2019.one';
-	public static $_RABBITMQ_EXCHANGE                 = 'amq.topic';
-	public static $_RABBITMQ_ROUTING_KEY              = 'Logger_2019.one';
-	public static $_RABBITMQ_ROUTING_KEY_BINDING      = 'Logger_2019.one';
-	public static $_RABBITMQ_QUEUE_LIST               = 'Logger_2019.list';
-	public static $_RABBITMQ_EXCHANGE_LIST            = 'amq.topic';
-	public static $_RABBITMQ_ROUTING_KEY_LIST         = 'Logger_2019.list';
-	public static $_RABBITMQ_ROUTING_KEY_BINDING_LIST = 'Logger_2019.list';
+	const RABBITMQ_QUEUE                    = 'Logger_2019.one';
+	const RABBITMQ_EXCHANGE                 = 'amq.topic';
+	const RABBITMQ_ROUTING_KEY              = 'Logger_2019.one';
+	const RABBITMQ_ROUTING_KEY_BINDING      = 'Logger_2019.one';
+	const RABBITMQ_QUEUE_LIST               = 'Logger_2019.list';
+	const RABBITMQ_EXCHANGE_LIST            = 'amq.topic';
+	const RABBITMQ_ROUTING_KEY_LIST         = 'Logger_2019.list';
+	const RABBITMQ_ROUTING_KEY_BINDING_LIST = 'Logger_2019.list';
 	
-	public static $_LOG_CONFIG_NAME = 'log_config';
-	public static $_LOG_CONFIG_KEY_MQ = [
+	const LOG_CONFIG_NAME = 'log_config';
+	const LOG_CONFIG_KEY_MQ = [
 		'enabled_response' => 'enabled_response',
 	];
 	
-	public static $_LOG_CONFIG_KEY_MQTT = [
+	const LOG_CONFIG_KEY_MQTT = [
 		'enabled' => 'enabled',
 		'client_id' => 'client_id',
 		'topics' => 'topics',
@@ -38,7 +38,7 @@ class Log {
 		'topics_list' => 'topics_list',
 	];
 	
-	public static $_LOG_CONFIG_KEY_RABBITMQ = [
+	const LOG_CONFIG_KEY_RABBITMQ = [
 		'enabled' => 'enabled',
 		
 		'queue' => 'queue',
@@ -52,7 +52,7 @@ class Log {
 		'routing_key_binding_list' => 'routing_key_binding_list',
 	];
 	
-	public static $_MQ_KEY = [
+	const MQ_KEY = [
 		'mq' => 'MQ',
 		'mqtt' => 'MQTT',
 		'rabbitmq' => 'RabbitMQ',
@@ -103,17 +103,20 @@ class Log {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
 		
-		$_enabledResponse = $this->getConfigMQ(self::$_LOG_CONFIG_KEY_MQ['enabled_response']) ?? false;
-		$_enabledMQTT = $this->getConfigMQTT(self::$_LOG_CONFIG_KEY_MQTT['enabled']) ?? false;
-		$_enabledRabbitMQ = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['enabled']) ?? false;
+		$_enabledResponse = $this->getConfigMQ(self::LOG_CONFIG_KEY_MQ['enabled_response']) ?? false;
+		$_enabledMQTT = $this->getConfigMQTT(self::LOG_CONFIG_KEY_MQTT['enabled']) ?? false;
+		$_enabledRabbitMQ = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['enabled']) ?? false;
 		
 		$this->setEnabledResponse($_enabledResponse);
 		$this->setEnabledMQTT($_enabledMQTT);
 		$this->setEnabledRabbitMQ($_enabledRabbitMQ);
+		
+		return $this;
 	}
 	
 	/**
@@ -243,7 +246,7 @@ class Log {
 			return $this;
 		}
 		
-		$_clientID = $this->getConfigMQTT(self::$_LOG_CONFIG_KEY_MQTT['client_id']) ?? self::$_MQTT_CLIENT_ID;
+		$_clientID = $this->getConfigMQTT(self::LOG_CONFIG_KEY_MQTT['client_id']) ?? self::MQTT_CLIENT_ID;
 		
 		$this->getMqttObj()->client_id($_clientID); // self::$_MQTT_CLIENT_ID
 		$this->getMqttObj()->connect();
@@ -313,7 +316,7 @@ class Log {
 			$this->connectMQTT();
 		}
 		
-		$_topics = $this->getConfigMQTT(self::$_LOG_CONFIG_KEY_MQTT['topics']) ?? self::$_MQTT_TOPICS;
+		$_topics = $this->getConfigMQTT(self::LOG_CONFIG_KEY_MQTT['topics']) ?? self::MQTT_TOPICS;
 		
 		$this->getMqttObj()->topics($_topics);
 		
@@ -343,10 +346,10 @@ class Log {
 			$this->connectRabbitMQ();
 		}
 		
-		$_queue = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['queue']) ?? self::$_RABBITMQ_QUEUE;
-		$_exchange = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['exchange']) ?? self::$_RABBITMQ_EXCHANGE;
-		$_routingKey = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['routing_key']) ?? self::$_RABBITMQ_ROUTING_KEY;
-		$_routingKeyBinding = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['routing_key_binding']) ?? self::$_RABBITMQ_ROUTING_KEY_BINDING;
+		$_queue = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['queue']) ?? self::RABBITMQ_QUEUE;
+		$_exchange = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['exchange']) ?? self::RABBITMQ_EXCHANGE;
+		$_routingKey = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['routing_key']) ?? self::RABBITMQ_ROUTING_KEY;
+		$_routingKeyBinding = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['routing_key_binding']) ?? self::RABBITMQ_ROUTING_KEY_BINDING;
 		
 		$this->getRabbitMQObj()->queue($_queue);
 		$this->getRabbitMQObj()->exchange($_exchange);
@@ -404,7 +407,7 @@ class Log {
 			$this->connectMQTT();
 		}
 		
-		$_topicsList = $this->getConfigMQTT(self::$_LOG_CONFIG_KEY_MQTT['topics_list']) ?? self::$_MQTT_TOPICS_LIST;
+		$_topicsList = $this->getConfigMQTT(self::LOG_CONFIG_KEY_MQTT['topics_list']) ?? self::MQTT_TOPICS_LIST;
 		
 		$this->getMqttObj()->topics($_topicsList);
 		
@@ -434,10 +437,10 @@ class Log {
 			$this->connectRabbitMQ();
 		}
 		
-		$_queueList = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['queue_list']) ?? self::$_RABBITMQ_QUEUE_LIST;
-		$_exchangeList = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['exchange_list']) ?? self::$_RABBITMQ_EXCHANGE_LIST;
-		$_routingKeyList = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['routing_key_list']) ?? self::$_RABBITMQ_ROUTING_KEY_LIST;
-		$_routingKeyBindingList = $this->getConfigRabbitMQ(self::$_LOG_CONFIG_KEY_RABBITMQ['routing_key_binding_list']) ?? self::$_RABBITMQ_ROUTING_KEY_BINDING_LIST;
+		$_queueList = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['queue_list']) ?? self::RABBITMQ_QUEUE_LIST;
+		$_exchangeList = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['exchange_list']) ?? self::RABBITMQ_EXCHANGE_LIST;
+		$_routingKeyList = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['routing_key_list']) ?? self::RABBITMQ_ROUTING_KEY_LIST;
+		$_routingKeyBindingList = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['routing_key_binding_list']) ?? self::RABBITMQ_ROUTING_KEY_BINDING_LIST;
 		
 		$this->getRabbitMQObj()->queue($_queueList);
 		$this->getRabbitMQObj()->exchange($_exchangeList);
@@ -629,7 +632,7 @@ class Log {
 	 * @return array|string|int|null
 	 */
 	public function getConfigValue() {
-		return $this->getConfigObj()->loadValue('', self::$_LOG_CONFIG_NAME);
+		return $this->getConfigObj()->loadValue('', self::LOG_CONFIG_NAME);
 	}
 	
 	/**
@@ -645,10 +648,10 @@ class Log {
 		}
 		
 		if (empty($name)) {
-			return $config[self::$_MQ_KEY['mq']] ?? null;
+			return $config[self::MQ_KEY['mq']] ?? null;
 		}
 		
-		return $config[self::$_MQ_KEY['mq']][$name] ?? null;
+		return $config[self::MQ_KEY['mq']][$name] ?? null;
 	}
 	
 	/**
@@ -664,10 +667,10 @@ class Log {
 		}
 		
 		if (empty($name)) {
-			return $config[self::$_MQ_KEY['mqtt']] ?? null;
+			return $config[self::MQ_KEY['mqtt']] ?? null;
 		}
 		
-		return $config[self::$_MQ_KEY['mqtt']][$name] ?? null;
+		return $config[self::MQ_KEY['mqtt']][$name] ?? null;
 	}
 	
 	/**
@@ -683,10 +686,10 @@ class Log {
 		}
 		
 		if (empty($name)) {
-			return $config[self::$_MQ_KEY['rabbitmq']] ?? null;
+			return $config[self::MQ_KEY['rabbitmq']] ?? null;
 		}
 		
-		return $config[self::$_MQ_KEY['rabbitmq']][$name] ?? null;
+		return $config[self::MQ_KEY['rabbitmq']][$name] ?? null;
 	}
 	
 	/**

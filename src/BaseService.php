@@ -4,6 +4,7 @@ namespace uujia\framework\base;
 
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
+use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\FactoryCache\Data;
 use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\common\Log;
@@ -22,11 +23,22 @@ class BaseService {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
 		
-		UU::C([Config::class, ErrorCodeList::class, MQCollection::class, Log::class, Result::class, Base::class]);
+		// UU::C([
+		// 	      Config::class,
+		// 	      ErrorCodeList::class,
+		// 	      MQCollection::class,
+		// 	      Log::class,
+		// 	      Result::class,
+		// 	      Base::class,
+		// 	      Event::class,
+		//       ]);
+		
+		return $this;
 		
 		// // 实例化Config
 		// UU::C(Config::class, function (Data $data, FactoryCacheTree $it, Container $c) {
@@ -118,6 +130,13 @@ class BaseService {
 	 */
 	public function getBase(): Base {
 		return UU::C(Base::class);
+	}
+	
+	/**
+	 * @return Event
+	 */
+	public function getEvent(): Event {
+		return UU::C(Event::class);
 	}
 	
 	

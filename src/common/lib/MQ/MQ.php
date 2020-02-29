@@ -16,7 +16,7 @@ abstract class MQ implements MQInterface {
 	// 	'subscribe' => 2,   // 订阅者
 	// ];
 	
-	public static $_ERROR_CODE = [
+	const ERROR_CODE = [
 		'0'   => 'ok',
 		'100' => '未知错误',
 		
@@ -64,9 +64,12 @@ abstract class MQ implements MQInterface {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
+		
+		return $this;
 	}
 	
 	/**
@@ -237,7 +240,7 @@ abstract class MQ implements MQInterface {
 		
 		// 验证是否连接成功
 		if (!$this->isConnected()) {
-			$this->error(self::$_ERROR_CODE[103], 103); // 连接失败
+			$this->error(self::ERROR_CODE[103], 103); // 连接失败
 			return $this;
 		}
 		
@@ -254,7 +257,7 @@ abstract class MQ implements MQInterface {
 		
 		if (!$this->isInit()) {
 			if (!$this->initMQ()) {
-				return $this->error(self::$_ERROR_CODE[101], 101); // 未成功初始化
+				return $this->error(self::ERROR_CODE[101], 101); // 未成功初始化
 			}
 		}
 		
@@ -296,7 +299,7 @@ abstract class MQ implements MQInterface {
 			//
 			// while($this->mqObj->proc()){}
 		} else {
-			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
 		
 		return $this;
@@ -314,7 +317,7 @@ abstract class MQ implements MQInterface {
 		if ($this->isConnected()) {
 			// $this->mqObj->publish($this->_config['topics'], $content, $this->qos(), $this->retain());
 		} else {
-			$this->error(self::$_ERROR_CODE[104], 104); // 未连接服务端
+			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
 		
 		return $this;

@@ -17,7 +17,7 @@ use uujia\framework\base\common\lib\MQ\RabbitMQExt;
  */
 class MQCollection extends FactoryCacheTree {
 	
-	public static $_MQ_KEY = [
+	const MQ_KEY = [
 		'mqtt' => 'MQTT',
 		'rabbitmq' => 'RabbitMQ',
 	];
@@ -41,6 +41,7 @@ class MQCollection extends FactoryCacheTree {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		parent::init();
@@ -49,9 +50,9 @@ class MQCollection extends FactoryCacheTree {
 		$this->clear();
 		
 		// 添加MQTT
-		$this->setKeyItemData(self::$_MQ_KEY['mqtt'], function ($data, $it) {
+		$this->setKeyNewItemData(self::MQ_KEY['mqtt'], function ($data, $it) {
 			$_config_list = $this->getMQConfigList();
-			$_config = $_config_list[self::$_MQ_KEY['mqtt']] ?? [];
+			$_config = $_config_list[self::MQ_KEY['mqtt']] ?? [];
 			
 			$_mqttObj = new MQTT($_config);
 			
@@ -59,15 +60,16 @@ class MQCollection extends FactoryCacheTree {
 		});
 		
 		// 添加RabbitMQ
-		$this->setKeyItemData(self::$_MQ_KEY['rabbitmq'], function ($data, $it) {
+		$this->setKeyNewItemData(self::MQ_KEY['rabbitmq'], function ($data, $it) {
 			$_config_list = $this->getMQConfigList();
-			$_config = $_config_list[self::$_MQ_KEY['rabbitmq']] ?? [];
+			$_config = $_config_list[self::MQ_KEY['rabbitmq']] ?? [];
 			
 			$_rabbitMQObj = defined('EXT_AMQP_ENABLED') ? new RabbitMQExt($_config) : new RabbitMQ($_config);
 			
 			return $_rabbitMQObj;
 		});
 		
+		return $this;
 	}
 	
 	/**
@@ -93,7 +95,7 @@ class MQCollection extends FactoryCacheTree {
 	 * @return MQTT
 	 */
 	public function getMQTTObj() {
-		return $this->getKeyDataValue(self::$_MQ_KEY['mqtt']);
+		return $this->getKeyDataValue(self::MQ_KEY['mqtt']);
 	}
 	
 	/**
@@ -102,7 +104,7 @@ class MQCollection extends FactoryCacheTree {
 	 * @return RabbitMQ|RabbitMQExt
 	 */
 	public function getRabbitMQObj() {
-		return $this->getKeyDataValue(self::$_MQ_KEY['rabbitmq']);
+		return $this->getKeyDataValue(self::MQ_KEY['rabbitmq']);
 	}
 	
 	/**
@@ -111,7 +113,7 @@ class MQCollection extends FactoryCacheTree {
 	 * @return bool
 	 */
 	public function isMQTTEnabled() {
-		return $this->isEnabledKey(self::$_MQ_KEY['mqtt']);
+		return $this->isEnabledKey(self::MQ_KEY['mqtt']);
 	}
 	
 	/**
@@ -121,7 +123,7 @@ class MQCollection extends FactoryCacheTree {
 	 * @return $this
 	 */
 	public function setMQTTEnabled(bool $enabled) {
-		$this->setEnabledKey(self::$_MQ_KEY['mqtt'], $enabled);
+		$this->setEnabledKey(self::MQ_KEY['mqtt'], $enabled);
 		
 		return $this;
 	}
@@ -132,7 +134,7 @@ class MQCollection extends FactoryCacheTree {
 	 * @return bool
 	 */
 	public function isRabbitMQEnabled() {
-		return $this->isEnabledKey(self::$_MQ_KEY['rabbitmq']);
+		return $this->isEnabledKey(self::MQ_KEY['rabbitmq']);
 	}
 	
 	/**
@@ -142,7 +144,7 @@ class MQCollection extends FactoryCacheTree {
 	 * @return $this
 	 */
 	public function setRabbitMQEnabled(bool $enabled) {
-		$this->setEnabledKey(self::$_MQ_KEY['rabbitmq'], $enabled);
+		$this->setEnabledKey(self::MQ_KEY['rabbitmq'], $enabled);
 		
 		return $this;
 	}

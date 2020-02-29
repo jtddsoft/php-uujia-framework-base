@@ -1,6 +1,6 @@
 <?php
 
-define('EXT_AMQP_ENABLED', 1);
+// define('EXT_AMQP_ENABLED', 1);
 
 return [
 	'MQTT' => [
@@ -38,10 +38,12 @@ return [
 	'RabbitMQ' => [
 		'enabled' => true,              // 启用
 		
-		'server'           => "59.110.217.60",     // change if necessary
+		'server'           => 'localhost',//"59.110.217.60",     // change if necessary
 		'port'             => 5672,            // change if necessary
 		'username'         => "hello",         // set your username
 		'password'         => "123456",        // set your password
+		
+		'vhost'            => '/',
 		
 		// connect
 		'queue'            => 'hello',
@@ -59,7 +61,7 @@ return [
 		'consumer_tag'     => '',
 		'no_local'         => false,
 		'no_ack'           => false,
-		'ack_flags'        => AMQP_AUTOACK, // ext flags
+		'ack_flags'        => defined('EXT_AMQP_ENABLED') ? AMQP_AUTOACK : true, // ext flags
 		
 		// publish
 		'internal'         => false,

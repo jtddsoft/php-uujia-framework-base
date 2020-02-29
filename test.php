@@ -2,6 +2,7 @@
 
 
 use uujia\framework\base\common\Base;
+use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\UU;
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
@@ -19,6 +20,8 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			}
 			
 			var_dump(UU::C(Base::class)->rt()->ok());
+			
+			
 			break;
 			
 		case 'mqs':
@@ -63,6 +66,26 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 				echo $item->getNameInfo()['name'] . " " . $item->getNameInfo()['intro'] . "\n"; // . dump($item);
 			}
 			
+			break;
+			
+		case 'p':
+			$total = 100;
+			for ($i = 1; $i <= $total; $i++) {
+				printf("progress: [%-50s] %d%% Done\r", str_repeat('#', $i / $total * 50), $i / $total * 100);
+				usleep(10000);
+			}
+			echo "\n";
+			echo "Done!\n";
+			break;
+			
+		case 'calls':
+			\uujia\framework\base\test\Demo::test();
+			break;
+			
+		case 'event':
+			$demo = new \uujia\framework\base\test\Demo();
+			
+			echo Json::je($demo->event());
 			break;
 	}
 	

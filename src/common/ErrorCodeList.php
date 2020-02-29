@@ -10,7 +10,7 @@ use uujia\framework\base\traits\NameBase;
 class ErrorCodeList {
 	use NameBase;
 	
-	public static $_ERROR_CODE_NAME = 'error_code';
+	const ERROR_CODE_NAME = 'error_code';
 	
 	/** @var Config $_configObj */
 	protected $_configObj;
@@ -50,8 +50,8 @@ class ErrorCodeList {
 		array_push($_errs, __DIR__ . "/../config/error_code.php");
 		
 		$this->_errCodeList = $configObj
-			->add(self::$_ERROR_CODE_NAME, $_errs)
-			->getListValue(self::$_ERROR_CODE_NAME);
+			->add(self::ERROR_CODE_NAME, $_errs)
+			->getListValue(self::ERROR_CODE_NAME);
 		
 		
 		// // 实例化
@@ -76,9 +76,12 @@ class ErrorCodeList {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
+		
+		return $this;
 	}
 	
 	/**
@@ -174,7 +177,7 @@ class ErrorCodeList {
 		// }
 		
 		$re = $this->getErrCodeList()->wFindData(function ($item, $i, $me, $data, $value) use ($code) {
-			$_err = $value[self::$_ERROR_CODE_NAME];
+			$_err = $value[self::ERROR_CODE_NAME];
 			if (array_key_exists($code, $_err)) {
 				//$msg = $_err[$code];
 				return true;
@@ -184,7 +187,7 @@ class ErrorCodeList {
 		});
 		
 		if ($re !== false) {
-			$msg = $re['value'][self::$_ERROR_CODE_NAME][$code];
+			$msg = $re['value'][self::ERROR_CODE_NAME][$code];
 		}
 		
 		return $msg;

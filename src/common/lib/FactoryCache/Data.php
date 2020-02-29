@@ -3,7 +3,9 @@
 
 namespace uujia\framework\base\common\lib\FactoryCache;
 
+use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\traits\ResultBase;
 
 /**
  * Class Data
@@ -12,9 +14,13 @@ use uujia\framework\base\traits\NameBase;
  */
 class Data {
 	use NameBase;
+	use ResultBase;
+	
+	const OTHER_KEY_RESULT = 'result';
 	
 	/**
 	 * 父级
+	 * @var FactoryCacheTree $_parent
 	 */
 	protected $_parent;
 	
@@ -26,6 +32,7 @@ class Data {
 	 *      return new XXX();
 	 *  }
 	 *
+	 * @var \Closure $_factoryFunc
 	 */
 	protected $_factoryFunc = null;
 	
@@ -41,6 +48,12 @@ class Data {
 	 */
 	protected $_isAutoCache = true;
 	
+	/**
+	 * 其他附加属性或返回值等等 自由使用
+	 *
+	 * @var array $_other
+	 */
+	protected $_other = [];
 	
 	
 	/**
@@ -60,9 +73,12 @@ class Data {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
+		
+		return $this;
 	}
 	
 	/**
@@ -89,9 +105,10 @@ class Data {
 			return null;
 		}
 		
-		$param = array_merge([$this, $this->_parent], $param);
+		//$param = array_merge([$this, $this->_parent], $param);
+		$_param = [$this, $this->_parent, $param];
 		
-		$v = call_user_func_array($this->_factoryFunc, $param);
+		$v = call_user_func_array($this->_factoryFunc, $_param);
 		
 		if (!$doNotCache && $this->isAutoCache()) {
 			$this->cache($v);
@@ -175,6 +192,7 @@ class Data {
 	
 	/**
 	 * 父级
+	 * @return FactoryCacheTree
 	 */
 	public function getParent() {
 		return $this->_parent;
@@ -191,23 +209,59 @@ class Data {
 	
 	/**
 	 * @param bool $isAutoCache
+	 * @return $this
 	 */
 	public function setIsAutoCache(bool $isAutoCache) {
 		$this->_isAutoCache = $isAutoCache;
+		
+		return $this;
 	}
 	
 	/**
-	 * @return null
+	 * @return \Closure
 	 */
 	public function _getFactoryFunc() {
 		return $this->_factoryFunc;
 	}
 	
 	/**
-	 * @param null $factoryFunc
+	 * @param \Closure $factoryFunc
+	 * @return $this
 	 */
 	public function _setFactoryFunc($factoryFunc) {
 		$this->_factoryFunc = $factoryFunc;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getOther(): array {
+		return $this->_other;
+	}
+	
+	/**
+	 * @param array $other
+	 * @return $this
+	 */
+	public function _setOther(array $other) {
+		$this->_other = $other;
+		
+		return $this;
+	}
+	
+	/**
+	 * 设置附加数据
+	 *
+	 * @param $key
+	 * @param $value
+	 * @return $this
+	 */
+	public function setKeyOther($key, $value) {
+		$this->_other[$key] = $value;
+		
+		return $this;
 	}
 	
 	

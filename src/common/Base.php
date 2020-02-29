@@ -25,9 +25,12 @@ class Base {
 	
 	/**
 	 * 初始化
+	 * @return $this
 	 */
 	public function init() {
 		$this->initNameInfo();
+		
+		return $this;
 	}
 	
 	/**
