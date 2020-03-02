@@ -334,6 +334,18 @@ class FactoryCacheTree extends TreeNode {
 	}
 	
 	/**
+	 * @return Data
+	 */
+	public function getLastNewItemData() {
+		$item = $this->getLastNewItem();
+		if ($item === null) {
+			return null;
+		}
+		
+		return $item->getData();
+	}
+	
+	/**
 	 * @return FactoryCacheTree
 	 */
 	public function getLastSetItem() {
@@ -348,6 +360,18 @@ class FactoryCacheTree extends TreeNode {
 		$this->_lastSetItem = $lastSetItem;
 		
 		return $this;
+	}
+	
+	/**
+	 * @return Data
+	 */
+	public function getLastSetItemData() {
+		$item = $this->getLastSetItem();
+		if ($item === null) {
+			return null;
+		}
+		
+		return $item->getData();
 	}
 	
 }

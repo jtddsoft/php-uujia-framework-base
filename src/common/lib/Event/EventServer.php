@@ -74,7 +74,7 @@ class EventServer {
 			
 			if (is_array($_listener)) {
 				$_listener = $listener['listener'];
-				$_serverName = $listener['serverName'];
+				$_serverName = $listener['serverName'] ?? $_serverName;
 			}
 			
 			$_server = $_serverConfig['server_event'][$_serverName];
@@ -116,6 +116,11 @@ class EventServer {
 			// $it->_param['result'] = [];
 			$it->cleanResults();
 			
+			/**
+			 * params会给每个事件监听返回
+			 *  results     同一事件所有监听返回值列表
+			 *  lastResult  最后一个监听的返回值
+			 */
 			$it->wForEach(function ($_item, $index, $me, $params) {
 				/** @var FactoryCacheTree $_item */
 				/** @var FactoryCacheTree $me */

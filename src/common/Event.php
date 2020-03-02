@@ -131,10 +131,13 @@ class Event extends Base {
 		$_listeners = [];
 		
 		if (is_callable($listener)) {
+			// 单监听者
 			$_listeners = [$listener];
 		} elseif (is_array($listener)) {
+			// 批量监听者
 			$_listeners = $listener;
 		} else {
+			// todo: 监听者格式错误
 			return $this;
 		}
 		
@@ -150,10 +153,8 @@ class Event extends Base {
 				->getList()
 				// 配置对应事件及添加监听项
 				->unshiftKeyNewItemData($key, $subItemFunc, $factoryItemFunc)
-				// 获取最后一次配置的对应事件项
-				->getLastSetItem()
-				// 获取事件项数据
-				->getData()
+				// 获取最后一次配置的对应事件项 获取事件项数据
+				->getLastSetItemData()
 				// 配置禁用自动缓存（由于仅仅是执行一个闭包 执行后返回的不是具体值 下次还要再执行 因此不能缓存）
 				->setIsAutoCache(false)
 				// 获取数据Data的父级 就是FactoryCacheTree
@@ -161,11 +162,11 @@ class Event extends Base {
 				// 获取事件项最后一次添加的监听项
 				->getLastNewItem()
 				// 设置权重
-				->setWeight($weight)
-				// 获取监听项数据
-				->getData()
-				// 配置监听项禁用缓存（由于仅仅是执行一个闭包 执行后返回的不是具体值 下次还要再执行 因此不能缓存）
-				->setIsAutoCache(false);
+				->setWeight($weight);
+				// // 获取监听项数据
+				// ->getData()
+				// // 配置监听项禁用缓存（由于仅仅是执行一个闭包 执行后返回的不是具体值 下次还要再执行 因此不能缓存）
+				// ->setIsAutoCache(false);
 		}
 		
 		return $this;
@@ -181,54 +182,47 @@ class Event extends Base {
 	 * @return $this
 	 */
 	public function add($key, $listener, $serverName = ServerConst::SERVER_NAME_MAIN, $weight = FactoryCacheTree::DEFAULT_WEIGHT) {
-		$factoryItemFunc = function ($data, $it) {
-			$_config = [];
-			
-			// 获取汇总列表中所有配置
-			/** @var FactoryCacheTree $it */
-			$it->wForEach(function ($_item, $index, $me) use (&$_config) {
-				/** @var FactoryCacheTree $_item */
-				$_it_config = $_item->getDataValue();
-				$_config    = array_merge($_config, $_it_config);
-			});
-			
-			return $_config;
-		};
+		// 实例化EventServer
+		/** @var EventServer $_eventServerObj */
+		$_eventServerObj = EventServer::getInstance();
 		
-		if (is_string($listener)) {
-			$this->getList()->addKeyNewItemData($key,
-				function ($data, $it, $params) use ($listener, $type) {
-					/** @var Data $data */
-					
-					// 接受返回值
-					$_funcResult = function ($result) use ($data) {
-						$data->setKeyOther(Data::OTHER_KEY_RESULT, $result);
-					};
-					
-					// 触发事件时执行回调
-					$res = call_user_func_array($listener, [$params, $_funcResult]);
-					
-					return $res;
-				}, $factoryItemFunc
-			)->getLastSetItem()->getLastNewItem()->setWeight($weight)->getData()->setIsAutoCache(false);
+		$factoryItemFunc = $_eventServerObj->init()->makeTriggerFunc();
+		
+		$_listeners = [];
+		
+		if (is_callable($listener)) {
+			// 单监听者
+			$_listeners = [$listener];
 		} elseif (is_array($listener)) {
-			foreach ($listener as $row) {
-				$this->getList()->addKeyNewItemData($key,
-					function ($data, $it, $params) use ($row, $type) {
-						/** @var Data $data */
-						
-						// 接受返回值
-						$_funcResult = function ($result) use ($data) {
-							$data->setKeyOther(Data::OTHER_KEY_RESULT, $result);
-						};
-						
-						// 触发事件时执行回调
-						$res = call_user_func_array($row, [$params, $_funcResult]);
-						
-						return $res;
-					}, $factoryItemFunc
-				)->getLastSetItem()->getLastNewItem()->setWeight($weight)->getData()->setIsAutoCache(false);
-			}
+			// 批量监听者
+			$_listeners = $listener;
+		} else {
+			// todo: 监听者格式错误
+			return $this;
+		}
+		
+		// 获取Server配置
+		$_serverConfig = $this->getConfigObj()->loadValue(ServerConst::SERVER_CONFIG_KEY);
+		
+		foreach ($_listeners as $row) {
+			/** @var \Closure $subItemFunc */
+			$subItemFunc = $_eventServerObj->init()->makeListenerFunc($row, $serverName, $_serverConfig);
+			
+			$this
+				// 获取总列表
+				->getList()
+				// 配置对应事件及添加监听项
+				->addKeyNewItemData($key, $subItemFunc, $factoryItemFunc)
+				// 获取最后一次配置的对应事件项 获取事件项数据
+				->getLastSetItemData()
+				// 配置禁用自动缓存（由于仅仅是执行一个闭包 执行后返回的不是具体值 下次还要再执行 因此不能缓存）
+				->setIsAutoCache(false)
+				// 获取数据Data的父级 就是FactoryCacheTree
+				->getParent()
+				// 获取事件项最后一次添加的监听项
+				->getLastNewItem()
+				// 设置权重
+				->setWeight($weight);
 		}
 		
 		return $this;

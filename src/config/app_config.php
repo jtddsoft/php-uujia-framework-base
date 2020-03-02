@@ -1,14 +1,9 @@
 <?php
 
 return [
-	'which' => [
-		'simple_select' => [
+	'app' => [
+		'name' => 'demo',
 		
-		],
-		
-		'multi_select' => [
-		
-		],
 		
 	],
 	

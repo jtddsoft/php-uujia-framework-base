@@ -92,6 +92,13 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	protected $_level = 0;
 	
 	/**
+	 * 所属key
+	 *
+	 * @var int|string $_key
+	 */
+	protected $_key = '';
+	
+	/**
 	 * id *
 	 *  （并非一定会用到）
 	 *
@@ -147,6 +154,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		
 		$this->_weight = self::DEFAULT_WEIGHT;
 		$this->_level = 0;
+		$this->_key = '';
 		$this->_id = uniqid();
 		$this->_title = '';
 		$this->_enabled = true;
@@ -350,6 +358,9 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		// 设置层级
 		$item->_setLevel($this->getLevel() + 1);
 		
+		// 设置key
+		$item->_setKey(0);
+		
 		// 插入
 		array_unshift($this->_children, $item);
 		
@@ -372,6 +383,9 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		
 		// 设置层级
 		$item->_setLevel($this->getLevel() + 1);
+		
+		// 设置key
+		$item->_setKey($this->count());
 		
 		// 插入
 		array_push($this->_children, $item);
@@ -501,6 +515,9 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		
 		// 设置层级
 		$item->_setLevel($this->getLevel() + 1);
+		
+		// 设置key
+		$item->_setKey($key);
 		
 		return $this;
 	}
@@ -921,6 +938,24 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 */
 	public function _setLastSetItem($lastSetItem) {
 		$this->_lastSetItem = $lastSetItem;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string|int
+	 */
+	public function getKey() {
+		return $this->_key;
+	}
+	
+	/**
+	 * @param string|int $key
+	 *
+	 * @return $this
+	 */
+	public function _setKey($key) {
+		$this->_key = $key;
 		
 		return $this;
 	}
