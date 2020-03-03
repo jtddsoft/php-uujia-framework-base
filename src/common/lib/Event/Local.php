@@ -52,6 +52,7 @@ class Local {
 	 * @return mixed
 	 */
 	public function trigger($_listener, $params) {
+		// todo: 检查是否事件类 如果是则调用事件类的专用触发 如果只是一般回调就直接触发
 		$res = call_user_func_array($_listener, [$params]);
 		
 		return $res;

@@ -136,6 +136,8 @@ class EventServer {
 				$params['lastResult'] = $_lastResult;
 				$re = $_item->getData()->get($params, false);
 				
+				// todo: 如果是事件类就缓存起来 后续触发时要检查是一般回调还是事件类 如果是事件类就执行特定方法
+				
 				// Local返回值复制
 				$_item->getData()->setLastReturn($re);
 				
