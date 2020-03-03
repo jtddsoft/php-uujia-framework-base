@@ -69,16 +69,23 @@ class EventServer {
 			//
 			// $_lastResult = Arr::from($_results)->last();
 			
+			/**
+			 * $listener 可以是闭包或事件类 也可以是数组包含服务器信息等
+			 */
 			$_listener = $listener;
 			$_serverName = $serverName;
 			
 			if (is_array($_listener)) {
+				// 数组表示含有多个信息 期中listener中为闭包或事件类
 				$_listener = $listener['listener'];
+				// 服务器名称 通过名称可以查到配置中服务器的详细信息 从而知道监听者是来自本地还是远端
 				$_serverName = $listener['serverName'] ?? $_serverName;
 			}
 			
+			// 从服务器配置信息中查到服务器详细信息
 			$_server = $_serverConfig['server_event'][$_serverName];
 			
+			// 根据类型 知道是本地还是远端
 			switch ($_server['type']) {
 				case ServerConst::TYPE_LOCAL_NORMAL:
 					// 本地服务器
