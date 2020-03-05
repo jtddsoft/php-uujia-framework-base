@@ -56,11 +56,11 @@ class EventServer {
 	 *
 	 * @param array|\Closure $listener
 	 * @param string         $serverName
-	 * @param array          $_serverConfig
+	 * @param array          $serverConfig
 	 * @return \Closure
 	 */
-	public function makeListenerFunc($listener, $serverName, $_serverConfig) {
-		$subItemFunc = function ($data, $it, $params) use ($listener, $serverName, $_serverConfig) {
+	public function makeListenerFunc($listener, $serverName, $serverConfig) {
+		$subItemFunc = function ($data, $it, $params) use ($listener, $serverName, $serverConfig) {
 			/** @var Data $data */
 			/** @var FactoryCacheTree $it */
 			
@@ -83,29 +83,42 @@ class EventServer {
 			}
 			
 			// 从服务器配置信息中查到服务器详细信息
-			$_server = $_serverConfig['server_event'][$_serverName];
+			$_server = $serverConfig['server_event'][$_serverName];
 			
-			// 根据类型 知道是本地还是远端
-			switch ($_server['type']) {
-				case ServerConst::TYPE_LOCAL_NORMAL:
-					// 本地服务器
-					$_local = $this->getLocalObj();
-					
-					// 触发事件时执行回调
-					// $res = call_user_func_array($_listener, [$params, $_lastResult, $_results]);
-					$res = $_local->trigger($_listener, $params);
-					
-					// // Local返回值复制
-					// $this->setLastReturn($_local->getLastReturn());
-					//
-					// $it->getParent()->addKeyParam('result', $_local->getLastReturn());
-					break;
-				
-				default:
-					// 远程服务器
-					// todo：MQ通信 POST请求之类
-					break;
-			}
+			// todo: 事件类来接管处理
+			$_evtParams = [
+				// 'data' => $data,
+				// 'eventItem' => $it,
+				'fParams' => $params,
+				'name' => $listener,
+				'serverName' => $serverName,
+				'serverConfig' => $serverConfig,
+				'server' => $_server,
+			];
+			
+			
+			
+			// // 根据类型 知道是本地还是远端
+			// switch ($_server['type']) {
+			// 	case ServerConst::TYPE_LOCAL_NORMAL:
+			// 		// 本地服务器
+			// 		$_local = $this->getLocalObj();
+			//
+			// 		// 触发事件时执行回调
+			// 		// $res = call_user_func_array($_listener, [$params, $_lastResult, $_results]);
+			// 		$res = $_local->trigger($_listener, $params);
+			//
+			// 		// // Local返回值复制
+			// 		// $this->setLastReturn($_local->getLastReturn());
+			// 		//
+			// 		// $it->getParent()->addKeyParam('result', $_local->getLastReturn());
+			// 		break;
+			//
+			// 	default:
+			// 		// 远程服务器
+			// 		// todo：MQ通信 POST请求之类
+			// 		break;
+			// }
 			
 			return $res;
 		};
@@ -170,25 +183,6 @@ class EventServer {
 	/**************************************************
 	 * getter setter
 	 **************************************************/
-	
-	/**
-	 * @return Local
-	 */
-	public function getLocalObj(): Local {
-		$this->_localObj === null && $this->_localObj = new Local($this);
-		
-		return $this->_localObj;
-	}
-	
-	/**
-	 * @param Local $localObj
-	 * @return $this
-	 */
-	public function _setLocal(Local $localObj) {
-		$this->_localObj = $localObj;
-		
-		return $this;
-	}
 	
 	
 }

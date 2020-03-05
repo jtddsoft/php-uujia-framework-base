@@ -69,7 +69,7 @@ class Demo extends BaseService {
 	
 	public function event() {
 		$event = $this->getEvent();
-		$event->listen('a', function ($param) {
+		$event->listen('a#*', function ($param) {
 			// echo Json::je($param);
 		
 			return $this->getResult()->ok();

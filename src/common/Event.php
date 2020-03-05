@@ -10,6 +10,7 @@ use uujia\framework\base\common\lib\Event\EventServer;
 use uujia\framework\base\common\lib\FactoryCache\Data;
 use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\common\lib\Utils\Arr;
+use uujia\framework\base\common\lib\Utils\Str as UUStr;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
@@ -63,23 +64,59 @@ class Event extends Base {
 		$this->name_info['intro'] = '事件管理';
 	}
 	
+	/**
+	 * 触发事件
+	 *
+	 * @param string|array $event
+	 * @param array        $param
+	 *
+	 * @return array|mixed|string
+	 */
 	public function trigger($event, $param = []) {
 		// $this->getList()->get($event)->_param['result'] = [];
-		$re = $this->getList()->getKeyDataValue($event, $param);
+		// $re = $this->getList()->getKeyDataValue($event, $param);
 		
-		return $re ?? $this->ret()->code(10101);
+		$_keys = $this->getList()->wkeys();
+		if (empty($_keys)) {
+			return $this->ret()->code(10101); // 未找到事件监听者
+		}
+		
+		$_ks = array_filter($_keys, function ($k) use ($event) {
+			if ($event == $k || UUStr::is($k, $event . '#')) {
+				return true;
+			}
+			
+			return false;
+		});
+		
+		if (empty($_ks)) {
+			return $this->ret()->code(10101); // 未找到事件监听者
+		}
+		
+		$_re = null;
+		foreach($_ks as $item) {
+			$re = $this->getList()->getKeyDataValue($item, $param);
+			$re && $_re = $re;
+		}
+		
+		return $_re ?? $this->ret()->code(10101); // 未找到事件监听者
 	}
 	
 	/**
 	 * 事件监听
+	 *  event
+	 *      1、具体事件名 例如：UserLoginAfter
+	 *      2、事件类中事件名和uuid精确匹配 例如：UserLoginAfter#184d8c21-9b45-4159-9b88-5cc56abbef0f
+	 *      3、匹配所有事件名（包括带有uuid） 例如：UserLoginAfter#*
 	 *
 	 * @param string|array   $event
 	 * @param array|\Closure $listener
 	 * @param string         $serverName
 	 * @param int            $weight
+	 *
 	 * @return $this
 	 */
-	public function listen($event, $listener, $serverName = ServerConst::SERVER_NAME_MAIN, $weight = FactoryCacheTree::DEFAULT_WEIGHT) {
+	public function listen($event, $listener, $weight = FactoryCacheTree::DEFAULT_WEIGHT, $serverName = ServerConst::SERVER_NAME_MAIN) {
 		$_events = [];
 		if (is_string($event)) {
 			$_events[] = $event;
