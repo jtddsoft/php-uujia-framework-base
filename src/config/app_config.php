@@ -4,6 +4,9 @@ return [
 	'app' => [
 		'name' => 'demo',
 		
+		'server' => [
+		
+		],
 		
 	],
 	
