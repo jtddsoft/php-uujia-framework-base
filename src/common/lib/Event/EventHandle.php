@@ -18,12 +18,12 @@ abstract class EventHandle {
 	 */
 	protected $_uuid = 'cdd64cb6-29b8-4663-b1b5-f4f515ed28ca';
 	
-	/**
-	 * 事件名称
-	 *  用于触发和监听
-	 * @var string $_name
-	 */
-	protected $_name = '';
+	// /**
+	//  * 事件名称
+	//  *  用于触发和监听
+	//  * @var string $_name
+	//  */
+	// protected $_name = '';
 	
 	/** @var Local $_local */
 	protected $_localObj = null;

@@ -96,7 +96,11 @@ class EventServer {
 				'server' => $_server,
 			];
 			
+			if ($_listener instanceof EventHandle) {
 			
+			} else {
+			
+			}
 			
 			// // 根据类型 知道是本地还是远端
 			// switch ($_server['type']) {
