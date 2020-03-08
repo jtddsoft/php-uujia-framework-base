@@ -4,13 +4,16 @@
 namespace uujia\framework\base\common;
 
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerTrait;
 use uujia\framework\base\common\lib\MQ\MQTT;
 use uujia\framework\base\common\lib\MQ\RabbitMQ;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\traits\NameBase;
 
-class Log {
+class Log implements LoggerInterface {
 	use NameBase;
+	use LoggerTrait;
 	
 	const MQTT_CLIENT_ID   = 'Logger_2019';
 	const MQTT_TOPICS      = 'Logger_2019';
@@ -128,19 +131,63 @@ class Log {
 	}
 	
 	/**
-	 * Debug
+	 * 用上下文信息替换记录信息中的占位符
 	 *
-	 * @param $text
-	 * @return Log
+	 * @param       $message
+	 * @param array $context
+	 * @return string
 	 */
-	public function debug($text) {
-		if (is_array($text)) {
-			$text = Json::je($text);
+	function interpolate($message, $context = []) {
+		// 构建一个花括号包含的键名的替换数组
+		$replace = array();
+		foreach ($context as $key => $val) {
+			// 检查该值是否可以转换为字符串
+			if (!is_array($val) && (!is_object($val) || method_exists($val, '__toString'))) {
+				$replace['{' . $key . '}'] = $val;
+			}
 		}
 		
-		$_time = date('Y-m-d H:i:s');
+		// 替换记录信息中的占位符，最后返回修改后的记录信息。
+		return strtr($message, $replace);
+	}
+	
+	/**************************************************
+	 * PSR-3 LoggerInterface 方法实现
+	 **************************************************/
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function log($level, $message, array $context = array()) {
+		$this->recordEx($message, $context, strtoupper($level));
+	}
+	
+	/**************************************************
+	 * Function
+	 **************************************************/
+	
+	/**
+	 * RecordEx
+	 *
+	 * @param string|array $msg
+	 * @param array        $context
+	 * @param string       $tag
+	 * @return Log
+	 */
+	public function recordEx($msg, array $context = [], $tag = 'INFO') {
+		if (is_array($msg)) {
+			$msg = Json::je($msg);
+		}
 		
-		$this->setLog("[DEBUG] [{$_time}] {$text}");
+		$_text = $msg;
+		if (empty($msg)) {
+			$_time = date('Y-m-d H:i:s');
+			$_text = "[{$tag}] [{$_time}] {$msg}";
+		}
+		
+		$_logText = $this->interpolate($msg, $context);
+		
+		$this->setLog($_logText);
 		
 		$list = [
 			'type' => 'json',
@@ -154,63 +201,36 @@ class Log {
 	}
 	
 	/**
-	 * Record
+	 * DebugEx
 	 *
-	 * @param string|array $text
+	 * @param string|array $msg
+	 * @param array        $context
 	 * @return Log
 	 */
-	public function record($text, $tag = 'INFO') {
-		if (is_array($text)) {
-			$text = Json::je($text);
-		}
-		
-		$_time = date('Y-m-d H:i:s');
-		
-		$this->setLog("[{$tag}] [{$_time}] {$text}");
-		
-		$list = [
-			'type' => 'json',
-			'logs' => $this->getLog(),
-		];
-		
-		// $this->printMQ($this->log);
-		$this->printMQ($list);
-		
-		return $this;
+	public function debugEx($msg, array $context = []) {
+		return $this->recordEx($msg, $context, 'DEBUG');
 	}
 	
 	/**
-	 * info
-	 * @param string|array $text
+	 * InfoEx
+	 *
+	 * @param string|array $msg
+	 * @param array        $context
+	 * @return Log
 	 */
-	public function info($text) {
-		$this->record($text, 'INFO');
+	public function infoEx($msg, array $context = []) {
+		return $this->recordEx($msg, $context, 'INFO');
 	}
 	
 	/**
-	 * Error
+	 * ErrorEx
 	 *
-	 * @param $text
+	 * @param string|array $msg
+	 * @param array        $context
 	 * @return Log
 	 */
-	public function error($text) {
-		if (is_array($text)) {
-			$text = Json::je($text);
-		}
-		
-		$_time = date('Y-m-d H:i:s');
-		
-		$this->setLog("[ERROR] [{$_time}] {$text}");
-		
-		$list = [
-			'type' => 'json',
-			'logs' => $this->getLog(),
-		];
-		
-		// $this->printMQ($this->log);
-		$this->printMQ($list);
-		
-		return $this;
+	public function errorEx($msg, array $context = []) {
+		return $this->recordEx($msg, $context, 'ERROR');
 	}
 	
 	/**

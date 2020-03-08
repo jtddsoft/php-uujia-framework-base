@@ -3,12 +3,15 @@
 namespace uujia\framework\base\common;
 
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use uujia\framework\base\common\consts\ResultConst;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
-class Result {
+class Result implements LoggerAwareInterface {
 	use NameBase;
 	use ResultBase;
 	
@@ -281,9 +284,20 @@ class Result {
 	/**
 	 * 设置日志对象
 	 *
-	 * @param Log $logObj
+	 * @param Log|LoggerInterface $logObj
+	 * @return Result
 	 */
-	public function _setLogObj(Log $logObj) {
+	public function _setLogObj($logObj) {
 		$this->logObj = $logObj;
+		
+		return $this;
 	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function setLogger(LoggerInterface $logger) {
+		return $this->_setLogObj($logger);
+	}
+	
 }
