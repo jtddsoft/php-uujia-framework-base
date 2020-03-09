@@ -38,7 +38,7 @@ return [
 	'RabbitMQ' => [
 		'enabled' => true,              // 启用
 		
-		'server'           => 'localhost',//"59.110.217.60",     // change if necessary
+		'server'           => '59.110.217.60',//localhost"59.110.217.60",     // change if necessary
 		'port'             => 5672,            // change if necessary
 		'username'         => "hello",         // set your username
 		'password'         => "123456",        // set your password

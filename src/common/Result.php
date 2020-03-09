@@ -8,6 +8,7 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use uujia\framework\base\common\consts\ResultConst;
 use uujia\framework\base\common\lib\Utils\Json;
+use uujia\framework\base\common\lib\Utils\Response;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
@@ -117,7 +118,7 @@ class Result implements LoggerAwareInterface {
 		$this->setLastReturn($_ret);
 		
 		// 写入日志
-		$this->getLogObj()->error($_ret);
+		$this->getLogObj()->errorEx($_ret);
 		
 		if ($this->isReturnDie()) {
 			$this->getLogObj()->response();
@@ -127,7 +128,8 @@ class Result implements LoggerAwareInterface {
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
-				return json($_ret);
+				// return json($_ret);
+				Response::json($_ret);
 				break;
 		}
 		
@@ -150,7 +152,7 @@ class Result implements LoggerAwareInterface {
 		$this->setLastReturn($_ret);
 		
 		// 写入日志
-		$this->getLogObj()->error($_ret);
+		$this->getLogObj()->errorEx($_ret);
 		
 		if ($this->isReturnDie()) {
 			$this->getLogObj()->response();
@@ -160,7 +162,8 @@ class Result implements LoggerAwareInterface {
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
-				return json($_ret);
+				// return json($_ret);
+				Response::json($_ret);
 				break;
 		}
 		
@@ -174,12 +177,13 @@ class Result implements LoggerAwareInterface {
 		$this->setLastReturn($_ret);
 		
 		// 写入日志
-		$this->getLogObj()->info($_ret);
+		$this->getLogObj()->infoEx($_ret);
 		
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
-				return json($_ret);
+				// return json($_ret);
+				Response::json($_ret);
 				break;
 		}
 		
@@ -194,12 +198,13 @@ class Result implements LoggerAwareInterface {
 		$this->setLastReturn($_ret);
 		
 		// 写入日志
-		$this->getLogObj()->info($_ret);
+		$this->getLogObj()->infoEx($_ret);
 		
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
-				return json($_ret);
+				// return json($_ret);
+				Response::json($_ret);
 				break;
 		}
 		
@@ -214,7 +219,8 @@ class Result implements LoggerAwareInterface {
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
 				$this->getLogObj()->response();
-				return json($this->getLastReturn());
+				// return json($this->getLastReturn());
+				Response::json($this->getLastReturn());
 				break;
 		}
 		
