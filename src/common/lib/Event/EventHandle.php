@@ -2,12 +2,13 @@
 
 namespace uujia\framework\base\common\lib\Event;
 
+use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\traits\InstanceBase;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
-abstract class EventHandle {
+abstract class EventHandle implements StoppableEventInterface {
 	use NameBase;
 	use ResultBase;
 	use InstanceBase;
@@ -17,6 +18,13 @@ abstract class EventHandle {
 	 *  此处的值是Demo 继承类需要重新生成
 	 */
 	protected $_uuid = 'cdd64cb6-29b8-4663-b1b5-f4f515ed28ca';
+	
+	/**
+	 * 是否终止事件队列
+	 *  不再触发之后的事件
+	 * @var bool $_isStopped
+	 */
+	protected $_isStopped = false;
 	
 	// /**
 	//  * 事件名称
@@ -63,6 +71,13 @@ abstract class EventHandle {
 	/**************************************************
 	 * local func
 	 **************************************************/
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function isPropagationStopped(): bool {
+		return $this->_isStopped;
+	}
 	
 	public function _event_trigger() {
 	
