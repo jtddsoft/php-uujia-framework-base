@@ -8,6 +8,13 @@ use uujia\framework\base\traits\InstanceBase;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
+/**
+ * Class EventHandle
+ * 事件具体监听及触发者
+ *  每个事件类都要继承
+ *
+ * @package uujia\framework\base\common\lib\Event
+ */
 abstract class EventHandle implements StoppableEventInterface {
 	use NameBase;
 	use ResultBase;
