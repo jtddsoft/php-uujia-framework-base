@@ -4,8 +4,8 @@
 namespace uujia\framework\base\common;
 
 
-use uujia\framework\base\common\lib\FactoryCache\Data;
-use uujia\framework\base\common\lib\FactoryCacheTree;
+use uujia\framework\base\common\lib\Tree\TreeFuncData;
+use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeNode;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
@@ -27,7 +27,7 @@ class Config {
 	/**
 	 * 配置列表
 	 *
-	 * @var $_list FactoryCacheTree
+	 * @var $_list TreeFunc
 	 */
 	protected $_list;
 	
@@ -38,7 +38,7 @@ class Config {
 	protected $_name = '';
 	
 	public function __construct() {
-		$this->_list = new FactoryCacheTree();
+		$this->_list = new TreeFunc();
 		
 		$this->init();
 	}
@@ -112,7 +112,7 @@ class Config {
 	 * @param int          $weight  权重
 	 * @return Config
 	 */
-	public function path($path, $type = '', $name = '', $weight = FactoryCacheTree::DEFAULT_WEIGHT) {
+	public function path($path, $type = '', $name = '', $weight = TreeFunc::DEFAULT_WEIGHT) {
 		$_paths = [];
 		if (is_string($path)) {
 			$_paths[] = $path;
@@ -134,7 +134,7 @@ class Config {
 			
 			$this->unshift($_name, $_path, $weight);
 			
-			// $item = new FactoryCacheTree();
+			// $item = new TreeFunc();
 			// $item->getData()->set(function ($data, $it) use ($_path, $type, $name) {
 			// 	$config = include $_path;
 			//
@@ -192,14 +192,14 @@ class Config {
 	 * @param int          $weight  权重
 	 * @return $this
 	 */
-	public function unshift($key, $path, $weight = FactoryCacheTree::DEFAULT_WEIGHT) {
+	public function unshift($key, $path, $weight = TreeFunc::DEFAULT_WEIGHT) {
 		$factoryItemFunc = function ($data, $it) {
 			$_config = [];
 			
 			// 获取汇总列表中所有配置
-			/** @var FactoryCacheTree $it */
+			/** @var TreeFunc $it */
 			$it->wForEach(function ($_item, $index, $me) use (&$_config) {
-				/** @var FactoryCacheTree $_item */
+				/** @var TreeFunc $_item */
 				$_it_config = $_item->getDataValue();
 				$_config    = array_merge($_it_config, $_config);
 			});
@@ -238,14 +238,14 @@ class Config {
 	 * @param int          $weight  权重
 	 * @return $this
 	 */
-	public function add($key, $path, $weight = FactoryCacheTree::DEFAULT_WEIGHT) {
+	public function add($key, $path, $weight = TreeFunc::DEFAULT_WEIGHT) {
 		$factoryItemFunc = function ($data, $it) {
 			$_config = [];
 			
 			// 获取汇总列表中所有配置
-			/** @var FactoryCacheTree $it */
+			/** @var TreeFunc $it */
 			$it->wForEach(function ($_item, $index, $me) use (&$_config) {
-				/** @var FactoryCacheTree $_item */
+				/** @var TreeFunc $_item */
 				$_it_config = $_item->getDataValue();
 				$_config    = array_merge($_config, $_it_config);
 			});
@@ -301,9 +301,9 @@ class Config {
 	/**
 	 * 获取列表
 	 *
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
-	public function getList(): FactoryCacheTree {
+	public function getList(): TreeFunc {
 		return $this->_list;
 	}
 	
@@ -311,9 +311,9 @@ class Config {
 	 * 获取列表项
 	 *
 	 * @param string $key
-	 * @return Data
+	 * @return TreeFuncData
 	 */
-	public function getListData(string $key): Data {
+	public function getListData(string $key): TreeFuncData {
 		return $this->getList()->getData();
 	}
 	
@@ -331,9 +331,9 @@ class Config {
 	 * 获取列表项
 	 *
 	 * @param string $key
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
-	public function getListValue(string $key): FactoryCacheTree {
+	public function getListValue(string $key): TreeFunc {
 		return $this->getList()->get($key);
 	}
 	

@@ -210,7 +210,7 @@ abstract class MQ implements MQInterface {
 	 *
 	 * @return $this|array|mixed|string|\think\response\Json
 	 */
-	public function connect_auto() {
+	public function connectAuto() {
 		// if ($this->isErr()) { return $this; } // return $this->return_error();
 		//
 		// if (!$this->isInit()) {

@@ -30,6 +30,8 @@ class Event extends Base {
 	public function __construct(Result $ret, Config $configObj) {
 		parent::__construct($ret);
 		
+		$this->_list = new TreeFunc();
+		
 		$this->_configObj = $configObj;
 		
 		$this->init();
@@ -197,6 +199,101 @@ class Event extends Base {
 		}
 		
 		return $this;
+	}
+	
+	/**
+	 * 尾部添加
+	 *
+	 * @param string|int     $key
+	 * @param array|\Closure $listener
+	 * @param string         $serverName
+	 * @param int            $weight 权重
+	 * @return $this
+	 */
+	public function add($key, $listener, $serverName = ServerConst::SERVER_NAME_MAIN, $weight = TreeFunc::DEFAULT_WEIGHT) {
+		// 实例化EventServer
+		/** @var EventServer $_eventServerObj */
+		$_eventServerObj = EventServer::getInstance();
+		
+		$factoryItemFunc = $_eventServerObj->init()->makeTriggerFunc();
+		
+		$_listeners = [];
+		
+		if (is_callable($listener)) {
+			// 单监听者
+			$_listeners = [$listener];
+		} elseif (is_array($listener)) {
+			// 批量监听者
+			$_listeners = $listener;
+		} else {
+			// todo: 监听者格式错误
+			return $this;
+		}
+		
+		// 获取Server配置
+		$_serverConfig = $this->getConfigObj()->loadValue(ServerConst::SERVER_CONFIG_KEY);
+		
+		foreach ($_listeners as $row) {
+			/** @var \Closure $subItemFunc */
+			$subItemFunc = $_eventServerObj->init()->makeListenerFunc($row, $serverName, $_serverConfig);
+			
+			$this
+				// 获取总列表
+				->getList()
+				// 配置对应事件及添加监听项
+				->addKeyNewItemData($key, $subItemFunc, $factoryItemFunc)
+				// 获取最后一次配置的对应事件项 获取事件项数据
+				->getLastSetItemData()
+				// 配置禁用自动缓存（由于仅仅是执行一个闭包 执行后返回的不是具体值 下次还要再执行 因此不能缓存）
+				->setIsAutoCache(false)
+				// 获取数据Data的父级 就是TreeFunc
+				->getParent()
+				// 获取事件项最后一次添加的监听项
+				->getLastNewItem()
+				// 设置权重
+				->setWeight($weight);
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 获取列表
+	 *
+	 * @return TreeFunc
+	 */
+	public function getList(): TreeFunc {
+		return $this->_list;
+	}
+	
+	/**
+	 * 获取列表项
+	 *
+	 * @param string $key
+	 * @return TreeFuncData
+	 */
+	public function getListData(string $key): TreeFuncData {
+		return $this->getList()->getData();
+	}
+	
+	/**
+	 * 获取列表项值
+	 *
+	 * @param string $key
+	 * @return array|string|int|null
+	 */
+	public function getListDataValue(string $key) {
+		return $this->getListValue($key)->getDataValue();
+	}
+	
+	/**
+	 * 获取列表项
+	 *
+	 * @param string $key
+	 * @return TreeFunc
+	 */
+	public function getListValue(string $key): TreeFunc {
+		return $this->getList()->get($key);
 	}
 	
 	/**

@@ -268,7 +268,7 @@ class Log implements LoggerInterface {
 		
 		$_clientID = $this->getConfigMQTT(self::LOG_CONFIG_KEY_MQTT['client_id']) ?? self::MQTT_CLIENT_ID;
 		
-		$this->getMqttObj()->client_id($_clientID); // self::$_MQTT_CLIENT_ID
+		$this->getMqttObj()->clientId($_clientID); // self::$_MQTT_CLIENT_ID
 		$this->getMqttObj()->connect();
 		
 		// $this->flagMQTTConnected(true);

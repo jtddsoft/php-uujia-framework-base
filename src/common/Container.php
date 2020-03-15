@@ -9,8 +9,8 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionMethod;
 use ReflectionParameter;
-use uujia\framework\base\common\lib\FactoryCache\Data;
-use uujia\framework\base\common\lib\FactoryCacheTree;
+use uujia\framework\base\common\lib\Tree\TreeFuncData;
+use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\Reflection;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
@@ -29,7 +29,7 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	// // 每次实例化都会存入对象实例 如果已存在就覆盖
 	// private $lastObj = [];
 	
-	/** @var $_list FactoryCacheTree */
+	/** @var $_list TreeFunc */
 	protected $_list;
 	
 	/**
@@ -38,8 +38,8 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	 */
 	protected $_keyNotExistAutoCreate = true;
 	
-	public function __construct(FactoryCacheTree $list = null) {
-		$this->_list = $list ?? new FactoryCacheTree();
+	public function __construct(TreeFunc $list = null) {
+		$this->_list = $list ?? new TreeFunc();
 		
 		$this->init();
 	}
@@ -182,7 +182,7 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 		// 工厂函数$c为空 自动注入
 		if ($data->_getFactoryFunc() === null) {
 			// 构建工厂
-			$_factoryFunc = function (Data $data, FactoryCacheTree $it, Container $c) use ($id) {
+			$_factoryFunc = function (TreeFuncData $data, TreeFunc $it, Container $c) use ($id) {
 				if(is_string($id) && class_exists($id)){
 					try {
 						$className = $id;
@@ -254,7 +254,7 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	 * @return $this
 	 */
 	public function set($id, \Closure $c = null) {
-		$item = new FactoryCacheTree();
+		$item = new TreeFunc();
 		
 		if ($c !== null && $c instanceof \Closure) {
 			$item->getData()->set(function ($data, $it) use ($c) {
@@ -270,9 +270,9 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	 * 获取or设置 list
 	 *
 	 * @param null $list
-	 * @return $this|FactoryCacheTree
+	 * @return $this|TreeFunc
 	 */
-	public function list($list = null): FactoryCacheTree {
+	public function list($list = null): TreeFunc {
 		if ($list === null) {
 			return $this->_list;
 		} else {

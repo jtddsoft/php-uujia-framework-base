@@ -1,93 +1,54 @@
 <?php
 
-
 namespace uujia\framework\base\common\lib\Event;
 
 
-use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\EventDispatcher\ListenerProviderInterface;
 use uujia\framework\base\common\consts\ServerConst;
-use uujia\framework\base\common\Event;
-use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
+use uujia\framework\base\common\lib\Tree\TreeFunc;
+use uujia\framework\base\common\lib\Utils\Arr;
+use uujia\framework\base\traits\InstanceBase;
+use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\traits\ResultBase;
 
-/**
- * Class EventProvider
- * 事件监听者供应商
- *  用于将对应事件监听者提供给事件调度
- *
- * @package uujia\framework\base\common\lib\Event
- */
-class EventProvider implements ListenerProviderInterface {
+class EventServer {
+	use NameBase;
+	use ResultBase;
+	use InstanceBase;
 	
+	/** @var Local $_local */
+	protected $_localObj = null;
+	
+	// todo: POST
+	protected $_postObj = null;
 	
 	/**
-	 * 配置列表
+	 * EventServer constructor.
 	 *
-	 * @var $_list TreeFunc
 	 */
-	protected $_list;
-	
-	
-	/**
-	 * @inheritDoc
-	 */
-	public function getListenersForEvent(object $event): iterable {
-		// TODO: Implement getListenersForEvent() method.
+	public function __construct() {
+		
+		
+		$this->init();
 	}
 	
-	
 	/**
-	 * 尾部添加
-	 *
-	 * @param string|int     $key
-	 * @param array|\Closure $listener
-	 * @param string         $serverName
-	 * @param int            $weight 权重
+	 * 初始化
 	 * @return $this
 	 */
-	public function add($key, $listener, $serverName = ServerConst::SERVER_NAME_MAIN, $weight = TreeFunc::DEFAULT_WEIGHT) {
-		// 构建触发方法
-		$factoryItemFunc = $this->makeTriggerFunc();
+	public function init() {
 		
-		$_listeners = [];
-		
-		if (is_callable($listener)) {
-			// 单监听者
-			$_listeners = [$listener];
-		} elseif (is_array($listener)) {
-			// 批量监听者
-			$_listeners = $listener;
-		} else {
-			// todo: 监听者格式错误
-			return $this;
-		}
-		
-		// 获取Server配置
-		$_serverConfig = $this->getConfigObj()->loadValue(ServerConst::SERVER_CONFIG_KEY);
-		
-		foreach ($_listeners as $row) {
-			/** @var \Closure $subItemFunc */
-			$subItemFunc = $this->makeListenerFunc($row, $serverName, $_serverConfig);
-			
-			$this
-				// 获取总列表
-				->getList()
-				// 配置对应事件及添加监听项
-				->addKeyNewItemData($key, $subItemFunc, $factoryItemFunc)
-				// 获取最后一次配置的对应事件项 获取事件项数据
-				->getLastSetItemData()
-				// 配置禁用自动缓存（由于仅仅是执行一个闭包 执行后返回的不是具体值 下次还要再执行 因此不能缓存）
-				->setIsAutoCache(false)
-				// 获取数据Data的父级 就是TreeFunc
-				->getParent()
-				// 获取事件项最后一次添加的监听项
-				->getLastNewItem()
-				// 设置权重
-				->setWeight($weight);
-		}
+		$this->initNameInfo();
 		
 		return $this;
+	}
+	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = self::class;
+		$this->name_info['intro'] = '事件处理服务';
 	}
 	
 	/**
@@ -223,43 +184,28 @@ class EventProvider implements ListenerProviderInterface {
 		return $factoryItemFunc;
 	}
 	
+	
+	/**************************************************
+	 * getter setter
+	 **************************************************/
+	
 	/**
-	 * 获取列表
-	 *
-	 * @return TreeFunc
+	 * @return Local
 	 */
-	public function getList(): TreeFunc {
-		return $this->_list;
+	public function getLocalObj(): Local {
+		$this->_localObj === null && $this->_localObj = new Local($this);
+		
+		return $this->_localObj;
 	}
 	
 	/**
-	 * 获取列表项
-	 *
-	 * @param string $key
-	 * @return TreeFuncData
+	 * @param Local $localObj
+	 * @return $this
 	 */
-	public function getListData(string $key): TreeFuncData {
-		return $this->getList()->getData();
-	}
-	
-	/**
-	 * 获取列表项值
-	 *
-	 * @param string $key
-	 * @return array|string|int|null
-	 */
-	public function getListDataValue(string $key) {
-		return $this->getListValue($key)->getDataValue();
-	}
-	
-	/**
-	 * 获取列表项
-	 *
-	 * @param string $key
-	 * @return TreeFunc
-	 */
-	public function getListValue(string $key): TreeFunc {
-		return $this->getList()->get($key);
+	public function _setLocal(Local $localObj) {
+		$this->_localObj = $localObj;
+		
+		return $this;
 	}
 	
 }

@@ -411,8 +411,8 @@ class RabbitMQ extends MQ {
 	 *
 	 * @return $this|array|mixed|string|\think\response\Json
 	 */
-	public function connect_auto() {
-		return parent::connect_auto();
+	public function connectAuto() {
+		return parent::connectAuto();
 	}
 	
 	/**

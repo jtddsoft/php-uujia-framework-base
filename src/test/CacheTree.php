@@ -6,7 +6,7 @@ use uujia\framework\base\common\lib\Tree\TreeNode;
 use uujia\framework\base\traits\NameBase;
 
 /**
- * Class FactoryCacheTree
+ * Class TreeFunc
  *
  * @package uujia\framework\base\common\lib
  */
@@ -220,7 +220,7 @@ class CacheTree extends TreeNode {
 	 * 删除缓存值
 	 *
 	 * @param $k
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function removeCache($k) {
 		unset($this->_c[$this->name()][$k]);

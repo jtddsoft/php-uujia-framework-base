@@ -3,7 +3,7 @@
 
 namespace uujia\framework\base\common;
 
-use uujia\framework\base\common\lib\FactoryCacheTree;
+use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\MQ\MQTT;
 use uujia\framework\base\common\lib\MQ\RabbitMQ;
 use uujia\framework\base\common\lib\MQ\RabbitMQExt;
@@ -15,7 +15,7 @@ use uujia\framework\base\common\lib\MQ\RabbitMQExt;
  *
  * @package uujia\framework\base\common\lib
  */
-class MQCollection extends FactoryCacheTree {
+class MQCollection extends TreeFunc {
 	
 	const MQ_KEY = [
 		'mqtt' => 'MQTT',

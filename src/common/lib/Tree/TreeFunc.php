@@ -1,47 +1,45 @@
 <?php
 
-namespace uujia\framework\base\common\lib;
+namespace uujia\framework\base\common\lib\Tree;
 
-use uujia\framework\base\common\lib\FactoryCache\Data;
-use uujia\framework\base\common\lib\Tree\TreeNode;
-use uujia\framework\base\traits\NameBase;
+
 
 /**
- * Class FactoryCacheTree
+ * Class TreeFunc
  *
- * @package uujia\framework\base\common\lib
+ * @package uujia\framework\base\common\Tree
  */
-class FactoryCacheTree extends TreeNode {
+class TreeFunc extends TreeNode {
 	
 	/**
-	 * 父级FactoryCacheTree
+	 * 父级TreeFunc
 	 *
-	 * @var $_parent FactoryCacheTree
+	 * @var $_parent TreeFunc
 	 */
 	protected $_parent = null;
 	
 	/**
-	 * 缓存最后一次实例化的FactoryCacheTree对象
-	 *  一般为add或unshift操作时新生产的FactoryCacheTree对象
+	 * 缓存最后一次实例化的TreeFunc对象
+	 *  一般为add或unshift操作时新生产的TreeFunc对象
 	 *  以便后续对新对象自定义操作
 	 *
-	 * @var FactoryCacheTree $_lastNewItem
+	 * @var TreeFunc $_lastNewItem
 	 */
 	protected $_lastNewItem = null;
 	
 	/**
-	 * 缓存最后一次set实例化的FactoryCacheTree对象
-	 *  一般为set操作时新生产的FactoryCacheTree对象
+	 * 缓存最后一次set实例化的TreeFunc对象
+	 *  一般为set操作时新生产的TreeFunc对象
 	 *  以便后续对新对象自定义操作
 	 *
-	 * @var FactoryCacheTree $_lastSetItem
+	 * @var TreeFunc $_lastSetItem
 	 */
 	protected $_lastSetItem = null;
 	
 	/**
 	 * 节点数据
 	 *
-	 * @var Data $_data
+	 * @var TreeFuncData $_data
 	 */
 	protected $_data = null;
 	
@@ -52,7 +50,7 @@ class FactoryCacheTree extends TreeNode {
 	public function init() {
 		parent::init();
 		
-		$this->_data = new Data($this);
+		$this->_data = new TreeFuncData($this);
 		
 		return $this;
 	}
@@ -78,7 +76,7 @@ class FactoryCacheTree extends TreeNode {
 		$result = false;
 		
 		$this->wForEach(function (&$item, $i, $me) use ($func, &$result) {
-			/** @var FactoryCacheTree $item */
+			/** @var TreeFunc $item */
 			$d = $item->getData();
 			$value = $item->getDataValue();
 			
@@ -109,9 +107,9 @@ class FactoryCacheTree extends TreeNode {
 	 *
 	 * @param string $link
 	 * @param bool   $notExistCreate
-	 * @return FactoryCacheTree|null
+	 * @return TreeFunc|null
 	 */
-	public function smartGetter($link = '', $notExistCreate = true): FactoryCacheTree {
+	public function smartGetter($link = '', $notExistCreate = true): TreeFunc {
 		return parent::smartGetter($link, $notExistCreate);
 	}
 	
@@ -119,14 +117,14 @@ class FactoryCacheTree extends TreeNode {
 	 * 获取
 	 *
 	 * @param string $key
-	 * @return FactoryCacheTree|null
+	 * @return TreeFunc|null
 	 */
 	public function get(string $key) {
 		if (!parent::has($key)) {
 			return null;
 		}
 		
-		/** @var FactoryCacheTree $v */
+		/** @var TreeFunc $v */
 		$v = parent::get($key);
 		
 		return $v;
@@ -140,10 +138,10 @@ class FactoryCacheTree extends TreeNode {
 	 *  });
 	 *
 	 * @param \Closure $factoryFunc
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function newItemData(\Closure $factoryFunc) {
-		$item = new FactoryCacheTree();
+		$item = new TreeFunc();
 		// $this->_setLastNewItem($item);
 		// $item->getData()->set(function ($data, $it) use () {
 		// 	$config = include $path;
@@ -165,7 +163,7 @@ class FactoryCacheTree extends TreeNode {
 	 *
 	 * @param string|int $key
 	 * @param \Closure   $factoryFunc
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function setKeyNewItemData($key, \Closure $factoryFunc) {
 		$item = $this->newItemData($factoryFunc);
@@ -184,10 +182,10 @@ class FactoryCacheTree extends TreeNode {
 	 *  });
 	 *
 	 * @param \Closure $factorySubFunc
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function unshiftNewItemData(\Closure $factorySubFunc) {
-		$item = new FactoryCacheTree();
+		$item = new TreeFunc();
 		$this->_setLastNewItem($item);
 		
 		$item->getData()->set($factorySubFunc);
@@ -207,7 +205,7 @@ class FactoryCacheTree extends TreeNode {
 	 * @param string|int $key
 	 * @param \Closure   $factoryItemFunc
 	 * @param \Closure   $factorySubFunc
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function unshiftKeyNewItemData($key, \Closure $factorySubFunc, \Closure $factoryItemFunc = null) {
 		if ($this->has($key)) {
@@ -232,10 +230,10 @@ class FactoryCacheTree extends TreeNode {
 	 *  });
 	 *
 	 * @param \Closure $factorySubFunc
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function addNewItemData(\Closure $factorySubFunc) {
-		$item = new FactoryCacheTree();
+		$item = new TreeFunc();
 		$this->_setLastNewItem($item);
 		
 		$item->getData()->set($factorySubFunc);
@@ -261,7 +259,7 @@ class FactoryCacheTree extends TreeNode {
 	 * @param string|int $key
 	 * @param \Closure   $factoryItemFunc
 	 * @param \Closure   $factorySubFunc
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function addKeyNewItemData($key, \Closure $factorySubFunc, \Closure $factoryItemFunc = null) {
 		if ($this->has($key)) {
@@ -280,9 +278,9 @@ class FactoryCacheTree extends TreeNode {
 	/**
 	 * 获取数据
 	 *
-	 * @return Data
+	 * @return TreeFuncData
 	 */
-	public function getData(): Data {
+	public function getData(): TreeFuncData {
 		return $this->_data;
 	}
 	
@@ -317,14 +315,14 @@ class FactoryCacheTree extends TreeNode {
 	 **************************************************/
 	
 	/**
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function getLastNewItem() {
 		return $this->_lastNewItem;
 	}
 	
 	/**
-	 * @param FactoryCacheTree $lastNewItem
+	 * @param TreeFunc $lastNewItem
 	 * @return $this
 	 */
 	public function _setLastNewItem($lastNewItem) {
@@ -334,7 +332,7 @@ class FactoryCacheTree extends TreeNode {
 	}
 	
 	/**
-	 * @return Data
+	 * @return TreeFuncData
 	 */
 	public function getLastNewItemData() {
 		$item = $this->getLastNewItem();
@@ -346,14 +344,14 @@ class FactoryCacheTree extends TreeNode {
 	}
 	
 	/**
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
 	public function getLastSetItem() {
 		return $this->_lastSetItem;
 	}
 	
 	/**
-	 * @param FactoryCacheTree $lastSetItem
+	 * @param TreeFunc $lastSetItem
 	 * @return $this
 	 */
 	public function _setLastSetItem($lastSetItem) {
@@ -363,7 +361,7 @@ class FactoryCacheTree extends TreeNode {
 	}
 	
 	/**
-	 * @return Data
+	 * @return TreeFuncData
 	 */
 	public function getLastSetItemData() {
 		$item = $this->getLastSetItem();

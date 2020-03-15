@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\lib\Tree;
 
 
-use uujia\framework\base\common\lib\FactoryCacheTree;
+use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
@@ -615,6 +615,20 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	}
 	
 	/**
+	 * @return iterable
+	 */
+	public function wForEachI(): iterable {
+		// 如果权值排序索引映射表为空 就做一次重新排序映射
+		$this->_weightIndex === null && $this->weight();
+		
+		foreach ($this->_weightIndex as $i => $index) {
+			$item = $this->_children[$index];
+			
+			yield $item;
+		}
+	}
+	
+	/**
 	 * 智能读取
 	 *  格式：$link = 'a.b'; 会直接按层级输出（层级a -> 层级b）
 	 *
@@ -790,7 +804,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @return bool
 	 */
 	public function isEnabledKey($key): bool {
-		/** @var FactoryCacheTree $item */
+		/** @var TreeFunc $item */
 		$item = $this->get($key);
 		if (empty($item)) {
 			return false;
@@ -807,7 +821,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @return $this
 	 */
 	public function setEnabledKey($key, bool $enabled) {
-		/** @var FactoryCacheTree $item */
+		/** @var TreeFunc $item */
 		$item = $this->get($key);
 		if (empty($item)) {
 			return $this;

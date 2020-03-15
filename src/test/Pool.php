@@ -3,7 +3,7 @@
 
 namespace uujia\framework\base\common\lib\FactoryCache;
 
-use uujia\framework\base\common\lib\FactoryCacheTree;
+use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\traits\NameBase;
 
 /**
@@ -17,7 +17,7 @@ class Pool {
 	/**
 	 * 父级FactoryList
 	 *
-	 * @var $_parent FactoryCacheTree
+	 * @var $_parent TreeFunc
 	 */
 	protected $_parent;
 	
@@ -63,11 +63,11 @@ class Pool {
 	/**
 	 * 获取and缓存 item
 	 *
-	 * @param string $key
-	 * @param Data   $value
-	 * @return $this|Data
+	 * @param string          $key
+	 * @param TreeFuncData $value
+	 * @return $this|TreeFuncData
 	 */
-	public function data(string $key, Data $value = null) {
+	public function data(string $key, TreeFuncData $value = null) {
 		if ($value === null) {
 			return $this->_data[$key] ?? null;
 		} else {
@@ -133,7 +133,7 @@ class Pool {
 		if ($this->has($k)) {
 			$this->item($k)->set($f);
 		} else {
-			$this->item($k, new Data($this, $f));
+			$this->item($k, new TreeFuncData($this, $f));
 		}
 		
 		return $this;
@@ -178,9 +178,9 @@ class Pool {
 	}
 	
 	/**
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
-	public function getParent(): FactoryCacheTree {
+	public function getParent(): TreeFunc {
 		return $this->_parent;
 	}
 	

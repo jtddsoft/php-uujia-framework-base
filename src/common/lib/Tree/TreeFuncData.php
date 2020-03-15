@@ -1,18 +1,17 @@
 <?php
 
 
-namespace uujia\framework\base\common\lib\FactoryCache;
+namespace uujia\framework\base\common\lib\Tree;
 
-use uujia\framework\base\common\lib\FactoryCacheTree;
 use uujia\framework\base\traits\NameBase;
 use uujia\framework\base\traits\ResultBase;
 
 /**
- * Class Data
+ * Class TreeFuncData
  *
- * @package uujia\framework\base\common\lib\FactoryCache
+ * @package uujia\framework\base\common\lib\Tree
  */
-class Data {
+class TreeFuncData {
 	use NameBase;
 	use ResultBase;
 	
@@ -20,7 +19,8 @@ class Data {
 	
 	/**
 	 * 父级
-	 * @var FactoryCacheTree $_parent
+	 *
+	 * @var TreeFunc $_parent
 	 */
 	protected $_parent;
 	
@@ -57,7 +57,7 @@ class Data {
 	
 	
 	/**
-	 * ItemData constructor.
+	 * TreeFuncData constructor.
 	 *
 	 * @param      $parent
 	 * @param null $factoryFunc
@@ -148,7 +148,7 @@ class Data {
 	 * @param \Closure $f
 	 * @return $this
 	 */
-	public function set(\Closure $f): Data {
+	public function set(\Closure $f): TreeFuncData {
 		$this->_factoryFunc = $f;
 		$this->removeCache();
 		
@@ -183,16 +183,17 @@ class Data {
 	/**
 	 * 删除缓存值
 	 *
-	 * @return Data
+	 * @return TreeFuncData
 	 */
-	public function removeCache(): Data {
+	public function removeCache(): TreeFuncData {
 		$this->_cache = null;
 		return $this;
 	}
 	
 	/**
 	 * 父级
-	 * @return FactoryCacheTree
+	 *
+	 * @return TreeFunc
 	 */
 	public function getParent() {
 		return $this->_parent;

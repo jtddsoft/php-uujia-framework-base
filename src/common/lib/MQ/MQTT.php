@@ -84,7 +84,7 @@ class MQTT extends MQ {
 	 *
 	 * @return $this|array
 	 */
-	public function client_id($client_id = null) {
+	public function clientId($client_id = null) {
 		if ($client_id === null) {
 			return $this->_config['client_id'];
 		} else {
@@ -231,7 +231,7 @@ class MQTT extends MQ {
 	 *
 	 * @return $this|array|mixed|string|\think\response\Json
 	 */
-	public function connect_auto() {
+	public function connectAuto() {
 		if ($this->isErr()) { return $this; } // return $this->return_error();
 		
 		if (!$this->isInit()) {
@@ -379,7 +379,6 @@ class MQTT extends MQ {
 		
 		return $this;
 	}
-	
 	
 	
 }

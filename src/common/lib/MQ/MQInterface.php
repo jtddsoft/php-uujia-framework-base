@@ -19,7 +19,7 @@ interface MQInterface {
 	/**
 	 * 自动连接服务器（连接失败自动重连）
 	 */
-	public function connect_auto();
+	public function connectAuto();
 	
 	/**
 	 * 连接服务器

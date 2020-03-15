@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common;
 
 
-use uujia\framework\base\common\lib\FactoryCacheTree;
+use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\traits\NameBase;
 
 class ErrorCodeList {
@@ -21,7 +21,8 @@ class ErrorCodeList {
 	 *      10000 => '用户名不能为空',
 	 *      10001 => '用户名密码错误',
 	 *  ]
-	 * @var FactoryCacheTree $_errCodeList
+	 *
+	 * @var TreeFunc $_errCodeList
 	 */
 	protected $_errCodeList;
 	
@@ -55,7 +56,7 @@ class ErrorCodeList {
 		
 		
 		// // 实例化
-		// $this->_errCodeList = new FactoryCacheTree();
+		// $this->_errCodeList = new TreeFunc();
 		//
 		// $configObj->getList()->set(self::$_ERROR_CODE_NAME, $this->_errCodeList);
 		//
@@ -102,7 +103,7 @@ class ErrorCodeList {
 	// 	// array_unshift(self::$errCodeList, $data);
 	//
 	// 	if (is_string($path)) {
-	// 		$item = new FactoryCacheTree();
+	// 		$item = new TreeFunc();
 	// 		$item->getData()->set(function ($data, $it) use ($path) {
 	// 			$errConfig = include $path;
 	//
@@ -112,7 +113,7 @@ class ErrorCodeList {
 	// 		$this->getErrCodeList()->unshift($item);
 	// 	} elseif (is_array($path)) {
 	// 		foreach ($path as $row) {
-	// 			$item = new FactoryCacheTree();
+	// 			$item = new TreeFunc();
 	// 			$item->getData()->set(function ($data, $it) use ($row) {
 	// 				$errConfig = include $row;
 	//
@@ -134,7 +135,7 @@ class ErrorCodeList {
 	//  */
 	// public function add($path) {
 	// 	if (is_string($path)) {
-	// 		$item = new FactoryCacheTree();
+	// 		$item = new TreeFunc();
 	// 		$item->getData()->set(function ($data, $it) use ($path) {
 	// 			$errConfig = include $path;
 	//
@@ -144,7 +145,7 @@ class ErrorCodeList {
 	// 		$this->getErrCodeList()->add($item);
 	// 	} elseif (is_array($path)) {
 	// 		foreach ($path as $row) {
-	// 			$item = new FactoryCacheTree();
+	// 			$item = new TreeFunc();
 	// 			$item->getData()->set(function ($data, $it) use ($row) {
 	// 				$errConfig = include $row;
 	//
@@ -194,16 +195,16 @@ class ErrorCodeList {
 	}
 	
 	/**
-	 * @return FactoryCacheTree
+	 * @return TreeFunc
 	 */
-	public function getErrCodeList(): FactoryCacheTree {
+	public function getErrCodeList(): TreeFunc {
 		return $this->_errCodeList;
 	}
 	
 	/**
-	 * @param FactoryCacheTree $errCodeList
+	 * @param TreeFunc $errCodeList
 	 */
-	public function _setErrCodeList(FactoryCacheTree $errCodeList) {
+	public function _setErrCodeList(TreeFunc $errCodeList) {
 		$this->_errCodeList = $errCodeList;
 	}
 	
