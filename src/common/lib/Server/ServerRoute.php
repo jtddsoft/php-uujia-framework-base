@@ -37,11 +37,15 @@ class ServerRoute {
 	 */
 	protected $_type = 'event';
 	
+	protected $_host = '';
+	
 	/**
 	 * Local constructor.
+	 *
+	 * @param array $config
 	 */
-	public function __construct() {
-		
+	public function __construct(array $config = []) {
+		$this->_config = $config;
 		
 		$this->init();
 	}
@@ -97,15 +101,49 @@ class ServerRoute {
 		return $this;
 	}
 	
+	
+	/**
+	 * 加载配置
+	 * 
+	 * @param null $name
+	 * @param null $type
+	 * @return array
+	 */
+	public function load($name = null, $type = null) {
+		!empty($name) && $name = $this->name();
+		!empty($type) && $type = $this->type();
+		
+		$_server = $this->getConfig($name);
+		
+		$_data = $_server[self::KEY_TYPE][$type];
+		
+		$result = [
+			'host' => $_server[self::KEY_HOST],
+			'data' => $_data,
+		];
+		
+		return $result;
+	}
+	
+	
+	
+	
+	
+	
 	/**************************************************
 	 * getter setter
 	 **************************************************/
 	
 	/**
+	 * @param null $name
 	 * @return array
 	 */
-	public function getConfig(): array {
-		return $this->_config;
+	public function getConfig($name = null): array {
+		if (empty($name)) {
+			return $this->_config;
+		}
+		
+		return $this->_config[$name];
 	}
 	
 	/**
