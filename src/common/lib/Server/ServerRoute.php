@@ -13,6 +13,9 @@ class ServerRoute {
 	const KEY_HOST = 'host';
 	const KEY_TYPE = 'type';
 	
+	// name
+	const NAME_MAIN = 'main';
+	
 	// type
 	const TYPE_EVENT = 'event';
 	
@@ -21,6 +24,11 @@ class ServerRoute {
 	 * @var array $_serverConfig
 	 */
 	protected $_config = [];
+	
+	/**************************************************
+	 * input
+	 * name type
+	 **************************************************/
 	
 	/**
 	 * 服务器名称
@@ -37,7 +45,43 @@ class ServerRoute {
 	 */
 	protected $_type = 'event';
 	
+	/**************************************************
+	 * input
+	 * param
+	 **************************************************/
+	
+	/**
+	 * route参数
+	 *  例如：->param([...])->route();
+	 *
+	 * @var string $_param
+	 */
+	protected $_param = 'param';
+	
+	/**
+	 * route回调
+	 *  例如：->param([...])->callback(function () {})->route();
+	 *
+	 * @var callable $_callback
+	 */
+	protected $_callback = null;
+	
+	/**************************************************
+	 * output
+	 * value
+	 **************************************************/
+	
+	/**
+	 * 返回值-主机名或域名
+	 * @var string $_host
+	 */
 	protected $_host = '';
+	
+	/**
+	 * 返回值-对应类型的数据
+	 * @var array $_serverData
+	 */
+	protected $_serverData = [];
 	
 	/**
 	 * Local constructor.
@@ -56,6 +100,10 @@ class ServerRoute {
 	 */
 	public function init() {
 		$this->initNameInfo();
+		
+		// 初始化
+		$this->_name = 'main';
+		$this->_type = self::TYPE_EVENT;
 		
 		return $this;
 	}
@@ -104,10 +152,11 @@ class ServerRoute {
 	
 	/**
 	 * 加载配置
-	 * 
+	 *
 	 * @param null $name
 	 * @param null $type
-	 * @return array
+	 *
+	 * @return ServerRoute
 	 */
 	public function load($name = null, $type = null) {
 		!empty($name) && $name = $this->name();
@@ -117,28 +166,25 @@ class ServerRoute {
 		
 		$_data = $_server[self::KEY_TYPE][$type];
 		
-		$result = [
-			'host' => $_server[self::KEY_HOST],
-			'data' => $_data,
-		];
+		$this->_setHost($_server[self::KEY_HOST]);
+		$this->_setServerData($_data);
 		
-		return $result;
+		return $this;
 	}
 	
+	public function route($type) {
 	
-	
-	
-	
+	}
 	
 	/**************************************************
 	 * getter setter
 	 **************************************************/
 	
 	/**
-	 * @param null $name
+	 * @param null|string $name
 	 * @return array
 	 */
-	public function getConfig($name = null): array {
+	public function getConfig($name = null) {
 		if (empty($name)) {
 			return $this->_config;
 		}
@@ -148,12 +194,50 @@ class ServerRoute {
 	
 	/**
 	 * @param array $config
+	 *
+	 * @return $this
 	 */
 	public function _setConfig(array $config) {
 		$this->_config = $config;
+		
+		return $this;
 	}
 	
+	/**
+	 * @return string
+	 */
+	public function getHost() {
+		return $this->_host;
+	}
 	
+	/**
+	 * @param string $host
+	 *
+	 * @return $this
+	 */
+	public function _setHost(string $host) {
+		$this->_host = $host;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getServerData() {
+		return $this->_serverData;
+	}
+	
+	/**
+	 * @param array $serverData
+	 *
+	 * @return $this
+	 */
+	public function _setServerData(array $serverData) {
+		$this->_serverData = $serverData;
+		
+		return $this;
+	}
 	
 	
 }
