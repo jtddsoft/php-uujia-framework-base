@@ -40,7 +40,7 @@ abstract class EventHandle implements StoppableEventInterface {
 	//  */
 	// protected $_name = '';
 	
-	/** @var Local $_local */
+	/** @var ServerRouteLocal $_local */
 	protected $_localObj = null;
 	
 	// todo: POST
@@ -150,19 +150,20 @@ abstract class EventHandle implements StoppableEventInterface {
 	}
 	
 	/**
-	 * @return Local
+	 * @return ServerRouteLocal
 	 */
-	public function getLocalObj(): Local {
-		$this->_localObj === null && $this->_localObj = new Local($this);
+	public function getLocalObj(): ServerRouteLocal {
+		$this->_localObj === null && $this->_localObj = new ServerRouteLocal($this);
 		
 		return $this->_localObj;
 	}
 	
 	/**
-	 * @param Local $localObj
+	 * @param ServerRouteLocal $localObj
+	 *
 	 * @return $this
 	 */
-	public function _setLocal(Local $localObj) {
+	public function _setLocal(ServerRouteLocal $localObj) {
 		$this->_localObj = $localObj;
 		
 		return $this;

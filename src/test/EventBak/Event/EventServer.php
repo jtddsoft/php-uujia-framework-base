@@ -16,7 +16,7 @@ class EventServer {
 	use ResultBase;
 	use InstanceBase;
 	
-	/** @var Local $_local */
+	/** @var ServerRouteLocal $_local */
 	protected $_localObj = null;
 	
 	// todo: POST
@@ -102,27 +102,29 @@ class EventServer {
 				
 				
 			} else {
-				// 根据类型 知道是本地还是远端
-				switch ($_server['type']) {
-					case ServerConst::TYPE_LOCAL_NORMAL:
-						// 本地服务器
-						$_local = $this->getLocalObj();
-						
-						// 触发事件时执行回调
-						// $res = call_user_func_array($_listener, [$params, $_lastResult, $_results]);
-						$res = $_local->trigger($_listener, $params);
-						
-						// // Local返回值复制
-						// $this->setLastReturn($_local->getLastReturn());
-						//
-						// $it->getParent()->addKeyParam('result', $_local->getLastReturn());
-						break;
-					
-					default:
-						// 远程服务器
-						// todo：MQ通信 POST请求之类
-						break;
-				}
+				// // 根据类型 知道是本地还是远端
+				// switch ($_server['type']) {
+				// 	case ServerConst::TYPE_LOCAL_NORMAL:
+				// 		// 本地服务器
+				// 		$_local = $this->getLocalObj();
+				//
+				// 		// 触发事件时执行回调
+				// 		// $res = call_user_func_array($_listener, [$params, $_lastResult, $_results]);
+				// 		$res = $_local->trigger($_listener, $params);
+				//
+				// 		// // Local返回值复制
+				// 		// $this->setLastReturn($_local->getLastReturn());
+				// 		//
+				// 		// $it->getParent()->addKeyParam('result', $_local->getLastReturn());
+				// 		break;
+				//
+				// 	default:
+				// 		// 远程服务器
+				// 		// todo：MQ通信 POST请求之类
+				// 		break;
+				// }
+				
+				
 			}
 			
 			return $res;
@@ -190,19 +192,20 @@ class EventServer {
 	 **************************************************/
 	
 	/**
-	 * @return Local
+	 * @return ServerRouteLocal
 	 */
-	public function getLocalObj(): Local {
-		$this->_localObj === null && $this->_localObj = new Local($this);
+	public function getLocalObj(): ServerRouteLocal {
+		$this->_localObj === null && $this->_localObj = new ServerRouteLocal($this);
 		
 		return $this->_localObj;
 	}
 	
 	/**
-	 * @param Local $localObj
+	 * @param ServerRouteLocal $localObj
+	 *
 	 * @return $this
 	 */
-	public function _setLocal(Local $localObj) {
+	public function _setLocal(ServerRouteLocal $localObj) {
 		$this->_localObj = $localObj;
 		
 		return $this;

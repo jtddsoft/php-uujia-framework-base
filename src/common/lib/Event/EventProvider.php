@@ -8,6 +8,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Server\ServerRoute;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 
@@ -93,13 +94,14 @@ class EventProvider implements ListenerProviderInterface {
 	/**
 	 * 构建监听项方法
 	 *
+	 * @param string         $event
 	 * @param array|\Closure $listener
 	 * @param string         $serverName
-	 * @param array          $serverConfig
+	 *
 	 * @return \Closure
 	 */
-	public function makeListenerFunc($listener, $serverName, $serverConfig) {
-		$subItemFunc = function ($data, $it, $params) use ($listener, $serverName, $serverConfig) {
+	public function makeListenerFunc($event, $listener, $serverName) {
+		$subItemFunc = function ($data, $it, $params) use ($event, $listener, $serverName) {
 			/** @var TreeFuncData $data */
 			/** @var TreeFunc $it */
 			
@@ -107,6 +109,8 @@ class EventProvider implements ListenerProviderInterface {
 			// $_results = $_param['result'] ?? [];
 			//
 			// $_lastResult = Arr::from($_results)->last();
+			
+			$_lastResult = $params['lastResult'];
 			
 			/**
 			 * $listener 可以是闭包或事件类 也可以是数组包含服务器信息等
@@ -122,7 +126,8 @@ class EventProvider implements ListenerProviderInterface {
 			}
 			
 			// 从服务器配置信息中查到服务器详细信息
-			$_server = $serverConfig['server_event'][$_serverName];
+			// $_server = $serverConfig['server_event'][$_serverName];
+			$res = $_lastResult;
 			
 			if ($_listener instanceof EventHandle) {
 				// todo: 事件类来接管处理
@@ -130,10 +135,10 @@ class EventProvider implements ListenerProviderInterface {
 					// 'data' => $data,
 					// 'eventItem' => $it,
 					'fParams' => $params,
-					'name' => $listener,
-					'serverName' => $serverName,
-					'serverConfig' => $serverConfig,
-					'server' => $_server,
+					'name' => $_listener,
+					'serverName' => $_serverName,
+					// 'serverConfig' => $serverConfig,
+					// 'server' => $_server,
 				];
 				
 				/** @var EventHandle $_listener */
@@ -141,26 +146,19 @@ class EventProvider implements ListenerProviderInterface {
 				
 				
 			} else {
-				// 根据类型 知道是本地还是远端
-				switch ($_server['type']) {
-					case ServerConst::TYPE_LOCAL_NORMAL:
-						// 本地服务器
-						$_local = $this->getLocalObj();
-						
-						// 触发事件时执行回调
-						// $res = call_user_func_array($_listener, [$params, $_lastResult, $_results]);
-						$res = $_local->trigger($_listener, $params);
-						
-						// // Local返回值复制
-						// $this->setLastReturn($_local->getLastReturn());
-						//
-						// $it->getParent()->addKeyParam('result', $_local->getLastReturn());
-						break;
-					
-					default:
-						// 远程服务器
-						// todo：MQ通信 POST请求之类
-						break;
+				/** @var ServerRoute $serverRouteObj */
+				$serverRouteObj = ServerRoute::getInstance();
+				$_isLocal = $serverRouteObj
+					->serverName($_serverName)
+					->serverType(ServerRoute::TYPE_EVENT)
+					->load()
+					->isLocal();
+				
+				if ($_isLocal) {
+					$res = call_user_func_array($_listener, [$params]);
+				} else {
+					// 远程服务器
+					// todo：MQ通信 POST请求之类
 				}
 			}
 			
