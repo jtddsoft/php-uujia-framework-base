@@ -9,7 +9,7 @@ use Psr\Log\LoggerTrait;
 use uujia\framework\base\common\lib\MQ\MQTT;
 use uujia\framework\base\common\lib\MQ\RabbitMQ;
 use uujia\framework\base\common\lib\Utils\Json;
-use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\common\traits\NameBase;
 
 class Log implements LoggerInterface {
 	use NameBase;

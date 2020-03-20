@@ -10,7 +10,7 @@ use uujia\framework\base\common\Config;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
-use uujia\framework\base\traits\InstanceBase;
+use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\UU;
 
 class Demo extends BaseService {

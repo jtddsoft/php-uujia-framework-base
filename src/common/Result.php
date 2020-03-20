@@ -9,8 +9,8 @@ use Psr\Log\LoggerInterface;
 use uujia\framework\base\common\consts\ResultConst;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Utils\Response;
-use uujia\framework\base\traits\NameBase;
-use uujia\framework\base\traits\ResultBase;
+use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\ResultBase;
 
 class Result implements LoggerAwareInterface {
 	use NameBase;

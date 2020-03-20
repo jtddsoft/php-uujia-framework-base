@@ -5,7 +5,7 @@ namespace uujia\framework\base\common;
 
 
 use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\common\traits\NameBase;
 
 class ErrorCodeList {
 	use NameBase;

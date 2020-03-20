@@ -4,9 +4,9 @@ namespace uujia\framework\base\common\lib\Event;
 
 use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
-use uujia\framework\base\traits\InstanceBase;
-use uujia\framework\base\traits\NameBase;
-use uujia\framework\base\traits\ResultBase;
+use uujia\framework\base\common\traits\InstanceBase;
+use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\ResultBase;
 
 /**
  * Class EventHandle

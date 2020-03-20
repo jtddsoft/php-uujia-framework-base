@@ -13,8 +13,8 @@ use uujia\framework\base\common\lib\Container\ContainerProvider;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\Reflection;
-use uujia\framework\base\traits\NameBase;
-use uujia\framework\base\traits\ResultBase;
+use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\ResultBase;
 
 /**
  * Class Container

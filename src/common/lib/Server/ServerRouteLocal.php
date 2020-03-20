@@ -3,8 +3,8 @@
 namespace uujia\framework\base\common\lib\Event;
 
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
-use uujia\framework\base\traits\NameBase;
-use uujia\framework\base\traits\ResultBase;
+use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\ResultBase;
 
 class ServerRouteLocal implements ServerRouteInterface {
 	use NameBase;

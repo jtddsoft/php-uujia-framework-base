@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\lib\FactoryCache;
 
 use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\common\traits\NameBase;
 
 /**
  * Class Pool

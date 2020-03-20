@@ -3,7 +3,7 @@
 namespace uujia\framework\base\common\lib;
 
 use uujia\framework\base\common\lib\Tree\TreeNode;
-use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\common\traits\NameBase;
 
 /**
  * Class TreeFunc

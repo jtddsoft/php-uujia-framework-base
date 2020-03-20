@@ -1,7 +1,7 @@
 <?php
 
 
-namespace uujia\framework\base\traits;
+namespace uujia\framework\base\common\traits;
 
 
 use uujia\framework\base\common\consts\ResultConst;

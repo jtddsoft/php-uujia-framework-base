@@ -3,8 +3,8 @@
 
 namespace uujia\framework\base\common\lib\MQ;
 
-use uujia\framework\base\traits\NameBase;
-use uujia\framework\base\traits\ResultBase;
+use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\ResultBase;
 
 abstract class MQ implements MQInterface {
 	use NameBase;

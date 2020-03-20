@@ -3,7 +3,7 @@
 namespace uujia\framework\base\common\lib\Utils;
 
 
-use uujia\framework\base\traits\InstanceBase;
+use uujia\framework\base\common\traits\InstanceBase;
 
 class Arr {
 	use InstanceBase;

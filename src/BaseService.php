@@ -12,7 +12,7 @@ use uujia\framework\base\common\ErrorCodeList;
 use uujia\framework\base\common\MQCollection;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\Container;
-use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\common\traits\NameBase;
 
 class BaseService {
 	use NameBase;

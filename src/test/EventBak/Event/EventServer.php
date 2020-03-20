@@ -7,9 +7,9 @@ use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\Arr;
-use uujia\framework\base\traits\InstanceBase;
-use uujia\framework\base\traits\NameBase;
-use uujia\framework\base\traits\ResultBase;
+use uujia\framework\base\common\traits\InstanceBase;
+use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\ResultBase;
 
 class EventServer {
 	use NameBase;

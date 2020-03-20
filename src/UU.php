@@ -4,8 +4,8 @@ namespace uujia\framework\base;
 
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\Container;
-use uujia\framework\base\traits\InstanceBase;
-use uujia\framework\base\traits\NameBase;
+use uujia\framework\base\common\traits\InstanceBase;
+use uujia\framework\base\common\traits\NameBase;
 
 class UU {
 	use NameBase;

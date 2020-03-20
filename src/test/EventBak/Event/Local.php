@@ -2,8 +2,8 @@
 
 namespace uujia\framework\base\common\lib\Event;
 
-use uujia\framework\base\traits\NameBase;
-use uujia\framework\base\traits\ResultBase;
+use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\ResultBase;
 
 class Local {
 	use NameBase;
