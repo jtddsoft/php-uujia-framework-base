@@ -12,6 +12,7 @@ use ReflectionParameter;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\Reflection;
+use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
@@ -21,9 +22,10 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common\lib\Container
  */
-class ContainerProvider implements ContainerInterface, \Iterator, \ArrayAccess {
+class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	use NameBase;
 	use ResultBase;
+	use InstanceBase;
 	
 	// private $c = [];
 	// // 每次实例化都会存入对象实例 如果已存在就覆盖

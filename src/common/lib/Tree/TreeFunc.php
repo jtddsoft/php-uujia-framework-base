@@ -81,6 +81,18 @@ class TreeFunc extends TreeNode {
 			$value = $item->getDataValue();
 			
 			if (!empty($func)) {
+				/**
+				 * 示例：
+				 *
+				 * $re = $this->getErrCodeList()->wFindData(function ($item, $i, $me, $data, $value) use ($code) {
+				 *      $_err = $value[self::ERROR_CODE_NAME];
+				 *      if (array_key_exists($code, $_err)) {
+				 *          return true;
+				 *      }
+				 *
+				 *      return false;
+				 * });
+				 */
 				$re = call_user_func_array($func, [&$item, $i, $me, $d, $value]);
 				if ($re) {
 					$result = [

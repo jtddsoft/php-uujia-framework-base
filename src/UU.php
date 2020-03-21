@@ -2,11 +2,16 @@
 
 namespace uujia\framework\base;
 
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\common\Container;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 
+/**
+ * Class UU
+ *
+ * @package uujia\framework\base
+ */
 class UU {
 	use NameBase;
 	use InstanceBase;
@@ -17,15 +22,18 @@ class UU {
 	/**
 	 * UU constructor.
 	 * 依赖Container
+	 *
+	 * @param null|Container|mixed $container
 	 */
-	public function __construct() {
-		self::$_container = new Container(new TreeFunc()); // $this
+	public function __construct($container = null) {
+		// self::$_container = new Container(new TreeFunc()); // $this
+		self::$_container = $container ?? Container::getInstance(new TreeFunc());
 	}
 	
 	/**
 	 * @return Container
 	 */
-	public static function getContainer(): Container {
+	public static function getContainer() {
 		$me = static::getInstance();
 		
 		return self::$_container;
@@ -34,7 +42,7 @@ class UU {
 	/**
 	 * @param Container $container
 	 */
-	public static function _setContainer(Container $container) {
+	public static function _setContainer($container) {
 		self::$_container = $container;
 	}
 	

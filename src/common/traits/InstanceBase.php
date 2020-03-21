@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\traits;
 
 
-trait InstanceBase{
+trait InstanceBase {
 	/**
 	 * 实例对象
 	 */
@@ -18,7 +18,11 @@ trait InstanceBase{
 	 */
 	public static function getInstance() {
 		if (null === static::$instance) {
-			static::$instance = new static;
+			// static::$instance = new static;
+			
+			// 反射构建实例化
+			$reflection = new \ReflectionClass(static::class);
+			static::$instance = $reflection->newInstanceArgs(func_get_args());// 传入的是关联数组
 		}
 		return static::$instance;
 	}

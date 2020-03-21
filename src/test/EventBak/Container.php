@@ -9,7 +9,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionMethod;
 use ReflectionParameter;
-use uujia\framework\base\common\lib\Container\ContainerProvider;
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\Reflection;
@@ -22,7 +22,7 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common
  */
-class Container extends ContainerProvider {
+class Container extends Container {
 	
 	
 	/**
