@@ -15,7 +15,7 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common\lib\Event
  */
-abstract class EventHandle implements StoppableEventInterface {
+abstract class EventHandle implements EventHandleInterface, StoppableEventInterface {
 	use NameBase;
 	use ResultBase;
 	use InstanceBase;
