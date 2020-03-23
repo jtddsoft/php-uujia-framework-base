@@ -33,6 +33,11 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	public $_children = [];
 	
 	/**
+	 * key别名
+	 */
+	public $_aliasKeys = [];
+	
+	/**
 	 * 迭代器游标位置
 	 */
 	protected $_position = 0;
@@ -455,6 +460,8 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @return $this
 	 */
 	public function remove(string $key) {
+		$this->hasAlias($key) && $key = $this->getAlias($key);
+		
 		unset($this->_children[$key]);
 		
 		return $this;
@@ -480,6 +487,8 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @return mixed|null
 	 */
 	public function get(string $key) {
+		$this->hasAlias($key) && $key = $this->getAlias($key);
+		
 		$v = $this->has($key) ? $this->_children[$key] : null;
 		
 		return $v;
@@ -492,6 +501,8 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @return bool
 	 */
 	public function has(string $key): bool {
+		$this->hasAlias($key) && $key = $this->getAlias($key);
+		
 		return array_key_exists($key, $this->_children);
 	}
 	
@@ -503,6 +514,8 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @return $this
 	 */
 	public function set(string $key, TreeNode $item) {
+		$this->hasAlias($key) && $key = $this->getAlias($key);
+		
 		// 如果item传空就创建
 		($item === null) && $item = new TreeNode($this);
 		$this->_setLastSetItem($item);
@@ -518,6 +531,76 @@ class TreeNode implements \Iterator, \ArrayAccess {
 		
 		// 设置key
 		$item->_setKey($key);
+		
+		return $this;
+	}
+	
+	/**
+	 * 清空别名列表
+	 *
+	 * @return $this
+	 */
+	public function clearAlias() {
+		$this->_aliasKeys = [];
+		
+		return $this;
+	}
+	
+	/**
+	 * 根据别名获取真实key
+	 *
+	 * @param string $a
+	 *
+	 * @return string|null
+	 */
+	public function getAlias(string $a) {
+		if (!$this->hasAlias($a)) {
+			return null;
+		}
+		
+		return $this->_aliasKeys[$a];
+	}
+	
+	/**
+	 * 别名是否存在
+	 *
+	 * @param string $a
+	 *
+	 * @return bool
+	 */
+	public function hasAlias(string $a): bool {
+		return array_key_exists($a, $this->_aliasKeys);
+	}
+	
+	/**
+	 * 配置别名
+	 *
+	 * @param string|array $a
+	 * @param string       $k
+	 *
+	 * @return $this
+	 */
+	public function setAlias($a, string $k = '') {
+		if (is_array($a)) {
+			foreach ($a as $aKey => $aValue) {
+				$this->_aliasKeys[$aKey] = $aValue;
+			}
+		} else {
+			$this->_aliasKeys[$a] = $k;
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 移除别名
+	 *
+	 * @param string $a
+	 *
+	 * @return $this
+	 */
+	public function removeAlias(string $a) {
+		unset($this->_aliasKeys[$a]);
 		
 		return $this;
 	}

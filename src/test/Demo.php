@@ -36,12 +36,39 @@ class Demo extends BaseService {
 		//
 		// }
 		
+		// 初始化容器
+		$this->initContainer();
+	}
+	
+	/**
+	 * 初始化容器
+	 */
+	public function initContainer() {
+		// UU::C([
+		// 	      Config::class,
+		// 	      ErrorCodeList::class,
+		// 	      MQCollection::class,
+		// 	      Log::class,
+		// 	      Result::class,
+		// 	      Base::class,
+		// 	      Event::class,
+		//       ]);
+		
 		/** @var $configObj Config */
-		$configObj = UU::C(Config::class);
+		$configObj = $this->getConfig(); //UU::C(Config::class);
 		$configObj->path(__DIR__ . '/config/error_code.php', '', '', 99);
 		
 		$paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
 		$configObj->path($paths);
+		
+		// 获取容器配置container_config
+		$_containerAlias = $configObj->loadValue('container', '', 'container.alias');
+		
+		if (!empty($_containerAlias)) {
+			$_containerObj = $this->getContainer();
+			$_containerObj->list()->setAlias($_containerAlias);
+		}
+		
 	}
 	
 	public function test() {

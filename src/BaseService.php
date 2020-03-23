@@ -11,7 +11,7 @@ use uujia\framework\base\common\Log;
 use uujia\framework\base\common\ErrorCodeList;
 use uujia\framework\base\common\MQCollection;
 use uujia\framework\base\common\Result;
-use uujia\framework\base\common\Container;
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\traits\NameBase;
 
 class BaseService {
@@ -27,16 +27,6 @@ class BaseService {
 	 */
 	public function init() {
 		$this->initNameInfo();
-		
-		// UU::C([
-		// 	      Config::class,
-		// 	      ErrorCodeList::class,
-		// 	      MQCollection::class,
-		// 	      Log::class,
-		// 	      Result::class,
-		// 	      Base::class,
-		// 	      Event::class,
-		//       ]);
 		
 		return $this;
 		
@@ -98,6 +88,13 @@ class BaseService {
 	}
 	
 	/**
+	 * @return Container
+	 */
+	public function getContainer(): Container {
+		return UU::getInstance()->getContainer();
+	}
+	
+	/**
 	 * @return ErrorCodeList
 	 */
 	public function getErrorCodeList(): ErrorCodeList {
@@ -123,6 +120,13 @@ class BaseService {
 	 */
 	public function getResult(): Result {
 		return UU::C(Result::class);
+	}
+	
+	/**
+	 * @return Config
+	 */
+	public function getConfig(): Config {
+		return UU::C(Config::class);
 	}
 	
 	/**

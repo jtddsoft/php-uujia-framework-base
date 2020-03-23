@@ -14,7 +14,7 @@ class Arr {
 	 * @param array $arr
 	 * @return Arr
 	 */
-	public static function from(array $arr) {
+	public static function from(array &$arr) {
 		/** @var Arr $me */
 		$me = static::getInstance();
 		$me->setArr($arr);
@@ -46,10 +46,36 @@ class Arr {
 	 * @param array $arr
 	 * @return $this
 	 */
-	public function setArr(array $arr) {
+	public function setArr(array &$arr) {
 		$this->_arr = $arr;
 		
 		return $this;
+	}
+	
+	/**
+	 * 数组转字符串
+	 *
+	 * @param array  $arr
+	 * @param string $glue
+	 *
+	 * @return string
+	 */
+	public static function arrToStr(array $arr, string $glue = ',') {
+		return implode($glue, $arr);
+	}
+	
+	/**
+	 * 字符串转数组
+	 *
+	 * @param string   $str
+	 * @param string   $delimiter
+	 *
+	 * @param int|null $limit
+	 *
+	 * @return array
+	 */
+	public static function strToArr(string $str, string $delimiter = ',', int $limit = null) {
+		return explode($delimiter, $str);
 	}
 	
 	

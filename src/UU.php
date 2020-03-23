@@ -2,6 +2,7 @@
 
 namespace uujia\framework\base;
 
+use uujia\framework\base\common\Config;
 use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\traits\InstanceBase;
@@ -17,7 +18,7 @@ class UU {
 	use InstanceBase;
 	
 	/** @var $_container Container */
-	protected static $_container;
+	protected $_container;
 	
 	/**
 	 * UU constructor.
@@ -27,24 +28,27 @@ class UU {
 	 */
 	public function __construct($container = null) {
 		// self::$_container = new Container(new TreeFunc()); // $this
-		self::$_container = $container ?? Container::getInstance(new TreeFunc());
-	}
-	
-	/**
-	 * @return Container
-	 */
-	public static function getContainer() {
-		$me = static::getInstance();
+		// self::$_container = $container ?? Container::getInstance(new TreeFunc());
+		$this->_container = $container ?? Container::getInstance(new TreeFunc());
 		
-		return self::$_container;
+		$this->init();
 	}
 	
-	/**
-	 * @param Container $container
-	 */
-	public static function _setContainer($container) {
-		self::$_container = $container;
-	}
+	// /**
+	//  * @return Container
+	//  */
+	// public static function getContainer() {
+	// 	// $me = static::getInstance();
+	//
+	// 	return self::$_container;
+	// }
+	//
+	// /**
+	//  * @param Container $container
+	//  */
+	// public static function _setContainer($container) {
+	// 	self::$_container = $container;
+	// }
 	
 	/**
 	 * 初始化
@@ -73,27 +77,44 @@ class UU {
 	 * @return mixed
 	 */
 	public static function C($objName, $obj = null) {
+		/** @var UU $me */
 		$me = static::getInstance();
 		
 		// 【注意】如果为数组 则批量注入（并非是获取 只有为字符串类名时才是获取）
 		if (is_array($objName)) {
 			foreach ($objName as $key => $row) {
-				self::getContainer()->set($row, $obj);
+				$me->getContainer()->set($row, $obj);
 			}
 			
-			return self::getContainer();
+			return $me->getContainer();
 		}
 		
 		if ($obj === null) {
 			// 读取
-			return self::getContainer()->get($objName);
+			return $me->getContainer()->get($objName);
 		} else {
 			// 设置
-			return self::getContainer()->set($objName, $obj);
+			return $me->getContainer()->set($objName, $obj);
 		}
 	}
 	
+	/**
+	 * @return Container
+	 */
+	public function getContainer() {
+		return $this->_container;
+	}
 	
+	/**
+	 * @param Container $container
+	 *
+	 * @return $this
+	 */
+	public function setContainer($container) {
+		$this->_container = $container;
+		
+		return $this;
+	}
 	
 	
 }

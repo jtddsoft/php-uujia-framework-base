@@ -7,6 +7,7 @@ namespace uujia\framework\base\common;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeNode;
+use uujia\framework\base\common\lib\Utils\Arr;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
@@ -27,7 +28,7 @@ class Config {
 	/**
 	 * 配置列表
 	 *
-	 * @var $_list TreeFunc
+	 * @var TreeFunc $_list
 	 */
 	protected $_list;
 	
@@ -36,6 +37,13 @@ class Config {
 	
 	// 如果type是空 name=name 如果type不为空 name=type . '_config'
 	protected $_name = '';
+	
+	/**
+	 * 最后一次获取load
+	 *
+	 * @var array|string|int|bool|mixed $_lastValue
+	 */
+	protected $_lastValue = [];
 	
 	public function __construct() {
 		$this->_list = new TreeFunc();
@@ -151,15 +159,25 @@ class Config {
 	}
 	
 	/**
+	 * 取最后一次获取load的值
+	 *
+	 * @return array|bool|int|mixed|string
+	 */
+	public function value() {
+		return $this->_lastValue;
+	}
+	
+	/**
 	 * 加载配置
 	 *
 	 * @param string $type
 	 * @param string $name
+	 * @param string $dotPath   以.分隔的配置结构路径
 	 *
 	 * @return array|string|null
 	 */
-	public function load($type = '', $name = '') {
-		$this->loadValue($type, $name);
+	public function load($type = '', $name = '', $dotPath = '') {
+		$this->_lastValue = $this->loadValue($type, $name, $dotPath);
 		
 		return $this;
 	}
@@ -169,10 +187,11 @@ class Config {
 	 *
 	 * @param string $type
 	 * @param string $name
+	 * @param string $dotPath   以.分隔的配置结构路径
 	 *
 	 * @return array|string|int|null
 	 */
-	public function loadValue($type = '', $name = '') {
+	public function loadValue($type = '', $name = '', $dotPath = '') {
 		// type转换为全名 例如：type = 'app' 转为name = 'app_config'
 		$_name = $this->getConfigName($type, $name);
 		
@@ -180,6 +199,23 @@ class Config {
 		
 		/** @var array|string|null $config */
 		$config = $this->getListValue($_name)->getDataValue();
+		
+		// 以.分隔的配置路径 a.b.c = $config['a']['b']['c']
+		if (!empty($dotPath)) {
+			$_dots = Arr::strToArr($dotPath, '.');
+			
+			$_value = $config;
+			foreach ($_dots as $item) {
+				if (empty($_value[$item])) {
+					$_value = null;
+					break;
+				}
+				
+				$_value = $_value[$item];
+			}
+			
+			$config = $_value;
+		}
 		
 		return $config;
 	}
