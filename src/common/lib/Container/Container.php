@@ -190,6 +190,8 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 		if ($data->_getFactoryFunc() === null) {
 			// 构建工厂
 			$_factoryFunc = function (TreeFuncData $data, TreeFunc $it, Container $c) use ($id) {
+				$it->getParent()->hasAlias($id) && $id = $it->getParent()->getAlias($id);
+				
 				if(is_string($id) && class_exists($id)){
 					try {
 						$className = $id;

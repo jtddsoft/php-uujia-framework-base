@@ -89,8 +89,14 @@ class RedisProvider implements RedisProviderInterface {
 	 * @return $this
 	 */
 	public function connect() {
-		$this->getRedisObj()->connect($this->getHost(), $this->getPort());
-		!empty($this->getPassword()) && $this->getRedisObj()->auth($this->getPassword());
+		if ($this->isEnabled()) {
+			$this->getRedisObj()->connect($this->getHost(), $this->getPort());
+			!empty($this->getPassword()) && $this->getRedisObj()->auth($this->getPassword());
+			
+			if (!$this->getRedisObj()->isConnected()) {
+				$this->code(13001); // 连接Redis服务端失败
+			}
+		}
 		
 		return $this;
 	}

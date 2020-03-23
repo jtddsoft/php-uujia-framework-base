@@ -10,6 +10,7 @@ use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\Log;
 use uujia\framework\base\common\ErrorCodeList;
 use uujia\framework\base\common\MQCollection;
+use uujia\framework\base\common\Redis;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\traits\NameBase;
@@ -141,6 +142,13 @@ class BaseService {
 	 */
 	public function getEvent(): Event {
 		return UU::C(Event::class);
+	}
+	
+	/**
+	 * @return Redis
+	 */
+	public function getRedis(): Redis {
+		return UU::C(Redis::KEY_CONTAINER_REDIS_ALIAS);
 	}
 	
 	

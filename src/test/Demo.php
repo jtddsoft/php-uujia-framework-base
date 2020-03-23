@@ -8,8 +8,10 @@ use uujia\framework\base\BaseService;
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Redis\RedisProvider;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
+use uujia\framework\base\common\Redis;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\UU;
 
@@ -69,11 +71,23 @@ class Demo extends BaseService {
 			$_containerObj->list()->setAlias($_containerAlias);
 		}
 		
+		$this->getRedis()
+		     ->setRedisProviderObj(new RedisProvider())
+		     ->loadConfig();
 	}
 	
 	public function test() {
 		// return glob(__DIR__ . "/../config/*_config.php", GLOB_BRACE);
 		// return UU::C(Base::class)->rt()->ok();
+		
+		/** @var \Redis $redis */
+		$redis = $this->getRedis()->getRedisObj();
+		if ($this->getRedis()->getRedisProviderObj()->isErr()) {
+			$this->getResult()->setLastReturn($this->getRedis()->getRedisProviderObj()->getLastReturn());
+			return $this->getResult()->rt()->return_error();
+		}
+		
+		$redis->set('aaa', 'cccc');
 		return UU::C(Base::class)->ok();
 	}
 	
