@@ -2,10 +2,11 @@
 
 namespace uujia\framework\base\common\lib\Redis;
 
+use uujia\framework\base\common\Config;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
-class Redis {
+class RedisProvider implements RedisProviderInterface {
 	use NameBase;
 	use ResultBase;
 	
@@ -79,7 +80,7 @@ class Redis {
 	 */
 	public function initNameInfo() {
 		$this->name_info['name']  = self::class;
-		$this->name_info['intro'] = 'Redis连接封装';
+		$this->name_info['intro'] = 'Redis供应商';
 	}
 	
 	/**
@@ -104,7 +105,7 @@ class Redis {
 	/**
 	 * @param bool $enabled
 	 *
-	 * @return Redis
+	 * @return RedisProvider
 	 */
 	public function setEnabled(bool $enabled) {
 		$this->_enabled = $enabled;
@@ -122,7 +123,7 @@ class Redis {
 	/**
 	 * @param string $prefix
 	 *
-	 * @return Redis
+	 * @return RedisProvider
 	 */
 	public function setPrefix(string $prefix) {
 		$this->_prefix = $prefix;
@@ -140,7 +141,7 @@ class Redis {
 	/**
 	 * @param string $host
 	 *
-	 * @return Redis
+	 * @return RedisProvider
 	 */
 	public function setHost(string $host) {
 		$this->_host = $host;
@@ -158,7 +159,7 @@ class Redis {
 	/**
 	 * @param int $port
 	 *
-	 * @return Redis
+	 * @return RedisProvider
 	 */
 	public function setPort(int $port) {
 		$this->_port = $port;
@@ -176,7 +177,7 @@ class Redis {
 	/**
 	 * @param string $password
 	 *
-	 * @return Redis
+	 * @return RedisProvider
 	 */
 	public function setPassword(string $password) {
 		$this->_password = $password;
@@ -187,14 +188,14 @@ class Redis {
 	/**
 	 * @return \Redis
 	 */
-	public function getRedisObj(): \Redis {
+	public function getRedisObj() {
 		return $this->_redisObj;
 	}
 	
 	/**
 	 * @param \Redis $redisObj
 	 *
-	 * @return Redis
+	 * @return RedisProvider
 	 */
 	public function _setRedisObj(\Redis $redisObj) {
 		$this->_redisObj = $redisObj;
