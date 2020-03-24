@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\lib\Cache;
 
 /**
- * Interface CacheProviderInterface
+ * Interface CacheDataProviderInterface
  * 缓存的提供者需要实现的接口规范
  *  例如：所有的事件为节省资源 事件调度依赖缓存
  *       而这些缓存的来源就来自于收集这些注册事件监听者信息 并将其放入缓存
@@ -13,6 +13,6 @@ namespace uujia\framework\base\common\lib\Cache;
  *
  * @package uujia\framework\base\common\lib\Cache
  */
-interface CacheProviderInterface {
+interface CacheDataProviderInterface {
 	
 }

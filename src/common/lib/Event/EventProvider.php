@@ -63,7 +63,12 @@ class EventProvider implements ListenerProviderInterface, CacheClassInterface {
 	 * @inheritDoc
 	 */
 	public function fromCache() {
-	
+		if (!$this->hasCache()) {
+			// 不存在缓存 调起缓存数据管理器 收集数据传来
+		}
+		
+		// 读取缓存
+		
 	}
 	
 	/**
@@ -71,6 +76,14 @@ class EventProvider implements ListenerProviderInterface, CacheClassInterface {
 	 */
 	public function toCache() {
 	
+	}
+	
+	/**
+	 * 缓存是否存在
+	 * @return bool
+	 */
+	public function hasCache(): bool {
+		return false;
 	}
 	
 	/**

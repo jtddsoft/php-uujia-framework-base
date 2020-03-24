@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common\lib\Cache;
 
 
-trait CacheProvider {
-	
+trait CacheDataManager {
+
+
 }
