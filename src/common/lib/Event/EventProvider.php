@@ -8,6 +8,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Cache\CacheClassInterface;
+use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Server\ServerRoute;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
@@ -19,8 +21,13 @@ use uujia\framework\base\common\lib\Tree\TreeFuncData;
  *
  * @package uujia\framework\base\common\lib\Event
  */
-class EventProvider implements ListenerProviderInterface {
+class EventProvider implements ListenerProviderInterface, CacheClassInterface {
+	use CacheClassTrait;
 	
+	// 缓存key前缀
+	const CACHE_KEY_PREFIX = 'event:';
+	
+	protected $_cacheKeyPrefix = '';
 	
 	/**
 	 * 配置列表
@@ -29,12 +36,48 @@ class EventProvider implements ListenerProviderInterface {
 	 */
 	protected $_list;
 	
+	public function __construct($eventName = '') {
+		$this->_cacheKeyPrefix = $this->getRedisProviderObj()->getPrefix() . self::CACHE_KEY_PREFIX . $eventName;
+	}
 	
 	/**
+	 * 为事件调度提供事件列表
+	 * @param EventHandleInterface|object $event
 	 * @inheritDoc
 	 */
 	public function getListenersForEvent(object $event): iterable {
 		// TODO: Implement getListenersForEvent() method.
+	}
+	
+	/**
+	 * 触发运行
+	 *  1、查缓存是否存在
+	 *      1）存在 继续
+	 *      2）不存在 构建参数存入缓存
+	 */
+	public function _run() {
+	
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function fromCache() {
+	
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function toCache() {
+	
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function clearCache() {
+	
 	}
 	
 	
@@ -258,6 +301,24 @@ class EventProvider implements ListenerProviderInterface {
 	 */
 	public function getListValue(string $key): TreeFunc {
 		return $this->getList()->get($key);
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getCacheKeyPrefix(): string {
+		return $this->_cacheKeyPrefix;
+	}
+	
+	/**
+	 * @param string $cacheKeyPrefix
+	 *
+	 * @return $this
+	 */
+	public function setCacheKeyPrefix(string $cacheKeyPrefix) {
+		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+		
+		return $this;
 	}
 	
 }

@@ -3,6 +3,8 @@
 
 namespace uujia\framework\base\common\lib\Event;
 
+use uujia\framework\base\common\lib\Cache\CacheClassInterface;
+use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Server\ServerParameter;
 
 /**
@@ -17,10 +19,11 @@ use uujia\framework\base\common\lib\Server\ServerParameter;
 class EventListenerProxy implements EventListenerProxyInterface {
 	
 	/**
-	 *
+	 * 服务器参数
 	 * @var ServerParameter $_serverParameter
 	 */
 	protected $_serverParameter;
+	
 	
 	/**
 	 * EventListenerProxy constructor.
@@ -29,11 +32,9 @@ class EventListenerProxy implements EventListenerProxyInterface {
 	 */
 	public function __construct(ServerParameter $serverParameterObj) {
 		$this->_serverParameter = $serverParameterObj;
+		
+		
 	}
-	
-	
-	
-	
 	
 	
 	
@@ -55,6 +56,7 @@ class EventListenerProxy implements EventListenerProxyInterface {
 	public function setServerParameter(ServerParameter $serverParameter): void {
 		$this->_serverParameter = $serverParameter;
 	}
+	
 	
 	
 }
