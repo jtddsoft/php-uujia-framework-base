@@ -18,9 +18,53 @@ interface CacheDataProviderInterface {
 	/**
 	 * 构建数据 写入缓存
 	 *
-	 * @param bool $writeCache
-	 *
 	 * @return mixed
 	 */
-	public function make($writeCache = true);
+	public function make();
+	
+	/**
+	 * 是否同时写入缓存
+	 *
+	 * @return bool
+	 */
+	public function isWriteCache();
+	
+	/**
+	 * 设置是否写入缓存标记
+	 *
+	 * @param bool $writeCache
+	 *
+	 * @return $this
+	 */
+	public function setWriteCache(bool $writeCache);
+	
+	/**
+	 * 获取输入参数
+	 *
+	 * @return array
+	 */
+	public function getParams();
+	
+	/**
+	 * 设置输入参数
+	 *
+	 * @param array $params
+	 * @return $this
+	 */
+	public function setParams($params);
+	
+	/**
+	 * 获取返回值
+	 *
+	 * @return array
+	 */
+	public function getResults();
+	
+	/**
+	 * 设置返回值
+	 *
+	 * @param array $results
+	 * @return $this
+	 */
+	public function setResults($results);
 }

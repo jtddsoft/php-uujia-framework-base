@@ -52,6 +52,7 @@ class CacheDataManager extends BaseClass {
 	 */
 	public function setProvider($key, $itemProvider) {
 		$subItemFunc = function ($data, $it, $params) use ($itemProvider) {
+			$itemProvider->setParams($params);
 			$itemProvider->make();
 			
 			return $itemProvider;
