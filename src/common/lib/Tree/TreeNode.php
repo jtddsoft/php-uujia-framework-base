@@ -4,8 +4,7 @@
 namespace uujia\framework\base\common\lib\Tree;
 
 
-use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\ResultBase;
 
 /**
@@ -13,8 +12,7 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common\lib\Tree
  */
-class TreeNode implements \Iterator, \ArrayAccess {
-	use NameBase;
+class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	use ResultBase;
 	
 	// 默认权重
@@ -144,7 +142,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	public function __construct($parent = null) {
 		$this->_parent = $parent;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -152,7 +150,7 @@ class TreeNode implements \Iterator, \ArrayAccess {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		// 初始化迭代器游标
 		$this->_position = 0;

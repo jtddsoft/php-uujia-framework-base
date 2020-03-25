@@ -6,13 +6,13 @@ namespace uujia\framework\base\common;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\MQ\MQTT;
 use uujia\framework\base\common\lib\MQ\RabbitMQ;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\traits\NameBase;
 
-class Log implements LoggerInterface {
-	use NameBase;
+class Log extends BaseClass implements LoggerInterface {
 	use LoggerTrait;
 	
 	const MQTT_CLIENT_ID   = 'Logger_2019';
@@ -101,7 +101,7 @@ class Log implements LoggerInterface {
 		// $this->_enabledMQTT = $enabledMQTT;
 		// $this->_flagMQTTConnected = false;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -109,7 +109,7 @@ class Log implements LoggerInterface {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		$_enabledResponse = $this->getConfigMQ(self::LOG_CONFIG_KEY_MQ['enabled_response']) ?? false;
 		$_enabledMQTT = $this->getConfigMQTT(self::LOG_CONFIG_KEY_MQTT['enabled']) ?? false;

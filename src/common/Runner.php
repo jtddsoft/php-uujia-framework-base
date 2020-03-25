@@ -25,10 +25,10 @@ class Runner extends Base {
 	 * @param string $app_name
 	 */
 	public function __construct(Result $ret, Config $configObj, $app_name = '') {
-		parent::__construct($ret);
-		
 		$this->_configObj = $configObj;
 		$this->_app_name = $app_name;
+		
+		parent::__construct($ret);
 	}
 	
 	/**

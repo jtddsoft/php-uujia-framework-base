@@ -15,4 +15,12 @@ namespace uujia\framework\base\common\lib\Cache;
  */
 interface CacheDataProviderInterface {
 	
+	/**
+	 * 构建数据 写入缓存
+	 *
+	 * @param bool $writeCache
+	 *
+	 * @return mixed
+	 */
+	public function make($writeCache = true);
 }

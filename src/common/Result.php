@@ -7,13 +7,13 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use uujia\framework\base\common\consts\ResultConst;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Utils\Response;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
-class Result implements LoggerAwareInterface {
-	use NameBase;
+class Result extends BaseClass implements LoggerAwareInterface {
 	use ResultBase;
 	
 	// 配置对象 依赖于配置管理class 必须事先初始化
@@ -45,7 +45,7 @@ class Result implements LoggerAwareInterface {
 		$this->errObj = $errObj;
 		$this->logObj = $logObj;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -53,7 +53,7 @@ class Result implements LoggerAwareInterface {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		return $this;
 	}

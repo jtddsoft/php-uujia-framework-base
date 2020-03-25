@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Event;
 
 
 use Psr\EventDispatcher\EventDispatcherInterface;
+use uujia\framework\base\common\lib\Base\BaseClass;
 
 /**
  * Class EventDispatcher
@@ -12,7 +13,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  *
  * @package uujia\framework\base\common\lib\Event
  */
-class EventDispatcher implements EventDispatcherInterface {
+class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	
 	/**
 	 * @inheritDoc

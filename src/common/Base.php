@@ -3,10 +3,10 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\NameBase;
 
-class Base {
-	use NameBase;
+class Base extends BaseClass {
 	
 	/** @var $_ret Result */
 	protected $_ret;
@@ -20,7 +20,7 @@ class Base {
 	public function __construct(Result $ret) {
 		$this->_ret = $ret;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -28,7 +28,7 @@ class Base {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		return $this;
 	}

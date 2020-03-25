@@ -3,11 +3,10 @@
 namespace uujia\framework\base\common\lib\Redis;
 
 use uujia\framework\base\common\Config;
-use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\ResultBase;
 
-class RedisProvider implements RedisProviderInterface {
-	use NameBase;
+class RedisProvider extends BaseClass implements RedisProviderInterface {
 	use ResultBase;
 	
 	/**
@@ -62,7 +61,7 @@ class RedisProvider implements RedisProviderInterface {
 		$this->_password = $password;
 		$this->_prefix = $prefix;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -70,7 +69,7 @@ class RedisProvider implements RedisProviderInterface {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		return $this;
 	}

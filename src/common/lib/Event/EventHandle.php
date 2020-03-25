@@ -4,6 +4,7 @@ namespace uujia\framework\base\common\lib\Event;
 
 use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
@@ -15,8 +16,7 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common\lib\Event
  */
-abstract class EventHandle implements EventHandleInterface, StoppableEventInterface {
-	use NameBase;
+abstract class EventHandle extends BaseClass implements EventHandleInterface, StoppableEventInterface {
 	use ResultBase;
 	use InstanceBase;
 	
@@ -54,7 +54,7 @@ abstract class EventHandle implements EventHandleInterface, StoppableEventInterf
 	public function __construct($uuid = 'cdd64cb6-29b8-4663-b1b5-f4f515ed28ca') {
 		$this->_uuid = $uuid;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -92,7 +92,7 @@ abstract class EventHandle implements EventHandleInterface, StoppableEventInterf
 	
 	public function _event_listen($params) {
 		// list ($data, $eventItem, $callParams, $name, $serverName, $serverConfig, $server) = $params;
-		list ($fParams, $name, $serverName, $serverConfig, $server) = $params;
+		[$fParams, $name, $serverName, $serverConfig, $server] = $params;
 		
 		// 根据类型 知道是本地还是远端
 		switch ($server['type']) {

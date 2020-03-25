@@ -28,11 +28,9 @@ class Event extends Base {
 	 * @param Config $configObj
 	 */
 	public function __construct(Result $ret, Config $configObj) {
-		parent::__construct($ret);
-		
 		$this->_configObj = $configObj;
 		
-		$this->init();
+		parent::__construct($ret);
 	}
 	
 	/**

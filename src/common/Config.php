@@ -4,15 +4,13 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\common\lib\Tree\TreeNode;
 use uujia\framework\base\common\lib\Utils\Arr;
-use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
-class Config {
-	use NameBase;
+class Config extends BaseClass {
 	use ResultBase;
 	
 	// 配置构建工厂 只是文件路径的方法集合
@@ -48,7 +46,7 @@ class Config {
 	public function __construct() {
 		$this->_list = new TreeFunc();
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -56,7 +54,7 @@ class Config {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		// $this->path(__DIR__ . "/../config/app_config.php", 'app');
 		

@@ -188,7 +188,7 @@ class TreeFunc extends TreeNode {
 	
 	/**
 	 * 插入到顶部Data
-	 *  unshiftItemData(function ($data, $it) use (a) {
+	 *  unshiftItemData(function ($data, $it, $params) use (a) {
 	 *      dosomething
 	 *      return value;
 	 *  });
@@ -209,14 +209,21 @@ class TreeFunc extends TreeNode {
 	
 	/**
 	 * 插入到顶部Data（直接设置到key）
-	 *  unshiftKeyItemData('key1', function ($data, $it) use (a) {
-	 *      dosomething
-	 *      return value;
-	 *  });
+	 *  unshiftKeyItemData('key1',
+	 *      function ($data, $it, $params) use (a) {
+	 *          dosomething
+	 *          return value;
+	 *      },
+	 *      function ($data, $it, $params) use (a) {
+	 *          dosomething
+	 *          return value;
+	 *      }
+	 *  );
 	 *
 	 * @param string|int $key
 	 * @param \Closure   $factoryItemFunc
 	 * @param \Closure   $factorySubFunc
+	 *
 	 * @return TreeFunc
 	 */
 	public function unshiftKeyNewItemData($key, \Closure $factorySubFunc, \Closure $factoryItemFunc = null) {
@@ -236,7 +243,7 @@ class TreeFunc extends TreeNode {
 	
 	/**
 	 * 添加到尾部Data
-	 *  addItemData(function ($data, $it) use (a) {
+	 *  addItemData(function ($data, $it, $params) use (a) {
 	 *      dosomething
 	 *      return value;
 	 *  });
@@ -258,11 +265,11 @@ class TreeFunc extends TreeNode {
 	/**
 	 * 添加到尾部Data（直接设置到key）
 	 *  addKeyItemData('key1',
-	 *      function ($data, $it) use (a) {
+	 *      function ($data, $it, $params) use (a) {
 	 *          dosomething
 	 *          return value;
 	 *      },
-	 *      function ($data, $it) use (a) {
+	 *      function ($data, $it, $params) use (a) {
 	 *          dosomething
 	 *          return value;
 	 *      }

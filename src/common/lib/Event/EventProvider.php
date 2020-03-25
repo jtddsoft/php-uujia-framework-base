@@ -8,6 +8,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Server\ServerRoute;
@@ -21,7 +22,7 @@ use uujia\framework\base\common\lib\Tree\TreeFuncData;
  *
  * @package uujia\framework\base\common\lib\Event
  */
-class EventProvider implements ListenerProviderInterface, CacheClassInterface {
+class EventProvider extends BaseClass implements ListenerProviderInterface, CacheClassInterface {
 	use CacheClassTrait;
 	
 	// 缓存key前缀
@@ -38,6 +39,8 @@ class EventProvider implements ListenerProviderInterface, CacheClassInterface {
 	
 	public function __construct($eventName = '') {
 		$this->_cacheKeyPrefix = $this->getRedisProviderObj()->getPrefix() . self::CACHE_KEY_PREFIX . $eventName;
+	
+		parent::__construct();
 	}
 	
 	/**

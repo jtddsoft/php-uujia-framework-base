@@ -3,7 +3,7 @@
 
 namespace uujia\framework\base\common\lib\Tree;
 
-use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\ResultBase;
 
 /**
@@ -11,8 +11,7 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common\lib\Tree
  */
-class TreeFuncData {
-	use NameBase;
+class TreeFuncData extends BaseClass {
 	use ResultBase;
 	
 	const OTHER_KEY_RESULT = 'result';
@@ -49,6 +48,15 @@ class TreeFuncData {
 	protected $_isAutoCache = true;
 	
 	/**
+	 * 自动加载缓存
+	 *  true - get获取时会自动查找是否存在缓存
+	 *  false - get将不再加载缓存
+	 *
+	 * @var bool $_isLoadCache
+	 */
+	protected $_isLoadCache = true;
+	
+	/**
 	 * 其他附加属性或返回值等等 自由使用
 	 *
 	 * @var array $_other
@@ -68,7 +76,7 @@ class TreeFuncData {
 		$this->_factoryFunc = $factoryFunc;
 		$this->_cache = $cache;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -76,7 +84,7 @@ class TreeFuncData {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		return $this;
 	}
@@ -96,8 +104,8 @@ class TreeFuncData {
 	 * @param bool  $doNotCache
 	 * @return mixed|null
 	 */
-	public function get($param = [], $doNotCache = false) {
-		if ($this->hasCache()) {
+	public function get($param = [], $doNotCache = false, $doNotLoadCache = false) {
+		if (!$doNotLoadCache && $this->isLoadCache() && $this->hasCache()) {
 			return $this->cache();
 		}
 		
@@ -214,6 +222,27 @@ class TreeFuncData {
 	 */
 	public function setIsAutoCache(bool $isAutoCache) {
 		$this->_isAutoCache = $isAutoCache;
+		
+		return $this;
+	}
+	
+	/**
+	 * 自动加载缓存
+	 *  true - get获取时会自动查找是否存在缓存
+	 *  false - get将不再加载缓存
+	 *
+	 * @return bool
+	 */
+	public function isLoadCache(): bool {
+		return $this->_isLoadCache;
+	}
+	
+	/**
+	 * @param bool $isLoadCache
+	 * @return $this
+	 */
+	public function setIsLoadCache(bool $isLoadCache) {
+		$this->_isLoadCache = $isLoadCache;
 		
 		return $this;
 	}

@@ -2,12 +2,11 @@
 
 namespace uujia\framework\base\common\lib\Event;
 
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
-use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
-class ServerRouteLocal implements ServerRouteInterface {
-	use NameBase;
+class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 	use ResultBase;
 	
 	/**
@@ -38,7 +37,7 @@ class ServerRouteLocal implements ServerRouteInterface {
 	public function __construct($parent = null) {
 		$this->_parent = $parent;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -46,7 +45,8 @@ class ServerRouteLocal implements ServerRouteInterface {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
+		
 		$this->initRoute();
 		
 		return $this;

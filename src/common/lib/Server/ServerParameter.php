@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Server;
 
 
 use uujia\framework\base\common\consts\ServerConst;
+use uujia\framework\base\common\lib\Base\BaseClass;
 
 /**
  * Class ServerParameter
@@ -12,7 +13,7 @@ use uujia\framework\base\common\consts\ServerConst;
  *
  * @package uujia\framework\base\common\lib\Server
  */
-class ServerParameter {
+class ServerParameter extends BaseClass {
 	
 	/**
 	 * 主机名 域名

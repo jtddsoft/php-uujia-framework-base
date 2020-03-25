@@ -34,9 +34,9 @@ class MQCollection extends TreeFunc {
 	 * @param        $parent
 	 */
 	public function __construct(Config $configObj, $parent = null) {
-		parent::__construct($parent);
-		
 		$this->_configObj = $configObj;
+		
+		parent::__construct($parent);
 	}
 	
 	/**

@@ -3,12 +3,12 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\lib\Container\Container;
 
-class Redis {
-	use NameBase;
+class Redis extends BaseClass {
 	
 	const KEY_CONTAINER_REDIS_ALIAS = 'redis';
 	
@@ -30,7 +30,7 @@ class Redis {
 		$this->_configObj = $configObj;
 		$this->_redisProviderObj = $redisProviderObj;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -38,7 +38,7 @@ class Redis {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		return $this;
 	}

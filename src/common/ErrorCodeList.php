@@ -4,11 +4,10 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\common\traits\NameBase;
 
-class ErrorCodeList {
-	use NameBase;
+class ErrorCodeList extends BaseClass {
 	
 	const ERROR_CODE_NAME = 'error_code';
 	
@@ -72,7 +71,7 @@ class ErrorCodeList {
 		// 	}
 		// }
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -80,7 +79,7 @@ class ErrorCodeList {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		return $this;
 	}

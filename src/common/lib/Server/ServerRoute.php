@@ -3,13 +3,13 @@
 namespace uujia\framework\base\common\lib\Server;
 
 use uujia\framework\base\common\consts\ServerConst;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\ServerRouteLocal;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
-class ServerRoute {
-	use NameBase;
+class ServerRoute extends BaseClass {
 	use ResultBase;
 	use InstanceBase;
 	
@@ -126,7 +126,7 @@ class ServerRoute {
 	public function __construct() {
 		// $this->_config = $config;
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -134,7 +134,7 @@ class ServerRoute {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		// 初始化
 		$this->_serverName = 'main';

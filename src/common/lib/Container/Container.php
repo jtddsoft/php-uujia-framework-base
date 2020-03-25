@@ -9,6 +9,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionMethod;
 use ReflectionParameter;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\Reflection;
@@ -22,7 +23,7 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common\lib\Container
  */
-class Container implements ContainerInterface, \Iterator, \ArrayAccess {
+class Container extends BaseClass implements ContainerInterface, \Iterator, \ArrayAccess {
 	use NameBase;
 	use ResultBase;
 	use InstanceBase;
@@ -48,7 +49,7 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	public function __construct(TreeFunc $list = null) {
 		$this->_list = $list ?? new TreeFunc();
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -56,7 +57,7 @@ class Container implements ContainerInterface, \Iterator, \ArrayAccess {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		$this->setKeyNotExistAutoCreate(true);
 		

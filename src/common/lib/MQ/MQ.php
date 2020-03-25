@@ -3,11 +3,10 @@
 
 namespace uujia\framework\base\common\lib\MQ;
 
-use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\ResultBase;
 
-abstract class MQ implements MQInterface {
-	use NameBase;
+abstract class MQ extends BaseClass implements MQInterface {
 	use ResultBase;
 	
 	// public static $_CLIENT_TYPE = [
@@ -59,7 +58,7 @@ abstract class MQ implements MQInterface {
 			$this->_config = array_merge($this->_config, $config);
 		}
 		
-		$this->init();
+		parent::__construct();
 	}
 	
 	/**
@@ -67,7 +66,7 @@ abstract class MQ implements MQInterface {
 	 * @return $this
 	 */
 	public function init() {
-		$this->initNameInfo();
+		parent::init();
 		
 		return $this;
 	}
