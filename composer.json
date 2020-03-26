@@ -12,11 +12,12 @@
         "php": ">=7.1.0",
         "psr/container": "^1.0",
         "bluerhinos/phpmqtt": "dev-master",
-        "php-amqplib/php-amqplib": "^2.11",
-        "psr/log": "^1.1",
-        "psr/event-dispatcher": "^1.0",
+        "php-amqplib/php-amqplib": "^2.11.1",
+        "psr/log": "^1.1.3",
+        "psr/event-dispatcher": "^1.0.0",
         "fig/event-dispatcher-util": "^1.1.0",
-        "doctrine/annotations": "^1.6"
+        "doctrine/annotations": "^1.6.0",
+        "oliverlorenz/php-mqtt-client": "^0.5.0"
     },
     "autoload": {
         "psr-4": {
