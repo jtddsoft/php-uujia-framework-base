@@ -10,7 +10,7 @@ use uujia\framework\base\common\lib\Container\Container;
 
 class Redis extends BaseClass {
 	
-	const KEY_CONTAINER_REDIS_ALIAS = 'redis';
+	// const KEY_CONTAINER_REDIS_ALIAS = 'redisProvider';
 	
 	/** @var RedisProviderInterface $_redisProviderObj */
 	protected $_redisProviderObj;
@@ -23,10 +23,12 @@ class Redis extends BaseClass {
 	 * Redis constructor.
 	 * 依赖Config
 	 *
+	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
+	 *
 	 * @param Config                 $configObj
 	 * @param RedisProviderInterface $redisProviderObj
 	 */
-	public function __construct(Config $configObj, $redisProviderObj = null) {
+	public function __construct(Config $configObj, RedisProviderInterface $redisProviderObj = null) {
 		$this->_configObj = $configObj;
 		$this->_redisProviderObj = $redisProviderObj;
 		
@@ -69,13 +71,13 @@ class Redis extends BaseClass {
 			'password' => '',
 		];
 		
-		if (empty($this->getRedisProviderObj())) {
-			/** @var Container $containerObj */
-			$containerObj = Container::getInstance();
-			
-			// 从容器中取出redis 这里用的是别名 【请一定要配置好容器别名列表】
-			$this->setRedisProviderObj($containerObj->get(self::KEY_CONTAINER_REDIS_ALIAS));
-		}
+		// if (empty($this->getRedisProviderObj())) {
+		// 	/** @var Container $containerObj */
+		// 	$containerObj = Container::getInstance();
+		//
+		// 	// 从容器中取出redis 这里用的是别名 【请一定要配置好容器别名列表】
+		// 	$this->setRedisProviderObj($containerObj->get(self::KEY_CONTAINER_REDIS_ALIAS));
+		// }
 		
 		$configRedis = $this->getConfigObj()->loadValue('redis', '', 'redis');
 		$configRedis = array_merge($_redisParam, $configRedis);

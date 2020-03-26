@@ -2,10 +2,6 @@
 
 namespace uujia\framework\base\common\lib\Cache;
 
-use uujia\framework\base\common\lib\Container\Container;
-use uujia\framework\base\common\lib\Redis\RedisProvider;
-use uujia\framework\base\common\Redis;
-
 trait CacheClassTrait {
 	
 	// /**
@@ -56,15 +52,15 @@ trait CacheClassTrait {
 	
 	}
 	
-	/**
-	 * @return \Redis
-	 */
-	public function getRedisObj() {
-		// return $this->_redisObj;
-		return Container::getInstance()
-		                ->get(Redis::KEY_CONTAINER_REDIS_ALIAS)
-						->getRedisObj();
-	}
+	// /**
+	//  * @return \Redis
+	//  */
+	// public function getRedisObj() {
+	// 	// return $this->_redisObj;
+	// 	return Container::getInstance()
+	// 	                ->get(Redis::KEY_CONTAINER_REDIS_ALIAS)
+	// 					->getRedisObj();
+	// }
 	
 	// /**
 	//  * @param \Redis $redisObj
@@ -77,15 +73,15 @@ trait CacheClassTrait {
 	// 	return $this;
 	// }
 	
-	/**
-	 * @return RedisProvider
-	 */
-	public function getRedisProviderObj() {
-		// return $this->_redisProviderObj;
-		return Container::getInstance()
-		                ->get(Redis::KEY_CONTAINER_REDIS_ALIAS)
-		                ->getRedisProviderObj();
-	}
+	// /**
+	//  * @return RedisProvider
+	//  */
+	// public function getRedisProviderObj() {
+	// 	// return $this->_redisProviderObj;
+	// 	return Container::getInstance()
+	// 	                ->get(Redis::KEY_CONTAINER_REDIS_ALIAS)
+	// 	                ->getRedisProviderObj();
+	// }
 	
 	// /**
 	//  * @param RedisProvider $redisProviderObj
