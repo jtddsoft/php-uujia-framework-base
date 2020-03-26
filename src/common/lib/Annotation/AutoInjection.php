@@ -4,6 +4,13 @@ namespace uujia\framework\base\common\lib\Annotation;
 
 use Doctrine\Common\Annotations\Annotation;
 
+/**
+ * Class AutoInjection
+ *
+ * @package uujia\framework\base\common\lib\Annotation
+ * @Annotation
+ * @Target({"METHOD"})
+ */
 class AutoInjection extends Annotation {
 	
 	/**
@@ -17,5 +24,6 @@ class AutoInjection extends Annotation {
 	 * @var string
 	 */
 	public $name;
+	
 	
 }

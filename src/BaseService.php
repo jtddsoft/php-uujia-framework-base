@@ -148,7 +148,7 @@ class BaseService {
 	 * @return Redis
 	 */
 	public function getRedis(): Redis {
-		return UU::C(Redis::KEY_CONTAINER_REDIS_ALIAS);
+		return UU::C(Redis::class);
 	}
 	
 	

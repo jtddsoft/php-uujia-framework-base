@@ -5,8 +5,7 @@ namespace uujia\framework\base\common;
 
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
-use uujia\framework\base\common\traits\NameBase;
-use uujia\framework\base\common\lib\Container\Container;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 
 class Redis extends BaseClass {
 	
@@ -23,10 +22,10 @@ class Redis extends BaseClass {
 	 * Redis constructor.
 	 * 依赖Config
 	 *
-	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
-	 *
 	 * @param Config                 $configObj
 	 * @param RedisProviderInterface $redisProviderObj
+	 *
+	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
 	public function __construct(Config $configObj, RedisProviderInterface $redisProviderObj = null) {
 		$this->_configObj = $configObj;

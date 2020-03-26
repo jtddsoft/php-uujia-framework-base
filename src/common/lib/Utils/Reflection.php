@@ -4,6 +4,7 @@ namespace uujia\framework\base\common\lib\Utils;
 
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use uujia\framework\base\common\traits\InstanceBase;
 
 /**
@@ -76,13 +77,25 @@ class Reflection {
 	protected $_propertyAnnotations;
 	
 	
-	
 	/**
 	 * 获取注解所属类型
 	 *  分为Class、Method、Property
 	 * @var int $_annotationOf
 	 */
 	protected $_annotationOf = 1;
+	
+	/**
+	 * 解析后的注解Map
+	 * @var array $_annotationMap
+	 */
+	protected $_annotationObjs = [];
+	
+	/**
+	 * 反射注入后的对象实例
+	 * @var Object $_injectionInstance
+	 */
+	protected $_injectionInstance = null;
+	
 	
 	/**
 	 * @param string $className     类名
@@ -95,6 +108,7 @@ class Reflection {
 		/** @var Reflection $me */
 		$me = static::getInstance();
 		$me->setClassName($className);
+		$me->setAnnotationOf($of);
 		
 		switch ($of) {
 			case self::ANNOTATION_OF_METHOD:
@@ -131,6 +145,9 @@ class Reflection {
 	 */
 	public function load() {
 		try {
+			// TODO: this method is deprecated and will be removed in doctrine/annotations 2.0
+			AnnotationRegistry::registerLoader('class_exists');
+			
 			// 根据获取的类型获取注解
 			switch ($this->_annotationOf) {
 				case self::ANNOTATION_OF_CLASS:
@@ -155,8 +172,11 @@ class Reflection {
 					$this->_setPropertyAnnotations($this->getReader()->getPropertyAnnotations($this->getRefProperty()));
 					break;
 			}
+			
+			return $this;
 		} catch (\ReflectionException $e) {
-		
+			// todo: error
+			return null;
 		}
 	}
 	
@@ -165,10 +185,10 @@ class Reflection {
 	 *
 	 * @param string $filter
 	 *
-	 * @return array
+	 * @return Reflection
 	 */
 	public function annotation($filter) {
-		$ref = [];
+		$this->_annotationObjs = [];
 		
 		// 根据获取的类型获取注解
 		switch ($this->_annotationOf) {
@@ -176,7 +196,7 @@ class Reflection {
 				// 获取类Class
 				foreach ($this->getClassAnnotations() as $item) {
 					if ($item instanceof $filter) {
-						$ref[] = $item;
+						$this->_annotationObjs[] = $item;
 					}
 				}
 				break;
@@ -185,7 +205,7 @@ class Reflection {
 				// 获取方法Method
 				foreach ($this->getMethodAnnotations() as $item) {
 					if ($item instanceof $filter) {
-						$ref[] = $item;
+						$this->_annotationObjs[] = $item;
 					}
 				}
 				break;
@@ -194,44 +214,40 @@ class Reflection {
 				// 获取属性Property
 				foreach ($this->getPropertyAnnotations() as $item) {
 					if ($item instanceof $filter) {
-						$ref[] = $item;
+						$this->_annotationObjs[] = $item;
 					}
 				}
 				break;
 		}
 		
-		return $ref;
+		return $this;
 	}
 	
 	/**
 	 * 实例化注入
 	 *
-	 * @param array|\Closure $args
-	 *
-	 * @return object|null
+	 * @param \Closure $callback
+	 * @return Reflection|null
 	 */
-	public function injection($args) {
-		try {
-			if (is_array($args)) {
-				$_args = $args;
-			} elseif (is_callable($args)) {
-				$_args = [];
+	public function injection(\Closure $callback) {
+		$this->_injectionInstance = null;
+		
+		if (is_callable($callback)) {
+			$_args = [];
+			
+			foreach ($this->getRefParameters() as $key => $param) {
+				$_arg = call_user_func_array($callback, [$this, $param]);
 				
-				foreach ($this->getRefParameters() as $key => $param) {
-					$_arg = call_user_func_array($args, [$this, $param]);
-					
-					$_args[$key] = $_arg;
-				}
+				$_args[$key] = $_arg;
 			}
 			
 			$reflection = $this->getRefClass();
-			$ins        = $reflection->newInstanceArgs($_args); // 传入的是关联数组
+			$this->_injectionInstance = $reflection->newInstanceArgs($_args); // 传入的是关联数组
 			
-			return $ins;
-		} catch (\ReflectionException $e) {
-			// todo: 异常
-			return null;
+			return $this;
 		}
+		
+		return null;
 	}
 	
 	/**
@@ -513,6 +529,57 @@ class Reflection {
 	 */
 	public function _setPropertyAnnotations($propertyAnnotations) {
 		$this->_propertyAnnotations = $propertyAnnotations;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return int
+	 */
+	public function getAnnotationOf(): int {
+		return $this->_annotationOf;
+	}
+	
+	/**
+	 * @param int $annotationOf
+	 * @return Reflection
+	 */
+	public function setAnnotationOf(int $annotationOf) {
+		$this->_annotationOf = $annotationOf;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getAnnotationObjs(): array {
+		return $this->_annotationObjs;
+	}
+	
+	/**
+	 * @param array $annotationObjs
+	 * @return Reflection
+	 */
+	public function _setAnnotationObjs(array $annotationObjs) {
+		$this->_annotationObjs = $annotationObjs;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return Object
+	 */
+	public function getInjectionInstance() {
+		return $this->_injectionInstance;
+	}
+	
+	/**
+	 * @param Object $injectionInstance
+	 * @return Reflection
+	 */
+	public function _setInjectionInstance($injectionInstance) {
+		$this->_injectionInstance = $injectionInstance;
 		
 		return $this;
 	}

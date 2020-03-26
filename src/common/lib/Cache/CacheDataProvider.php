@@ -22,12 +22,12 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	 */
 	protected $_params = [];
 	
-	/**
-	 * 返回值
-	 *
-	 * @var array $_results
-	 */
-	protected $_results = [];
+	// /**
+	//  * 返回值
+	//  *
+	//  * @var array $_results
+	//  */
+	// protected $_results = [];
 	
 	/**
 	 * CacheDataProvider constructor.
@@ -51,6 +51,35 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	 * @return mixed
 	 */
 	public function make() {
+	
+	}
+	
+	/**
+	 * 从缓存读取
+	 */
+	public function fromCache() {
+	
+	}
+	
+	/**
+	 * 写入缓存
+	 */
+	public function toCache() {
+	
+	}
+	
+	/**
+	 * 缓存是否存在
+	 * @return bool
+	 */
+	public function hasCache(): bool {
+		return false;
+	}
+	
+	/**
+	 * 清空缓存
+	 */
+	public function clearCache() {
 	
 	}
 	
@@ -89,21 +118,21 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 		return $this;
 	}
 	
-	/**
-	 * @return array
-	 */
-	public function getResults() {
-		return $this->_results;
-	}
-	
-	/**
-	 * @param array $results
-	 * @return $this
-	 */
-	public function setResults($results) {
-		$this->_results = $results;
-		
-		return $this;
-	}
+	// /**
+	//  * @return array
+	//  */
+	// public function getResults() {
+	// 	return $this->_results;
+	// }
+	//
+	// /**
+	//  * @param array $results
+	//  * @return $this
+	//  */
+	// public function setResults($results) {
+	// 	$this->_results = $results;
+	//
+	// 	return $this;
+	// }
 	
 }

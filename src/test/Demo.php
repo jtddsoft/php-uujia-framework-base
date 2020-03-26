@@ -70,9 +70,9 @@ class Demo extends BaseService {
 			$_containerObj = $this->getContainer();
 			$_containerObj->list()->setAlias($_containerAlias);
 		}
-		
+		$a = class_exists(AntoInjection::class);
 		$this->getRedis()
-		     ->setRedisProviderObj(new RedisProvider())
+		     // ->setRedisProviderObj(new RedisProvider())
 		     ->loadConfig();
 	}
 	

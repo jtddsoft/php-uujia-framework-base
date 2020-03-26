@@ -23,6 +23,27 @@ interface CacheDataProviderInterface {
 	public function make();
 	
 	/**
+	 * 从缓存读取
+	 */
+	public function fromCache();
+	
+	/**
+	 * 写入缓存
+	 */
+	public function toCache();
+	
+	/**
+	 * 清空缓存
+	 */
+	public function clearCache();
+	
+	/**
+	 * 是否存在缓存
+	 * @return bool
+	 */
+	public function hasCache(): bool;
+	
+	/**
 	 * 是否同时写入缓存
 	 *
 	 * @return bool
@@ -53,18 +74,18 @@ interface CacheDataProviderInterface {
 	 */
 	public function setParams($params);
 	
-	/**
-	 * 获取返回值
-	 *
-	 * @return array
-	 */
-	public function getResults();
-	
-	/**
-	 * 设置返回值
-	 *
-	 * @param array $results
-	 * @return $this
-	 */
-	public function setResults($results);
+	// /**
+	//  * 获取返回值
+	//  *
+	//  * @return array
+	//  */
+	// public function getResults();
+	//
+	// /**
+	//  * 设置返回值
+	//  *
+	//  * @param array $results
+	//  * @return $this
+	//  */
+	// public function setResults($results);
 }

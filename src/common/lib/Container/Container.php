@@ -9,6 +9,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionMethod;
 use ReflectionParameter;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
@@ -203,20 +204,60 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 						}
 						
 						// 自动依赖注入
-						$ins = Reflection::invokeInjection($className,
-							function (ReflectionMethod $refMethod, array $refParams, ReflectionParameter $param) use ($c) {
+						// todo: 不能用单例
+						$ins = Reflection::from($className, '__construct', Reflection::ANNOTATION_OF_METHOD)
+							->load()
+							->annotation(AutoInjection::class)
+							->injection(function (Reflection $me, ReflectionParameter $param) use ($c) {
 								$_arg = null;
-						
-								// 如果有类型约束 并且是个类 就构建这个依赖
-								if ($param->hasType() && $param->getClass() !== null) {
+								
+								/**
+								 * 检查是否有注解 AutoInjection
+								 * @var AutoInjection[] $anObjs
+								 */
+								$anObjs = $me->getAnnotationObjs();
+								$found = false;
+								$containerKey = '';
+								
+								if (!empty($anObjs)) {
+									foreach ($anObjs as $item) {
+										/** @var AutoInjection $item */
+										if ($item->arg == $param->getName()) {
+											$found = true;
+											$containerKey = $item->name;
+											break;
+										}
+									}
+								}
+								
+								if ($found) {
+									$_arg = $c->get($containerKey);
+								} elseif ($param->hasType() && $param->getClass() !== null) {
+									// 如果有类型约束 并且是个类 就构建这个依赖
 									$newClass = $c->get($param->getClass()->getName());
 									$_arg     = $newClass;
 								} elseif ($param->isDefaultValueAvailable()) {
 									$_arg = $param->getDefaultValue();
 								}
-						
+								
 								return $_arg;
-							});
+							})
+							->getInjectionInstance();
+						
+						// $ins = Reflection::invokeInjection($className,
+						// 	function (ReflectionMethod $refMethod, array $refParams, ReflectionParameter $param) use ($c) {
+						// 		$_arg = null;
+						//
+						// 		// 如果有类型约束 并且是个类 就构建这个依赖
+						// 		if ($param->hasType() && $param->getClass() !== null) {
+						// 			$newClass = $c->get($param->getClass()->getName());
+						// 			$_arg     = $newClass;
+						// 		} elseif ($param->isDefaultValueAvailable()) {
+						// 			$_arg = $param->getDefaultValue();
+						// 		}
+						//
+						// 		return $_arg;
+						// 	});
 						
 						return $ins;
 					} catch (\ReflectionException $e) {
