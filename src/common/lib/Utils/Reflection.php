@@ -98,29 +98,29 @@ class Reflection {
 	
 	
 	/**
-	 * @param string $className     类名
-	 * @param string $name          方法名或属性名
-	 * @param int    $of            类型所属（1-Class、2-Method、3-Property）
+	 * Reflection constructor.
 	 *
-	 * @return Reflection
+	 * @param string $className 类名
+	 * @param string $name      方法名或属性名
+	 * @param int    $of        类型所属（1-Class、2-Method、3-Property）
 	 */
-	public static function from($className, $name = '', $of = self::ANNOTATION_OF_CLASS) {
-		/** @var Reflection $me */
-		$me = static::getInstance();
-		$me->setClassName($className);
-		$me->setAnnotationOf($of);
+	public function __construct($className, $name = '', $of = self::ANNOTATION_OF_CLASS) {
+		// /** @var Reflection $me */
+		// $me = static::getInstance();
+		$this->setClassName($className);
+		$this->setAnnotationOf($of);
 		
 		switch ($of) {
 			case self::ANNOTATION_OF_METHOD:
-				$me->setMethodName($name);
+				$this->setMethodName($name);
 				break;
 			
 			case self::ANNOTATION_OF_PROPERTY:
-				$me->setPropertyName($name);
+				$this->setPropertyName($name);
 				break;
 		}
 		
-		return $me;
+		// return $me;
 	}
 	
 	/**

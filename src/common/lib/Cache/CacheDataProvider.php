@@ -9,6 +9,15 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 class CacheDataProvider extends BaseClass implements CacheDataProviderInterface {
 	
 	/**
+	 * 缓存Key前缀
+	 * （此处是来自上层的前缀 本层的真实前缀需要以此为基础拼接
+	 *  例如：$_cacheKeyPrefix = ['ev'] 要保存 key = ['ss'] 真实Key应为 'ev:ss'）
+	 *
+	 * @var array $_cacheKeyPrefix
+	 */
+	protected $_cacheKeyPrefix = [];
+	
+	/**
 	 * 是否在收集信息的同时写入缓存
 	 *
 	 * @var bool $_writeCache
@@ -32,8 +41,9 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	/**
 	 * CacheDataProvider constructor.
 	 *
+	 * @param string $cacheKeyPrefix
 	 */
-	public function __construct() {
+	public function __construct($cacheKeyPrefix = '') {
 		
 		
 		parent::__construct();
@@ -134,5 +144,22 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	//
 	// 	return $this;
 	// }
+	/**
+	 * @return string
+	 */
+	public function getCacheKeyPrefix(): string {
+		return $this->_cacheKeyPrefix;
+	}
+	
+	/**
+	 * @param string $cacheKeyPrefix
+	 *
+	 * @return CacheDataProvider
+	 */
+	public function _setCacheKeyPrefix(string $cacheKeyPrefix) {
+		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+		
+		return $this;
+	}
 	
 }

@@ -205,7 +205,9 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 						
 						// 自动依赖注入
 						// todo: 不能用单例
-						$ins = Reflection::from($className, '__construct', Reflection::ANNOTATION_OF_METHOD)
+						// $ins = Reflection::from($className, '__construct', Reflection::ANNOTATION_OF_METHOD)
+						$refObj = new Reflection($className, '__construct', Reflection::ANNOTATION_OF_METHOD);
+						$ins = $refObj
 							->load()
 							->annotation(AutoInjection::class)
 							->injection(function (Reflection $me, ReflectionParameter $param) use ($c) {

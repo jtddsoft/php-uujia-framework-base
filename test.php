@@ -30,6 +30,18 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			$demo->subscribeRabbitMQ();
 			break;
+		
+		case 'mqst':
+			$demo = new \uujia\framework\base\test\Demo();
+			
+			$demo->subscribeMQTT();
+			break;
+		
+		case 'mqss':
+			$demo = new \uujia\framework\base\test\Demo();
+			
+			$demo->publishMQTT();
+			break;
 			
 		case 'config':
 			$config = new \uujia\framework\base\test\ConfigTest();

@@ -5,46 +5,61 @@ namespace uujia\framework\base\common\lib\MQ;
 
 
 use Bluerhinos\phpMQTT;
+use oliverlorenz\reactphpmqtt\ClientFactory;
+use oliverlorenz\reactphpmqtt\MqttClient;
+use oliverlorenz\reactphpmqtt\protocol\Version4;
+use React\Promise\PromiseInterface;
 use uujia\framework\base\common\lib\Utils\Json;
+use React\Socket\ConnectionInterface as Stream;
+use oliverlorenz\reactphpmqtt\packet\Publish;
+use React\Socket\ConnectionInterface as Connection;
 
 class MQTT extends MQ {
 	
 	// MQTT 对象
-	/** @var $_mqObj phpMQTT */
+	/** @var MqttClient $_mqObj */
 	protected $_mqObj;
+	
+	/** @var PromiseInterface $_mqConnect */
+	protected $_mqConnect;
 	
 	// 配置
 	protected $_config = [
-		// 'client_type' => 0,
-		'enabled' => false,              // 启用
+		// // 'client_type' => 0,
+		// 'enabled' => false,              // 启用
+		//
+		// 'server'    => "localhost",     // change if necessary
+		// 'port'      => 1883,            // change if necessary
+		// 'username'  => "hello",         // set your username
+		// 'password'  => "123456",        // set your password
+		// 'client_id' => '',              // make sure this is unique for connecting to sever - you could use uniqid()
+		// 'cafile'    => null,            // 证书
+		// 'topics'    => '',              // 主题
+		//
+		// // connect_auto connect
+		// 'clean' => true,
+		// 'will' => null,
+		//
+		// // subscribe
+		// 'topics_callback' => null,
+		// // 'topics_callback' => [
+		// // 	'[topic1]' => [
+		// // 		'function' => function ($topic, $msg) {},
+		// // 		'qos' => 0,
+		// // 	],
+		// // 	'[topic2]' => [
+		// // 		'function' => function ($topic, $msg) {},
+		// // 		'qos' => 0,
+		// // 	],
+		// // ],
+		// 'qos'    => 0,
+		// // subscribe publish
+		// 'retain' => 0,
 		
-		'server'    => "localhost",     // change if necessary
-		'port'      => 1883,            // change if necessary
-		'username'  => "hello",         // set your username
-		'password'  => "123456",        // set your password
-		'client_id' => '',              // make sure this is unique for connecting to sever - you could use uniqid()
-		'cafile'    => null,            // 证书
-		'topics'    => '',              // 主题
-		
-		// connect_auto connect
-		'clean' => true,
-		'will' => null,
-		
-		// subscribe
-		'topics_callback' => null,
-		// 'topics_callback' => [
-		// 	'[topic1]' => [
-		// 		'function' => function ($topic, $msg) {},
-		// 		'qos' => 0,
-		// 	],
-		// 	'[topic2]' => [
-		// 		'function' => function ($topic, $msg) {},
-		// 		'qos' => 0,
-		// 	],
-		// ],
-		'qos'    => 0,
-		// subscribe publish
-		'retain' => 0,
+		'broker' => 'yourMqttBroker.tld:1883',
+		// 'options' => new \oliverlorenz\reactphpmqtt\packet\ConnectionOptions(array(
+		// 	                                                                     'keepAlive' => 120,
+		//                                                                      )),
 	];
 	
 	
@@ -63,10 +78,12 @@ class MQTT extends MQ {
 	 */
 	public function initMQ() {
 		if ($this->_config['enabled']) {
-			$this->setMqObj(new phpMQTT($this->_config['server'],
-			                            $this->_config['port'],
-			                            $this->_config['client_id'],
-			                            $this->_config['cafile']));
+			// $this->setMqObj(new phpMQTT($this->_config['server'],
+			//                             $this->_config['port'],
+			//                             $this->_config['client_id'],
+			//                             $this->_config['cafile']));
+			
+			$this->setMqObj(ClientFactory::createClient(new Version4()));
 			
 			$this->setInit(true);
 			return true;
@@ -232,29 +249,31 @@ class MQTT extends MQ {
 	 * @return $this|array|mixed|string|\think\response\Json
 	 */
 	public function connectAuto() {
-		if ($this->isErr()) { return $this; } // return $this->return_error();
+		// if ($this->isErr()) { return $this; } // return $this->return_error();
+		//
+		// if (!$this->isInit()) {
+		// 	if (!$this->initMQ()) {
+		// 		$this->error(self::ERROR_CODE[101], 101); // 未成功初始化
+		// 		return $this;
+		// 	}
+		// }
+		//
+		// $this->setConnected(false);
+		//
+		// $re = $this->getMqObj()->connect_auto($this->_config['clean'],
+		//                                       $this->_config['will'],
+		//                                       $this->_config['username'],
+		//                                       $this->_config['password']);
+		// if ($re === false) {
+		// 	$this->error(self::ERROR_CODE[102], 102); // 连接失败
+		// 	return $this;
+		// }
+		//
+		// $this->setConnected(true);
+		//
+		// return $this;
 		
-		if (!$this->isInit()) {
-			if (!$this->initMQ()) {
-				$this->error(self::ERROR_CODE[101], 101); // 未成功初始化
-				return $this;
-			}
-		}
-		
-		$this->setConnected(false);
-		
-		$re = $this->getMqObj()->connect_auto($this->_config['clean'],
-		                                      $this->_config['will'],
-		                                      $this->_config['username'],
-		                                      $this->_config['password']);
-		if ($re === false) {
-			$this->error(self::ERROR_CODE[102], 102); // 连接失败
-			return $this;
-		}
-		
-		$this->setConnected(true);
-		
-		return $this;
+		return parent::connectAuto();
 	}
 	
 	/**
@@ -274,14 +293,19 @@ class MQTT extends MQ {
 		
 		$this->setConnected(false);
 		
-		$re = $this->getMqObj()->connect($this->_config['clean'],
-		                                 $this->_config['will'],
-		                                 $this->_config['username'],
-		                                 $this->_config['password']);
+		// $re = $this->getMqObj()->connect($this->_config['clean'],
+		//                                  $this->_config['will'],
+		//                                  $this->_config['username'],
+		//                                  $this->_config['password']);
+		
+		$re = $this->getMqObj()->connect($this->_config['broker'], $this->_config['options']);
+		
 		if ($re === false) {
 			$this->error(self::ERROR_CODE[102], 102); // 连接失败
 			return $this;
 		}
+		
+		$this->_setMqConnect($re);
 		
 		$this->setConnected(true);
 		
@@ -296,7 +320,7 @@ class MQTT extends MQ {
 	public function close() {
 		if ($this->isErr()) { return $this->return_error(); }
 		
-		$this->getMqObj()->close();
+		// $this->getMqObj()->disconnect($this->getMqConnect());
 		
 		return $this->ok();
 	}
@@ -312,26 +336,51 @@ class MQTT extends MQ {
 		if ($this->isErr()) { return $this; }
 		
 		if ($this->isConnected()) {
-			$_topics_callback = $this->topics_callback();
+			// $_topics_callback = $this->topics_callback();
+			//
+			// if ($_topics_callback === null){
+			// 	$_topics_callback[$this->topics()] = [
+			// 		'function' => function ($topic, $msg) {
+			// 			if ($this->getCallbackSubscribe() !== null && is_callable($this->getCallbackSubscribe())) {
+			// 				$_param = [
+			// 					'msg' => $msg,
+			// 					'topic' => $topic,
+			// 				];
+			// 				call_user_func_array($this->getCallbackSubscribe(), $_param);
+			// 			}
+			// 		},
+			// 		'qos' => 0,
+			// 	];
+			// }
 			
-			if ($_topics_callback === null){
-				$_topics_callback[$this->topics()] = [
-					'function' => function ($topic, $msg) {
-						if ($this->getCallbackSubscribe() !== null && is_callable($this->getCallbackSubscribe())) {
-							$_param = [
-								'msg' => $msg,
-								'topic' => $topic,
-							];
-							call_user_func_array($this->getCallbackSubscribe(), $_param);
-						}
-					},
-					'qos' => 0,
-				];
-			}
+			// $this->getMqObj()->subscribe($_topics_callback, $this->_config['qos']);
+			//
+			// while($this->getMqObj()->proc()){}
 			
-			$this->getMqObj()->subscribe($_topics_callback, $this->_config['qos']);
+			$client = $this->getMqObj();
 			
-			while($this->getMqObj()->proc()){}
+			$this->getMqConnect()->then(function(Stream $stream) use ($client) {
+				$stream->on(Publish::EVENT, function(Publish $message) {
+					printf(
+						'Received payload "%s" for topic "%s"%s',
+						$message->getPayload(),
+						$message->getTopic(),
+						PHP_EOL
+					);
+					
+					if ($this->getCallbackSubscribe() !== null && is_callable($this->getCallbackSubscribe())) {
+						$_param = [
+							'msg'   => $message->getPayload(),
+							'topic' => $message->getTopic(),
+						];
+						call_user_func_array($this->getCallbackSubscribe(), $_param);
+					}
+				});
+				
+				$client->subscribe($stream, $this->topics(), 0);
+			});
+			
+			$client->getLoop()->run();
 		} else {
 			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
@@ -352,10 +401,22 @@ class MQTT extends MQ {
 			$msgText = $content;
 			is_array($msgText) && $msgText = Json::je($content);
 			
-			$this->getMqObj()->publish($this->_config['topics'],
-			                           $msgText,
-			                           $this->_config['qos'],
-			                           $this->_config['retain']);
+			// $this->getMqObj()->publish($this->_config['topics'],
+			//                            $msgText,
+			//                            $this->_config['qos'],
+			//                            $this->_config['retain']);
+			
+			$client = $this->getMqObj();
+			$p = $this->getMqConnect();
+			$client->getLoop()->addPeriodicTimer(0, function () use ($p, $client, $msgText) {
+				$p->then(function(Connection $stream) use ($client, $msgText) {
+					return $client->publish($stream, $this->topics(), $msgText);
+				});
+				$client->getLoop()->stop();
+			});
+			
+			// $client->getLoop()->run();
+			$client->getLoop()->run();
 		} else {
 			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
 		}
@@ -364,18 +425,36 @@ class MQTT extends MQ {
 	}
 	
 	/**
-	 * @return phpMQTT
+	 * @return MqttClient
 	 */
-	public function getMqObj(): phpMQTT {
+	public function getMqObj() {
 		return $this->_mqObj;
 	}
 	
 	/**
-	 * @param phpMQTT $mqObj
+	 * @param MqttClient $mqObj
 	 * @return $this
 	 */
 	public function setMqObj($mqObj) {
 		$this->_mqObj = $mqObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return PromiseInterface
+	 */
+	public function getMqConnect(): PromiseInterface {
+		return $this->_mqConnect;
+	}
+	
+	/**
+	 * @param PromiseInterface $mqConnect
+	 *
+	 * @return MQTT
+	 */
+	public function _setMqConnect(PromiseInterface $mqConnect) {
+		$this->_mqConnect = $mqConnect;
 		
 		return $this;
 	}

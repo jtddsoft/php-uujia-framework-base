@@ -6,31 +6,39 @@ return [
 		
 		'server'          => "localhost",     // change if necessary
 		'port'            => 1883,            // change if necessary
-		'username'        => "hello",         // set your username
-		'password'        => "123456",        // set your password
-		'client_id'       => '',              // make sure this is unique for connecting to sever - you could use uniqid()
+		'username'        => "",         // set your username hello
+		'password'        => "",        // set your password 123456
+		'client_id'       => '1',              // make sure this is unique for connecting to sever - you could use uniqid()
 		'cafile'          => null,            // 证书
-		'topics'          => '',              // 主题
+		'topics'          => 'test',              // 主题
+		//
+		// // connect_auto connect
+		// 'clean'           => true,
+		// 'will'            => null,
+		//
+		// // subscribe
+		// 'topics_callback' => null,
+		// // 'topics_callback' => [
+		// // 	'[topic1]' => [
+		// // 		'function' => function ($topic, $msg) {},
+		// // 		'qos' => 0,
+		// // 	],
+		// // 	'[topic2]' => [
+		// // 		'function' => function ($topic, $msg) {},
+		// // 		'qos' => 0,
+		// // 	],
+		// // ],
+		// 'qos'             => 0,
+		// // subscribe publish
+		// 'retain'          => 0,
 		
-		// connect_auto connect
-		'clean'           => true,
-		'will'            => null,
-		
-		// subscribe
-		'topics_callback' => null,
-		// 'topics_callback' => [
-		// 	'[topic1]' => [
-		// 		'function' => function ($topic, $msg) {},
-		// 		'qos' => 0,
-		// 	],
-		// 	'[topic2]' => [
-		// 		'function' => function ($topic, $msg) {},
-		// 		'qos' => 0,
-		// 	],
-		// ],
-		'qos'             => 0,
-		// subscribe publish
-		'retain'          => 0,
+		// 'broker' => 'yourMqttBroker.tld:1883',
+		'broker' => 'localhost:1883',
+		'options' => new \oliverlorenz\reactphpmqtt\packet\ConnectionOptions(array(
+			                                                                     'keepAlive' => 120,
+			                                                                     'username' => '',
+			                                                                     'password' => '',
+		                                                                     )),
 	],
 	
 	'RabbitMQ' => [

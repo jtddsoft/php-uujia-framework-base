@@ -68,6 +68,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	public function fromCache() {
 		if (!$this->hasCache()) {
 			// 不存在缓存 调起缓存数据管理器 收集数据传来
+			
 		}
 		
 		// 读取缓存

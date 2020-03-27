@@ -2,17 +2,20 @@
 
 // define('EXT_AMQP_ENABLED', 1);
 
+use oliverlorenz\reactphpmqtt\packet\QoS\Levels;
+
 return [
 	'MQTT' => [
 		'enabled' => true,              // 启用
 		
-		'server'          => "59.110.217.60",     // change if necessary
+		'server'          => "localhost",     // change if necessary
+		// 'server'          => "mq.tongxinmao.com",     // change if necessary
 		'port'            => 1883,            // change if necessary
-		'username'        => "hello",         // set your username
-		'password'        => "123456",        // set your password
-		'client_id'       => '',              // make sure this is unique for connecting to sever - you could use uniqid()
+		'username'        => "",         // set your username hello
+		'password'        => "",        // set your password 123456
+		'client_id'       => '1',              // make sure this is unique for connecting to sever - you could use uniqid()
 		'cafile'          => null,            // 证书
-		'topics'          => '',              // 主题
+		'topics'          => 'test',              // 主题
 		
 		// connect_auto connect
 		'clean'           => true,
@@ -33,6 +36,20 @@ return [
 		'qos'             => 0,
 		// subscribe publish
 		'retain'          => 0,
+		
+		// 'broker' => '59.110.217.60:1883',
+		'broker' => '127.0.0.1:1883',
+		'options' => new \oliverlorenz\reactphpmqtt\packet\ConnectionOptions([
+			                                                                     'username' => '', // hello
+			                                                                     'password' => '', // 123456
+			                                                                     // 'clientId' => '',
+			                                                                     // 'cleanSession' => '',
+			                                                                     // 'willTopic' => '',
+			                                                                     // 'willMessage' => '',
+			                                                                     // 'willQos' => Levels::AT_MOST_ONCE_DELIVERY,
+			                                                                     // 'willRetain' => false,
+			                                                                     'keepAlive' => 120,
+		                                                                     ]),
 	],
 	
 	'RabbitMQ' => [

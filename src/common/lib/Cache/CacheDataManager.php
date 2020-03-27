@@ -59,7 +59,34 @@ class CacheDataManager extends BaseClass {
 		};
 		
 		$itemFunc = function ($data, $it, $params) {
-		
+			// 获取汇总列表中所有配置
+			/** @var TreeFunc $it */
+			$it->cleanResults();
+			
+			/**
+			 * 遍历指定key下所有缓存供应商收集数据
+			 */
+			$it->wForEach(function ($_item, $index, $me, $params) {
+				/** @var TreeFunc $_item */
+				/** @var TreeFunc $me */
+				
+				$re = $_item->getData()->get($params, true, false);
+				
+				// Local返回值复制
+				$_item->getData()->setLastReturn($re);
+				
+				// 加入到返回值列表
+				$me->setLastReturn($re);
+				
+				if ($_item->getData()->isErr()) {
+					return false;
+				}
+				
+				return true;
+			}, $params);
+			
+			// return $this->ok();
+			return $it->getLastReturn();
 		};
 		
 		$this->getProviderList()
