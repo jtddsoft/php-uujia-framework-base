@@ -88,4 +88,24 @@ interface CacheDataProviderInterface {
 	//  * @return $this
 	//  */
 	// public function setResults($results);
+	
+	/**
+	 * 获取缓存key的前缀
+	 *  （可以为应用名称 用来区分多种缓存）
+	 *
+	 * @return array
+	 */
+	public function getCacheKeyPrefix();
+	
+	/**
+	 * 设置缓存key的前缀
+	 *
+	 * @param array $cacheKeyPrefix
+	 *
+	 * @return $this
+	 */
+	public function setCacheKeyPrefix($cacheKeyPrefix);
+	
+	
+	
 }

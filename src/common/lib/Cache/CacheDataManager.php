@@ -8,9 +8,29 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 
 class CacheDataManager extends BaseClass {
+	
+	/**
+	 * 缓存Key前缀
+	 * （此处是来自上层的前缀 本层的真实前缀需要以此为基础拼接
+	 *  例如：$_cacheKeyPrefix = ['ev'] 要保存 key = ['ss'] 真实Key应为 'ev:ss'）
+	 *
+	 * @var array $_cacheKeyPrefix
+	 */
+	protected $_cacheKeyPrefix = [];
 
 	/** @var TreeFunc $_providerList */
 	protected $_providerList = null;
+	
+	/**
+	 * CacheDataManager constructor.
+	 *
+	 * @param array $cacheKeyPrefix
+	 */
+	public function __construct($cacheKeyPrefix = []) {
+		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+		
+		parent::__construct();
+	}
 	
 	/**
 	 * 初始化
@@ -51,14 +71,16 @@ class CacheDataManager extends BaseClass {
 	 * @param CacheDataProviderInterface $itemProvider
 	 */
 	public function regProvider($key, $itemProvider) {
-		$subItemFunc = function ($data, $it, $params) use ($itemProvider) {
+		$cachePrefixs = $this->_cacheKeyPrefix;
+		$subItemFunc = function ($data, $it, $params) use ($itemProvider, $key, $cachePrefixs) {
 			$itemProvider->setParams($params);
+			$itemProvider->setCacheKeyPrefix($cachePrefixs);
 			$res = $itemProvider->make();
 			
 			return $res;
 		};
 		
-		$itemFunc = function ($data, $it, $params) {
+		$itemFunc = function ($data, $it, $params) use ($key) {
 			// 获取汇总列表中所有配置
 			/** @var TreeFunc $it */
 			$it->cleanResults();

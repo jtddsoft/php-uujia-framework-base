@@ -18,6 +18,14 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	protected $_cacheKeyPrefix = [];
 	
 	/**
+	 * 缓存key
+	 *  需要拼接前缀使用
+	 *
+	 * @var string $_key
+	 */
+	protected $_key = '';
+	
+	/**
 	 * 是否在收集信息的同时写入缓存
 	 *
 	 * @var bool $_writeCache
@@ -41,10 +49,10 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	/**
 	 * CacheDataProvider constructor.
 	 *
-	 * @param string $cacheKeyPrefix
+	 * @param array $cacheKeyPrefix
 	 */
-	public function __construct($cacheKeyPrefix = '') {
-		
+	public function __construct($cacheKeyPrefix = []) {
+		$this->_cacheKeyPrefix = $cacheKeyPrefix;
 		
 		parent::__construct();
 	}
@@ -53,6 +61,18 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 		parent::init();
 		
 		return $this;
+	}
+	
+	/**
+	 * 构建缓存Key
+	 *
+	 * @return string
+	 */
+	public function makeCacheKey() {
+		$k = $this->getCacheKeyPrefix();
+		$k[] = $this->_key;
+		
+		return implode(':', $k);
 	}
 	
 	/**
@@ -144,20 +164,39 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	//
 	// 	return $this;
 	// }
+	
 	/**
-	 * @return string
+	 * @return array
 	 */
-	public function getCacheKeyPrefix(): string {
+	public function getCacheKeyPrefix() {
 		return $this->_cacheKeyPrefix;
 	}
 	
 	/**
-	 * @param string $cacheKeyPrefix
+	 * @param array $cacheKeyPrefix
 	 *
 	 * @return CacheDataProvider
 	 */
-	public function _setCacheKeyPrefix(string $cacheKeyPrefix) {
+	public function setCacheKeyPrefix($cacheKeyPrefix) {
 		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getKey(): string {
+		return $this->_key;
+	}
+	
+	/**
+	 * @param string $key
+	 *
+	 * @return CacheDataProvider
+	 */
+	public function setKey(string $key) {
+		$this->_key = $key;
 		
 		return $this;
 	}
