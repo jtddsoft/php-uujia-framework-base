@@ -26,9 +26,9 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	use CacheClassTrait;
 	
 	// 缓存key前缀
-	const CACHE_KEY_PREFIX = 'event:';
+	const CACHE_KEY_PREFIX = 'event';
 	
-	protected $_cacheKeyPrefix = '';
+	protected $_cacheKeyPrefix = [];
 	
 	/**
 	 * 配置列表
@@ -37,8 +37,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	protected $_list;
 	
-	public function __construct($eventName = '') {
-		$this->_cacheKeyPrefix = $this->getRedisProviderObj()->getPrefix() . self::CACHE_KEY_PREFIX . $eventName;
+	public function __construct($cacheKeyPrefix = []) {
+		$this->_cacheKeyPrefix = $cacheKeyPrefix;
 	
 		parent::__construct();
 	}
@@ -97,6 +97,18 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	
 	}
 	
+	/**
+	 * 获取拼接后的缓存key
+	 *
+	 * @param string $currKey 当前key
+	 * @return string
+	 */
+	public function getCacheKey($currKey = '') {
+		// 前缀 + 起始key + 当前key = 最终使用key
+		$k = array_merge($this->getCacheKeyPrefix(), [$currKey]);
+		
+		return implode(':', $k);
+	}
 	
 	/**
 	 * 尾部添加
@@ -321,18 +333,18 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	/**
-	 * @return string
+	 * @return array
 	 */
-	public function getCacheKeyPrefix(): string {
+	public function getCacheKeyPrefix() {
 		return $this->_cacheKeyPrefix;
 	}
 	
 	/**
-	 * @param string $cacheKeyPrefix
+	 * @param array $cacheKeyPrefix
 	 *
 	 * @return $this
 	 */
-	public function setCacheKeyPrefix(string $cacheKeyPrefix) {
+	public function setCacheKeyPrefix(array $cacheKeyPrefix) {
 		$this->_cacheKeyPrefix = $cacheKeyPrefix;
 		
 		return $this;

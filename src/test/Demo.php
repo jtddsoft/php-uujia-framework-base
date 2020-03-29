@@ -109,9 +109,10 @@ class Demo extends BaseService {
 	
 	public function subscribeMQTT() {
 		$mq = $this->getMQCollection()->getMQTTObj();
-		$mq->connect()
-			->topics('Logger_2019')
-			->clientId('Logger_2019')
+		$mq->topics('Logger_2019')
+		   ->clientId('Logger2019')
+			->connect()
+			
 		   ->setCallbackSubscribe(function ($message) {
 			   // echo json_encode($message) . "\n";
 			   var_dump($message);
@@ -122,9 +123,10 @@ class Demo extends BaseService {
 	
 	public function publishMQTT() {
 		$mq = $this->getMQCollection()->getMQTTObj();
-		$mq->connect()
-			->topics('test')
-			->clientId('test2')
+		$mq->topics('Logger_2019')
+		   ->clientId('Logger20191')
+			// ->connect()
+			
 		   ->publish('111111111222222222');
 		
 	}

@@ -6,8 +6,8 @@ return [
 		
 		'server'          => "localhost",     // change if necessary
 		'port'            => 1883,            // change if necessary
-		'username'        => "",         // set your username hello
-		'password'        => "",        // set your password 123456
+		'username'        => "hello",         // set your username hello
+		'password'        => "123456",        // set your password 123456
 		'client_id'       => '1',              // make sure this is unique for connecting to sever - you could use uniqid()
 		'cafile'          => null,            // 证书
 		'topics'          => 'test',              // 主题
@@ -33,12 +33,12 @@ return [
 		// 'retain'          => 0,
 		
 		// 'broker' => 'yourMqttBroker.tld:1883',
-		'broker' => 'localhost:1883',
-		'options' => new \oliverlorenz\reactphpmqtt\packet\ConnectionOptions(array(
-			                                                                     'keepAlive' => 120,
-			                                                                     'username' => '',
-			                                                                     'password' => '',
-		                                                                     )),
+		// 'broker' => 'localhost:1883',
+		// 'options' => new \oliverlorenz\reactphpmqtt\packet\ConnectionOptions(array(
+		// 	                                                                     'keepAlive' => 120,
+		// 	                                                                     'username' => '',
+		// 	                                                                     'password' => '',
+		//                                                                      )),
 	],
 	
 	'RabbitMQ' => [

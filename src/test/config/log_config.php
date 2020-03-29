@@ -8,7 +8,7 @@ return [
 	'MQTT' => [
 		'enabled' => true,              // 启用
 		
-		'client_id' => 'Logger_2019',              // make sure this is unique for connecting to sever - you could use uniqid()
+		'client_id' => 'Logger2019',              // make sure this is unique for connecting to sever - you could use uniqid()
 		'topics'    => 'Logger_2019',              // 主题
 		
 		'topics_list' => 'Logger_2019_List',

@@ -114,6 +114,19 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	}
 	
 	/**
+	 * 获取拼接后的缓存key
+	 *
+	 * @param string $currKey 当前key
+	 * @return string
+	 */
+	public function getCacheKey($currKey = '') {
+		// 前缀 + 起始key + 当前key = 最终使用key
+		$k = array_merge($this->getCacheKeyPrefix(), [$this->getKey(), $currKey]);
+		
+		return implode(':', $k);
+	}
+	
+	/**
 	 * @return bool
 	 */
 	public function isWriteCache(): bool {

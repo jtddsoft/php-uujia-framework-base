@@ -4,7 +4,6 @@
 namespace uujia\framework\base\common\lib\MQ;
 
 
-use Bluerhinos\phpMQTT;
 use oliverlorenz\reactphpmqtt\ClientFactory;
 use oliverlorenz\reactphpmqtt\MqttClient;
 use oliverlorenz\reactphpmqtt\protocol\Version4;
@@ -13,6 +12,7 @@ use uujia\framework\base\common\lib\Utils\Json;
 use React\Socket\ConnectionInterface as Stream;
 use oliverlorenz\reactphpmqtt\packet\Publish;
 use React\Socket\ConnectionInterface as Connection;
+use karpy47\PhpMqttClient\MQTTClient as MQTTClientP;
 
 class MQTT extends MQ {
 	
@@ -397,29 +397,49 @@ class MQTT extends MQ {
 	public function publish($content) {
 		if ($this->isErr()) { return $this; }
 		
-		if ($this->isConnected()) {
+		// if ($this->isConnected()) {
 			$msgText = $content;
 			is_array($msgText) && $msgText = Json::je($content);
-			
-			// $this->getMqObj()->publish($this->_config['topics'],
-			//                            $msgText,
-			//                            $this->_config['qos'],
-			//                            $this->_config['retain']);
-			
-			$client = $this->getMqObj();
-			$p = $this->getMqConnect();
-			$client->getLoop()->addPeriodicTimer(0, function () use ($p, $client, $msgText) {
-				$p->then(function(Connection $stream) use ($client, $msgText) {
-					return $client->publish($stream, $this->topics(), $msgText);
-				});
-				$client->getLoop()->stop();
-			});
-			
-			// $client->getLoop()->run();
-			$client->getLoop()->run();
-		} else {
-			$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
+		//
+		// 	// $this->getMqObj()->publish($this->_config['topics'],
+		// 	//                            $msgText,
+		// 	//                            $this->_config['qos'],
+		// 	//                            $this->_config['retain']);
+		//
+		// 	$client = $this->getMqObj();
+		// 	$p = $this->getMqConnect();
+		// 	$client->getLoop()->addPeriodicTimer(0.1, function () use ($p, $client, $msgText) {
+		// 		$p->then(function(Connection $stream) use ($client, $msgText) {
+		// 			return $client->publish($stream, $this->topics(), $msgText);
+		// 		});
+		// 		$client->getLoop()->stop();
+		// 	});
+		//
+		// 	// $client->getLoop()->run();
+		// 	$client->getLoop()->run();
+		// } else {
+		// 	$this->error(self::ERROR_CODE[104], 104); // 未连接服务端
+		// }
+		
+		$client = new MQTTClientP($this->_config['server'],
+		                          $this->_config['port']);
+		$client->setAuthentication($this->_config['username'],
+		                           $this->_config['password']);
+		// $client->setEncryption('cacerts.pem');
+		$success = $client->sendConnect($this->_config['client_id'] . 1);  // set your client ID
+		if ($success) {
+			// $client->sendSubscribe('topic1');
+			// $client->sendPublish('topic2', 'Message to all subscribers of this topic');
+			$client->sendPublish($this->topics(), $msgText);
+			// $messages = $client->getPublishMessages();  // now read and acknowledge all messages waiting
+			// foreach ($messages as $message) {
+			// 	echo $message['topic'] .': '. $message['message'] . PHP_EOL;
+			// 	// Other keys in $message array: retain (boolean), duplicate (boolean), qos (0-2), packetId (2-byte integer)
+			// }
+			$client->sendDisconnect();
 		}
+		$client->close();
+		
 		
 		return $this;
 	}
@@ -458,6 +478,5 @@ class MQTT extends MQ {
 		
 		return $this;
 	}
-	
 	
 }

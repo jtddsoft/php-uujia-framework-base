@@ -16,6 +16,7 @@
         "psr/event-dispatcher": "^1.0.0",
         "fig/event-dispatcher-util": "^1.1.0",
         "doctrine/annotations": "^1.6.0",
+        "karpy47/php-mqtt-client": "^1.0",
         "oliverlorenz/php-mqtt-client": "^0.5.0"
     },
     "autoload": {
