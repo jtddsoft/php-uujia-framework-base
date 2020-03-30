@@ -33,9 +33,17 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	/**
 	 * 配置列表
 	 *
-	 * @var $_list TreeFunc
+	 * @var TreeFunc $_list
 	 */
 	protected $_list;
+	
+	/**
+	 * 要触发的事件对象
+	 * （EventHandle 主要取事件标识 addons.rubbish2.user.LoginBefore）
+	 *
+	 * @var EventHandleInterface $_eventHandle;
+	 */
+	protected $_eventHandle;
 	
 	public function __construct($cacheKeyPrefix = []) {
 		$this->_cacheKeyPrefix = $cacheKeyPrefix;
@@ -87,6 +95,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @return bool
 	 */
 	public function hasCache(): bool {
+		
 		return false;
 	}
 	
