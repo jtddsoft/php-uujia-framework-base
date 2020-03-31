@@ -7,6 +7,7 @@ namespace uujia\framework\base\common\lib\Event;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use uujia\framework\base\common\Config;
+use uujia\framework\base\common\consts\CacheConst;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Base\BaseClass;
@@ -300,6 +301,17 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function getRedisObj() {
 		return $this->getParent()->getRedisObj();
+	}
+	
+	public function getCacheDataManager() {
+		return $this->getParent()->getCacheDataManagerObj();
+	}
+	
+	public function getCacheDataProvider() {
+		$cdMgr = $this->getCacheDataManager();
+		$cdProvider = $cdMgr->getProviderList()->get(CacheConst::DATA_PROVIDER_KEY_EVENT);
+		
+		return $cdProvider;
 	}
 	
 }

@@ -6,6 +6,7 @@ namespace uujia\framework\base\common\lib\Event;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 
 /**
@@ -17,11 +18,31 @@ use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	
 	/**
+	 * CacheDataManager对象
+	 *
+	 * @var CacheDataManagerInterface $_cacheDataManagerObj
+	 */
+	protected $_cacheDataManagerObj;
+	
+	/**
 	 * Redis对象
 	 *
 	 * @var RedisProviderInterface $_redisProviderObj
 	 */
 	protected $_redisProviderObj;
+	
+	/**
+	 * EventDispatcher constructor.
+	 *
+	 * @param CacheDataManagerInterface|null $cacheDataManagerObj
+	 * @param RedisProviderInterface|null    $redisProviderObj
+	 */
+	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null, RedisProviderInterface $redisProviderObj = null) {
+		$this->_cacheDataManagerObj = $cacheDataManagerObj;
+		$this->_redisProviderObj = $redisProviderObj;
+		
+		parent::__construct();
+	}
 	
 	
 	/**
@@ -36,7 +57,7 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	/**
 	 * @return RedisProviderInterface
 	 */
-	public function getRedisProviderObj(): RedisProviderInterface {
+	public function getRedisProviderObj() {
 		return $this->_redisProviderObj;
 	}
 	
@@ -44,7 +65,7 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	 * @param RedisProviderInterface $redisProviderObj
 	 * @return $this
 	 */
-	public function setRedisProviderObj(RedisProviderInterface $redisProviderObj) {
+	public function setRedisProviderObj($redisProviderObj) {
 		$this->_redisProviderObj = $redisProviderObj;
 	
 		return $this;
@@ -55,6 +76,23 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	 */
 	public function getRedisObj() {
 		return $this->getRedisProviderObj()->getRedisObj();
+	}
+	
+	/**
+	 * @return CacheDataManagerInterface
+	 */
+	public function getCacheDataManagerObj() {
+		return $this->_cacheDataManagerObj;
+	}
+	
+	/**
+	 * @param CacheDataManagerInterface $cacheDataManagerObj
+	 * @return $this
+	 */
+	public function setCacheDataManagerObj($cacheDataManagerObj) {
+		$this->_cacheDataManagerObj = $cacheDataManagerObj;
+		
+		return $this;
 	}
 	
 	
