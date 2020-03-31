@@ -86,11 +86,15 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		return $this->_isStopped;
 	}
 	
-	public function _event_trigger() {
+	public function _trigger() {
 	
 	}
 	
-	public function _event_listen($params) {
+	public function t() {
+		return $this->_trigger();
+	}
+	
+	public function _listen($params) {
 		// list ($data, $eventItem, $callParams, $name, $serverName, $serverConfig, $server) = $params;
 		[$fParams, $name, $serverName, $serverConfig, $server] = $params;
 		
@@ -115,6 +119,10 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 				// todo：MQ通信 POST请求之类
 				break;
 		}
+	}
+	
+	public function on($params) {
+		return $this->_listen($params);
 	}
 	
 	/**************************************************

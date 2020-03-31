@@ -11,4 +11,9 @@ namespace uujia\framework\base\common\lib\Cache;
  */
 interface CacheDataManagerInterface {
 	
+	
+	public function getRedisObj();
+	
+	
+	
 }

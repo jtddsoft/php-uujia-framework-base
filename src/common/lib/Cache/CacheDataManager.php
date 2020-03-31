@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Cache;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 
 class CacheDataManager extends BaseClass {
@@ -22,11 +23,22 @@ class CacheDataManager extends BaseClass {
 	protected $_providerList = null;
 	
 	/**
+	 * Redis对象
+	 *
+	 * @var RedisProviderInterface $_redisProviderObj
+	 */
+	protected $_redisProviderObj;
+	
+	/**
 	 * CacheDataManager constructor.
 	 *
-	 * @param array $cacheKeyPrefix
+	 * @param RedisProviderInterface|null $redisProvider
+	 * @param array                       $cacheKeyPrefix
+	 *
+	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct($cacheKeyPrefix = []) {
+	public function __construct(RedisProviderInterface $redisProvider = null, $cacheKeyPrefix = []) {
+		$this->_redisProviderObj = $redisProvider;
 		$this->_cacheKeyPrefix = $cacheKeyPrefix;
 		
 		parent::__construct();
@@ -75,6 +87,7 @@ class CacheDataManager extends BaseClass {
 		$subItemFunc = function ($data, $it, $params) use ($itemProvider, $key, $cachePrefixs) {
 			$itemProvider->setParams($params);
 			$itemProvider->setCacheKeyPrefix($cachePrefixs);
+			$itemProvider->setParent($this);
 			$res = $itemProvider->make();
 			
 			return $res;
@@ -152,6 +165,30 @@ class CacheDataManager extends BaseClass {
 		$this->_providerList = $providerList;
 		
 		return $this;
+	}
+	
+	/**
+	 * @return RedisProviderInterface
+	 */
+	public function getRedisProviderObj(): RedisProviderInterface {
+		return $this->_redisProviderObj;
+	}
+	
+	/**
+	 * @param RedisProviderInterface $redisProviderObj
+	 * @return $this
+	 */
+	public function setRedisProviderObj(RedisProviderInterface $redisProviderObj) {
+		$this->_redisProviderObj = $redisProviderObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return \Redis
+	 */
+	public function getRedisObj() {
+		return $this->getRedisProviderObj()->getRedisObj();
 	}
 	
 }

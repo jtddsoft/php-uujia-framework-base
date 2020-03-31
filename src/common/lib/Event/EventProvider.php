@@ -6,6 +6,7 @@ namespace uujia\framework\base\common\lib\Event;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
+use uujia\framework\base\common\Config;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Base\BaseClass;
@@ -29,6 +30,11 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	// 缓存key前缀
 	const CACHE_KEY_PREFIX = 'event';
 	
+	/**
+	 * @var EventDispatcher $_parent
+	 */
+	protected $_parent;
+	
 	protected $_cacheKeyPrefix = [];
 	
 	/**
@@ -47,22 +53,32 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	protected $_eventHandle;
 	
 	/**
-	 * Redis对象
+	 * 配置项
 	 *
-	 * @var RedisProviderInterface $_redisProviderObj
+	 * @var array $_config
 	 */
-	protected $_redisProviderObj;
+	protected $_config = [];
+	
+	/**
+	 * 最后一次key的搜索
+	 *
+	 * @var array $_lastKeys
+	 */
+	protected $_lastKeys = [];
+	
 	
 	/**
 	 * EventProvider constructor.
 	 *
-	 * @param RedisProviderInterface $redisProvider
-	 * @param array                  $cacheKeyPrefix
+	 * @param null  $parent
+	 * @param array $config
+	 * @param array $cacheKeyPrefix
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct(RedisProviderInterface $redisProvider, $cacheKeyPrefix = []) {
-		$this->_redisProviderObj = $redisProvider;
+	public function __construct($parent = null, $config = [], $cacheKeyPrefix = []) {
+		$this->_parent = $parent;
+		$this->_config = $config;
 		
 		$this->_cacheKeyPrefix = $cacheKeyPrefix;
 		$this->_cacheKeyPrefix[] = self::CACHE_KEY_PREFIX;
@@ -79,6 +95,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		if (!($event instanceof EventHandleInterface)) {
 			return [];
 		}
+		
+		$this->setEventHandle($event);
 		
 		
 	}
@@ -110,7 +128,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @inheritDoc
 	 */
 	public function toCache() {
-	
+		return $this;
 	}
 	
 	/**
@@ -120,17 +138,37 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	public function hasCache(): bool {
 		$k = $this->getCacheKey('*');
 		
-		/** @var RedisProviderInterface $redis */
+		/** @var \Redis $redis */
 		$redis = $this->getRedisProviderObj()->getRedisObj();
-		$re = $redis->keys($k);
-		return false;
+		$iterator = null;
+		$reKeys = $redis->scan($iterator, $k, 1);
+		
+		// while(false !== ($keys = $redis->scan($iterator))) {
+		// 	foreach($keys as $key) {
+		// 		echo $key . PHP_EOL;
+		// 	}
+		// }
+		return !empty($reKeys);
 	}
 	
 	/**
 	 * @inheritDoc
 	 */
 	public function clearCache() {
-	
+		$k = $this->getCacheKey('*');
+		
+		/** @var \Redis $redis */
+		$redis = $this->getRedisProviderObj()->getRedisObj();
+		
+		$iterator = null;
+		while(false !== ($keys = $redis->scan($iterator, $k, 100))) {
+			// foreach($keys as $key) {
+			// 	echo $key . PHP_EOL;
+			// }
+			$redis->del($keys);
+		}
+		
+		return $this;
 	}
 	
 	/**
@@ -141,7 +179,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function getCacheKey($currKey = '') {
 		// 前缀 + 起始key + 当前key = 最终使用key
-		$k = array_merge($this->getCacheKeyPrefix(), [$currKey]);
+		$k = !empty($currKey) ? array_merge($this->getCacheKeyPrefix(), [$currKey]) : $this->getCacheKeyPrefix();
 		
 		return implode(':', $k);
 	}
@@ -213,7 +251,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	
 	/**
 	 * @param EventHandleInterface $eventHandle
-	 * @return EventProvider
+	 * @return $this
 	 */
 	public function setEventHandle(EventHandleInterface $eventHandle) {
 		$this->_eventHandle = $eventHandle;
@@ -222,20 +260,46 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	/**
-	 * @return RedisProviderInterface
+	 * @return array
 	 */
-	public function getRedisProviderObj(): RedisProviderInterface {
-		return $this->_redisProviderObj;
+	public function getLastKeys(): array {
+		return $this->_lastKeys;
 	}
 	
 	/**
-	 * @param RedisProviderInterface $redisProviderObj
-	 * @return EventProvider
+	 * @param array $lastKeys
+	 *
+	 * @return $this
 	 */
-	public function setRedisProviderObj(RedisProviderInterface $redisProviderObj) {
-		$this->_redisProviderObj = $redisProviderObj;
+	public function setLastKeys(array $lastKeys) {
+		$this->_lastKeys = $lastKeys;
 		
 		return $this;
+	}
+	
+	/**
+	 * @return EventDispatcher
+	 */
+	public function getParent(): EventDispatcher {
+		return $this->_parent;
+	}
+	
+	/**
+	 * @param EventDispatcher $parent
+	 *
+	 * @return EventProvider
+	 */
+	public function setParent(EventDispatcher $parent) {
+		$this->_parent = $parent;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return \Redis
+	 */
+	public function getRedisObj() {
+		return $this->getParent()->getRedisObj();
 	}
 	
 }

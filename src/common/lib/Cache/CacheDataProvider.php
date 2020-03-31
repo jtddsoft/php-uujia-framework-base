@@ -5,8 +5,17 @@ namespace uujia\framework\base\common\lib\Cache;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 
 class CacheDataProvider extends BaseClass implements CacheDataProviderInterface {
+	
+	// 缓存有效时间
+	const CACHE_EXPIRES_TIME = 120 * 1000;
+	
+	/**
+	 * @var CacheDataManagerInterface $_parent
+	 */
+	protected $_parent;
 	
 	/**
 	 * 缓存Key前缀
@@ -39,6 +48,20 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	 */
 	protected $_params = [];
 	
+	/**
+	 * 配置项
+	 *
+	 * @var array $_config
+	 */
+	protected $_config = [];
+	
+	/**
+	 * 缓存有效时间
+	 *
+	 * @var float|int $_cache_expires_time
+	 */
+	protected $_cache_expires_time = 120 * 1000;
+	
 	// /**
 	//  * 返回值
 	//  *
@@ -49,10 +72,15 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	/**
 	 * CacheDataProvider constructor.
 	 *
+	 * @param null|CacheDataManagerInterface  $parent
 	 * @param array $cacheKeyPrefix
+	 * @param array $config
 	 */
-	public function __construct($cacheKeyPrefix = []) {
+	public function __construct($parent = null, $cacheKeyPrefix = [], $config = []) {
+		$this->_parent = $parent;
 		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+		$this->_config = $config;
+		$this->_cache_expires_time = $config['cache_expires_time'] ?? self::CACHE_EXPIRES_TIME;
 		
 		parent::__construct();
 	}
@@ -212,6 +240,67 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 		$this->_key = $key;
 		
 		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getConfig(): array {
+		return $this->_config;
+	}
+	
+	/**
+	 * @param array $config
+	 *
+	 * @return CacheDataProvider
+	 */
+	public function _setConfig(array $config) {
+		$this->_config = $config;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return float|int
+	 */
+	public function getCacheExpiresTime() {
+		return $this->_cache_expires_time;
+	}
+	
+	/**
+	 * @param float|int $cache_expires_time
+	 *
+	 * @return CacheDataProvider
+	 */
+	public function setCacheExpiresTime($cache_expires_time) {
+		$this->_cache_expires_time = $cache_expires_time;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return CacheDataManagerInterface
+	 */
+	public function getParent() {
+		return $this->_parent;
+	}
+	
+	/**
+	 * @param CacheDataManagerInterface $parent
+	 *
+	 * @return CacheDataProvider
+	 */
+	public function setParent($parent) {
+		$this->_parent = $parent;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return \Redis
+	 */
+	public function getRedisObj() {
+		return $this->getParent()->getRedisObj();
 	}
 	
 }

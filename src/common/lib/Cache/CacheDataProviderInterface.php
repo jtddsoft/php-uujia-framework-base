@@ -106,6 +106,18 @@ interface CacheDataProviderInterface {
 	 */
 	public function setCacheKeyPrefix($cacheKeyPrefix);
 	
+	/**
+	 * @return CacheDataManagerInterface
+	 */
+	public function getParent();
 	
+	/**
+	 * @param CacheDataManagerInterface $parent
+	 *
+	 * @return $this
+	 */
+	public function setParent($parent);
+	
+	public function getRedisObj();
 	
 }
