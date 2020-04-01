@@ -109,26 +109,28 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 *      2）不存在 构建参数存入缓存
 	 */
 	public function _run() {
-	
-	}
-	
-	/**
-	 * @inheritDoc
-	 */
-	public function fromCache() {
 		if (!$this->hasCache()) {
 			// 不存在缓存 调起缓存数据管理器 收集数据传来
 			
 		}
 		
 		// 读取缓存
-		
+		$this->fromCache();
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public function fromCache() {
+	
 	}
 	
 	/**
 	 * @inheritDoc
 	 */
 	public function toCache() {
+		// 调用缓存数据供应商
+		
 		return $this;
 	}
 	
