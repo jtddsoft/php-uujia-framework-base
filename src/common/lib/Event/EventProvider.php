@@ -74,8 +74,6 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @param null  $parent
 	 * @param array $config
 	 * @param array $cacheKeyPrefix
-	 *
-	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
 	public function __construct($parent = null, $config = [], $cacheKeyPrefix = []) {
 		$this->_parent = $parent;

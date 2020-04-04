@@ -36,6 +36,8 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	 *
 	 * @param CacheDataManagerInterface|null $cacheDataManagerObj
 	 * @param RedisProviderInterface|null    $redisProviderObj
+	 *
+	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
 	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null, RedisProviderInterface $redisProviderObj = null) {
 		$this->_cacheDataManagerObj = $cacheDataManagerObj;
