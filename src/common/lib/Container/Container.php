@@ -219,21 +219,31 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 								 */
 								$anObjs = $me->getAnnotationObjs();
 								$found = false;
-								$containerKey = '';
+								$autoInjectionItem = '';
 								
 								if (!empty($anObjs)) {
 									foreach ($anObjs as $item) {
 										/** @var AutoInjection $item */
 										if ($item->arg == $param->getName()) {
 											$found = true;
-											$containerKey = $item->name;
+											// $containerKey = $item->name;
+											$autoInjectionItem = $item;
 											break;
 										}
 									}
 								}
 								
 								if ($found) {
-									$_arg = $c->get($containerKey);
+									// $_arg = $c->get($containerKey);
+									switch ($autoInjectionItem->type) {
+										case 'c':
+											$_arg = $c->get($autoInjectionItem->name);
+											break;
+											
+										case 'v':
+											$_arg = $autoInjectionItem->value;
+											break;
+									}
 								} elseif ($param->hasType() && $param->getClass() !== null) {
 									// 如果有类型约束 并且是个类 就构建这个依赖
 									$newClass = $c->get($param->getClass()->getName());

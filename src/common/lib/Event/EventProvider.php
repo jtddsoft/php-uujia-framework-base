@@ -47,6 +47,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	
 	/**
 	 * 要触发的事件对象
+	 *  事件调度会传来EventHandle对象的触发形态
 	 * （EventHandle 主要取事件标识 addons.rubbish2.user.LoginBefore）
 	 *
 	 * @var EventHandleInterface $_eventHandle;
@@ -109,7 +110,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	public function _run() {
 		if (!$this->hasCache()) {
 			// 不存在缓存 调起缓存数据管理器 收集数据传来
-			
+			$this->toCache();
 		}
 		
 		// 读取缓存
@@ -120,7 +121,28 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @inheritDoc
 	 */
 	public function fromCache() {
-	
+		// todo: 从触发的EventHandle中解出当前触发事件名
+		$this->getEventHandle();
+		
+		$k = $this->getCacheKey('*');
+		
+		/** @var \Redis $redis */
+		$redis = $this->getRedisObj();
+		
+		// $iterator = null;
+		// while(false !== ($keys = $redis->scan($iterator, $k, 1))) {
+		// 	foreach($keys as $key) {
+		// 		// echo $key . PHP_EOL;
+		//
+		// 	}
+		// }
+		
+		$reData = $redis->zrange($k, 0, -1);
+		
+		
+		
+		
+		
 	}
 	
 	/**
@@ -128,6 +150,10 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function toCache() {
 		// 调用缓存数据供应商
+		$this->getParent()
+		     ->getCacheDataManagerObj()
+		     ->getProviderList()
+			 ->getKeyDataValue(CacheConst::DATA_PROVIDER_KEY_EVENT);
 		
 		return $this;
 	}
@@ -137,36 +163,49 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @return bool
 	 */
 	public function hasCache(): bool {
-		$k = $this->getCacheKey('*');
+		// $k = $this->getCacheKey('*');
+		//
+		// /** @var \Redis $redis */
+		// $redis = $this->getRedisProviderObj()->getRedisObj();
+		// $iterator = null;
+		// $reKeys = $redis->scan($iterator, $k, 1);
+		//
+		// // while(false !== ($keys = $redis->scan($iterator))) {
+		// // 	foreach($keys as $key) {
+		// // 		echo $key . PHP_EOL;
+		// // 	}
+		// // }
+		// return !empty($reKeys);
 		
-		/** @var \Redis $redis */
-		$redis = $this->getRedisProviderObj()->getRedisObj();
-		$iterator = null;
-		$reKeys = $redis->scan($iterator, $k, 1);
-		
-		// while(false !== ($keys = $redis->scan($iterator))) {
-		// 	foreach($keys as $key) {
-		// 		echo $key . PHP_EOL;
-		// 	}
-		// }
-		return !empty($reKeys);
+		return EventFilter::factory()
+		                  ->setRedisObj($this->getRedisObj())
+		                  ->setProfix($this->getCacheKeyPrefix())
+		                  ->keyExist();
 	}
 	
 	/**
 	 * @inheritDoc
 	 */
 	public function clearCache() {
-		$k = $this->getCacheKey('*');
+		// $k = $this->getCacheKey('*');
+		//
+		// /** @var \Redis $redis */
+		// $redis = $this->getRedisObj();
+		//
+		// $iterator = null;
+		// while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
+		// 	// foreach($keys as $key) {
+		// 	// 	echo $key . PHP_EOL;
+		// 	// }
+		// 	$redis->del($keys);
+		// }
+		//
+		// return $this;
 		
-		/** @var \Redis $redis */
-		$redis = $this->getRedisProviderObj()->getRedisObj();
-		
-		$iterator = null;
-		while(false !== ($keys = $redis->scan($iterator, $k, 100))) {
-			// foreach($keys as $key) {
-			// 	echo $key . PHP_EOL;
-			// }
-			$redis->del($keys);
+		foreach (EventFilter::factory()
+		                    ->setProfix($this->getCacheKeyPrefix())
+		                    ->keyScan('*', 0) as $item) {
+			$this->getRedisObj()->del($item);
 		}
 		
 		return $this;
@@ -179,10 +218,14 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @return string
 	 */
 	public function getCacheKey($currKey = '') {
-		// 前缀 + 起始key + 当前key = 最终使用key
-		$k = !empty($currKey) ? array_merge($this->getCacheKeyPrefix(), [$currKey]) : $this->getCacheKeyPrefix();
+		// // 前缀 + 起始key + 当前key = 最终使用key
+		// $k = !empty($currKey) ? array_merge($this->getCacheKeyPrefix(), [$currKey]) : $this->getCacheKeyPrefix();
+		//
+		// return implode(':', $k);
 		
-		return implode(':', $k);
+		return EventFilter::factory()
+		                  ->setProfix($this->getCacheKeyPrefix())
+		                  ->getJointKey($currKey);
 	}
 	
 	
