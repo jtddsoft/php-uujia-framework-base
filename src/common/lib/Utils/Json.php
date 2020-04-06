@@ -49,6 +49,35 @@ class Json {
 		return json_decode($json, true);
 	}
 	
+	/**
+	 * 是否json
+	 *
+	 * @param $string
+	 * @return bool
+	 */
+	public static function isJson($string) {
+		json_decode($string);
+		return(json_last_error() == JSON_ERROR_NONE);
+	}
+	
+	/**
+	 * 解析json串
+	 * @param string $json_str
+	 * @return bool|array
+	 */
+	public static function analyJson($json_str) {
+		$json_str = str_replace('＼＼', '', $json_str);
+		$out_arr = array();
+		preg_match('/{.*}/', $json_str, $out_arr);
+		if (!empty($out_arr)) {
+			$result = json_decode($out_arr[0], TRUE);
+		} else {
+			return FALSE;
+		}
+		return $result;
+	}
+	
+	
 	
 	
 }

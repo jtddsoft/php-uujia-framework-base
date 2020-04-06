@@ -17,6 +17,7 @@ use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Server\ServerRoute;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
+use uujia\framework\base\common\lib\Utils\Json;
 
 /**
  * Class EventProvider
@@ -98,7 +99,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		
 		$this->setEventHandle($event);
 		
-		
+		yield from $this->_run();
 	}
 	
 	/**
@@ -114,7 +115,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		}
 		
 		// 读取缓存
-		$this->fromCache();
+		yield from $this->fromCache();
 	}
 	
 	/**
@@ -137,11 +138,13 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// 	}
 		// }
 		
-		$reData = $redis->zrange($k, 0, -1);
-		
-		
-		
-		
+		// $reData = $redis->zrange($k, 0, -1);
+		$i = 0;
+		while(!empty($reData = $redis->zrange($k, $i, 10))) {
+			$i++;
+			
+			yield $reData;
+		}
 		
 	}
 	
