@@ -127,7 +127,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		
 		$k = $this->getCacheKey('*');
 		
-		/** @var \Redis $redis */
+		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		$redis = $this->getRedisObj();
 		
 		// $iterator = null;
