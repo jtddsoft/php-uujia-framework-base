@@ -33,7 +33,7 @@ class AutoInjection extends Annotation {
 	
 	/**
 	 * 赋值
-	 * @var string|int|float|bool|array
+	 * @var string|int|float|bool|array|null
 	 */
 	public $value = '';
 	
