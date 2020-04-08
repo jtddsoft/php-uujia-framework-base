@@ -40,7 +40,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	protected $_cacheKeyPrefix = [];
 	
 	/**
-	 * 配置列表
+	 * 事件列表
+	 *  尽可能按需加载 触发到哪个事件就从缓存加载到列表
 	 *
 	 * @var TreeFunc $_list
 	 */
@@ -99,16 +100,16 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		
 		$this->setEventHandle($event);
 		
-		yield from $this->_run();
+		yield from $this->_make();
 	}
 	
 	/**
-	 * 触发运行
+	 * 构建列表生成器
 	 *  1、查缓存是否存在
 	 *      1）存在 继续
 	 *      2）不存在 构建参数存入缓存
 	 */
-	public function _run() {
+	public function _make() {
 		if (!$this->hasCache()) {
 			// 不存在缓存 调起缓存数据管理器 收集数据传来
 			$this->toCache();

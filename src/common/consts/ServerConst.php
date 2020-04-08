@@ -13,8 +13,8 @@ class ServerConst {
 	 * Type 事件类型
 	 */
 	const REQUEST_TYPE_LOCAL_NORMAL    = 'LOCAL'; // 本地通用事件
-	const REQUEST_TYPE_REMOTE_RABBITMQ = 'RabbitMQ'; // 远程RabbitMq事件
-	const REQUEST_TYPE_REMOTE_POST     = 'Post'; // 远程POST协议
+	//const REQUEST_TYPE_REMOTE_RABBITMQ = 'RabbitMQ'; // 远程RabbitMq事件
+	//const REQUEST_TYPE_REMOTE_POST     = 'Post'; // 远程POST协议
 	
 	/**
 	 * Server 服务器名称（多服务器分布 用于识别不同服务器的名称）

@@ -9,6 +9,11 @@ use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
+/**
+ * Class ServerRoute
+ *
+ * @package uujia\framework\base\common\lib\Server
+ */
 class ServerRoute extends BaseClass {
 	use ResultBase;
 	use InstanceBase;
@@ -29,6 +34,12 @@ class ServerRoute extends BaseClass {
 	
 	// local
 	const HOST_LOCAL = 'localhost';
+	
+	/**
+	 * 服务器参数类
+	 * @var ServerParameter $_serverParameter
+	 */
+	protected $_serverParameter = null;
 	
 	/**
 	 * 本地服务路由
@@ -69,21 +80,6 @@ class ServerRoute extends BaseClass {
 	 * param
 	 **************************************************/
 	
-	/**
-	 * route参数
-	 *  例如：->param([...])->route();
-	 *
-	 * @var string $_param
-	 */
-	protected $_param = 'param';
-	
-	/**
-	 * route回调
-	 *  例如：->param([...])->callback(function () {})->route();
-	 *
-	 * @var callable $_callback
-	 */
-	protected $_callback = null;
 	
 	/**************************************************
 	 * output
@@ -96,35 +92,21 @@ class ServerRoute extends BaseClass {
 	 */
 	protected $_name = '';
 	
-	/**
-	 * 配置中某服务器对应的主机名或域名
-	 * @var string $_host
-	 */
-	protected $_host = ServerConst::SERVER_HOST_LOCALHOST;
-	
-	/**
-	 * 配置中某服务器对应类型的数据
-	 *  例如：event类型的 可能会有url、requestType
-	 * @var array $_serverTypeData
-	 */
-	protected $_serverTypeData = [];
-	
-	/**
-	 * 请求类型
-	 *  （例如：本地local、Rabbitmq、Post等等）
-	 * @var string $_requestType
-	 */
-	protected $_requestType = ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
-	
 	/**************************************************
 	 * init
 	 **************************************************/
 	
 	/**
-	 * Local constructor.
+	 * ServerRoute constructor.
+	 *
+	 * @param ServerParameter $serverParameter
+	 * @param array           $config
+	 *
+	 * @AutoInjection(arg = "serverParameter", type = "v" value = null)
 	 */
-	public function __construct() {
-		// $this->_config = $config;
+	public function __construct(ServerParameter $serverParameter = null, array $config = []) {
+		$this->_config = $config;
+		$this->_serverParameter = $serverParameter;
 		
 		parent::__construct();
 	}
@@ -224,9 +206,15 @@ class ServerRoute extends BaseClass {
 		
 		$_requestType = $_data[self::KEY_REQUEST_TYPE];
 		
-		$this->_setHost($_host);
-		$this->_setServerTypeData($_data);
-		$this->_setRequestType($_requestType);
+		// $this->_setHost($_host);
+		// $this->_setServerTypeData($_data);
+		// $this->_setRequestType($_requestType);
+		
+		$this->getServerParameter()
+			->setHost($_host)
+			->setUrl($_data['url'] ?? '')
+			->setAsync($_data['async'] ?? false)
+			->setRequestType($_data['requestType'] ?? ServerConst::REQUEST_TYPE_LOCAL_NORMAL);
 		
 		return $this;
 	}
@@ -237,8 +225,8 @@ class ServerRoute extends BaseClass {
 	 * @return bool
 	 */
 	public function isLocal() {
-		return in_array($this->getHost(), ['', ServerConst::SERVER_HOST_LOCALHOST]) &&
-		       $this->getRequestType() == ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
+		return in_array($this->getServerParameter()->getHost(), ['', ServerConst::SERVER_HOST_LOCALHOST]) &&
+		       $this->getServerParameter()->getRequestType() == ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
 	}
 	
 	/**
@@ -293,60 +281,6 @@ class ServerRoute extends BaseClass {
 	}
 	
 	/**
-	 * @return string
-	 */
-	public function getHost() {
-		return $this->_host;
-	}
-	
-	/**
-	 * @param string $host
-	 *
-	 * @return $this
-	 */
-	public function _setHost(string $host) {
-		$this->_host = $host;
-		
-		return $this;
-	}
-	
-	/**
-	 * @return array
-	 */
-	public function getServerTypeData() {
-		return $this->_serverTypeData;
-	}
-	
-	/**
-	 * @param array $serverTypeData
-	 *
-	 * @return $this
-	 */
-	public function _setServerTypeData(array $serverTypeData) {
-		$this->_serverTypeData = $serverTypeData;
-		
-		return $this;
-	}
-	
-	/**
-	 * @return string
-	 */
-	public function getRequestType(): string {
-		return $this->_requestType;
-	}
-	
-	/**
-	 * @param string $requestType
-	 *
-	 * @return $this
-	 */
-	public function _setRequestType(string $requestType) {
-		$this->_requestType = $requestType;
-		
-		return $this;
-	}
-	
-	/**
 	 * @return ServerRouteLocal
 	 */
 	public function getServerRouteLocal(): ServerRouteLocal {
@@ -368,19 +302,23 @@ class ServerRoute extends BaseClass {
 	}
 	
 	/**
-	 * @return callable|array
+	 * @return ServerParameter
 	 */
-	public function getCallback() {
-		return $this->_callback;
+	public function getServerParameter(): ServerParameter {
+		if ($this->_serverParameter === null) {
+			$this->_serverParameter = new ServerParameter();
+		}
+		
+		return $this->_serverParameter;
 	}
 	
 	/**
-	 * @param callable|array $callback
+	 * @param ServerParameter $serverParameter
 	 *
 	 * @return $this
 	 */
-	public function setCallback($callback) {
-		$this->_callback = $callback;
+	public function _setServerParameter(ServerParameter $serverParameter) {
+		$this->_serverParameter = $serverParameter;
 		
 		return $this;
 	}
