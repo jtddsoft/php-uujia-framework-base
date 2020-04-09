@@ -18,14 +18,6 @@ class ServerRoute extends BaseClass {
 	use ResultBase;
 	use InstanceBase;
 	
-	// key
-	const KEY_SERVER_NAME = 'name';
-	const KEY_SERVER_DATA = 'server';
-	
-	const KEY_HOST = 'host';
-	const KEY_TYPE = 'type';
-	const KEY_REQUEST_TYPE = 'requestType';
-	
 	// name
 	const NAME_MAIN = 'main';
 	
@@ -146,7 +138,7 @@ class ServerRoute extends BaseClass {
 			// $this->_config = $config;
 			$this->_setConfig($config);
 			
-			$this->_setName($this->_config[self::KEY_SERVER_NAME]);
+			$this->_setName($this->_config[ServerConst::KEY_SERVER_NAME]);
 		}
 		
 		return $this;
@@ -199,12 +191,14 @@ class ServerRoute extends BaseClass {
 		// !empty($requestType) && $requestType = $this->requestType();
 		
 		$_config = $this->getConfig();
-		$_server = $_config[self::KEY_SERVER_DATA][$name];
+		$_server = $_config[ServerConst::KEY_SERVER_DATA][$name];
 		
-		$_host = $_server[self::KEY_HOST];
-		$_data = $_server[self::KEY_TYPE][$type];
+		$_host = $_server[ServerConst::KEY_HOST];
+		$_data = $_server[ServerConst::KEY_TYPE][$type];
 		
-		$_requestType = $_data[self::KEY_REQUEST_TYPE];
+		$_url = $_data[ServerConst::KEY_URL] ?? '';
+		$_requestType = $_data[ServerConst::KEY_REQUEST_TYPE] ?? ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
+		$_async = $_data[ServerConst::KEY_ASYNC] ?? false;
 		
 		// $this->_setHost($_host);
 		// $this->_setServerTypeData($_data);
@@ -212,9 +206,9 @@ class ServerRoute extends BaseClass {
 		
 		$this->getServerParameter()
 			->setHost($_host)
-			->setUrl($_data['url'] ?? '')
-			->setAsync($_data['async'] ?? false)
-			->setRequestType($_data['requestType'] ?? ServerConst::REQUEST_TYPE_LOCAL_NORMAL);
+			->setUrl($_url)
+			->setAsync($_async)
+			->setRequestType($_requestType);
 		
 		return $this;
 	}
@@ -234,7 +228,7 @@ class ServerRoute extends BaseClass {
 	 */
 	public function route() {
 		if ($this->isLocal()) {
-			$this->getServerRouteLocal()->setCallback($this->getCallback())->route();
+			$this->getServerRouteLocal()->setCallback($this->getServerParameter()->getCallback())->route();
 		} else {
 			// todo: 远程或有协议（post之类）
 		}

@@ -26,4 +26,15 @@ class ServerConst {
 	 */
 	const SERVER_CONFIG_KEY = 'server';
 	
+	// key
+	const KEY_SERVER_NAME = 'name';
+	const KEY_SERVER_DATA = 'server';
+	
+	const KEY_HOST = 'host';
+	const KEY_TYPE = 'type';
+	const KEY_REQUEST_TYPE = 'requestType';
+	const KEY_ASYNC = 'async';
+	const KEY_URL = 'url';
+	
+	
 }
