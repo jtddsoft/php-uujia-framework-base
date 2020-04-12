@@ -5,7 +5,7 @@ namespace uujia\framework\base\common\lib\Base;
 
 use uujia\framework\base\common\traits\NameBase;
 
-class BaseClass {
+class BaseClass implements BaseClassInterface {
 	use NameBase;
 	
 	/**

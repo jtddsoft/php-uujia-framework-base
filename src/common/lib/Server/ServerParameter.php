@@ -6,6 +6,7 @@ namespace uujia\framework\base\common\lib\Server;
 
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Base\BaseClassInterface;
 
 /**
  * Class ServerParameter
@@ -13,7 +14,7 @@ use uujia\framework\base\common\lib\Base\BaseClass;
  *
  * @package uujia\framework\base\common\lib\Server
  */
-class ServerParameter extends BaseClass {
+class ServerParameter extends BaseClass implements BaseClassInterface, ServerParameterInterface {
 	
 	/**
 	 * 主机名 域名
@@ -52,8 +53,9 @@ class ServerParameter extends BaseClass {
 	protected $_ret = [];
 	
 	/**
-	 * 本地访问直接执行回调
-	 *  不会再舍近求远的发远程请求
+	 * 服务回调
+	 *  如果用于本地 则直接调用回调 不会再舍近求远的发远程请求
+	 *  如果用于远程 调用回调取回数据返回
 	 *
 	 * @var callable $_callback
 	 */

@@ -3,6 +3,7 @@
 namespace uujia\framework\base\common\lib\Server;
 
 use uujia\framework\base\common\consts\ServerConst;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\ServerRouteLocal;
 use uujia\framework\base\common\traits\InstanceBase;
@@ -10,11 +11,11 @@ use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
 /**
- * Class ServerRoute
+ * Class ServerRouteManager
  *
  * @package uujia\framework\base\common\lib\Server
  */
-class ServerRoute extends BaseClass {
+class ServerRouteManager extends BaseClass {
 	use ResultBase;
 	use InstanceBase;
 	
@@ -28,22 +29,35 @@ class ServerRoute extends BaseClass {
 	const HOST_LOCAL = 'localhost';
 	
 	/**
+	 * 路由服务集合名称Key
+	 *  本地路由服务
+	 *  POST
+	 *  MQ
+	 */
+	const SERVER_ROUTE_NAME_LOCAL = 'server_route_local';
+	const SERVER_ROUTE_NAME_POST  = 'server_route_post';
+	const SERVER_ROUTE_NAME_MQ    = 'server_route_mq';
+
+	/**
 	 * 服务器参数类
-	 * @var ServerParameter $_serverParameter
+	 *
+	 * @var ServerParameterInterface
 	 */
 	protected $_serverParameter = null;
 	
 	/**
-	 * 本地服务路由
-	 * @var ServerRouteLocal $_serverRouteLocal
+	 * 路由服务集合
+	 *  本地路由服务、POST服务、MQ服务等等
+	 *
+	 * @var ServerRouteInterface[]
 	 */
-	protected $_serverRouteLocal = null;
+	protected $_serverRoutes = [];
 	
 	
 	
 	/**
 	 * 所有服务器配置
-	 * @var array $_serverConfig
+	 * @var array
 	 */
 	protected $_config = [];
 	
@@ -55,7 +69,7 @@ class ServerRoute extends BaseClass {
 	/**
 	 * 服务器名称
 	 *  通过名称查找对应服务器
-	 * @var string $_serverName
+	 * @var string
 	 */
 	protected $_serverName = 'main';
 	
@@ -63,7 +77,7 @@ class ServerRoute extends BaseClass {
 	 * 服务类型
 	 *  例如：事件event
 	 *
-	 * @var string $_serverType
+	 * @var string
 	 */
 	protected $_serverType = 'event';
 	
@@ -80,7 +94,7 @@ class ServerRoute extends BaseClass {
 	
 	/**
 	 * 本机服务器名称
-	 * @var string $_name
+	 * @var string
 	 */
 	protected $_name = '';
 	
@@ -89,16 +103,20 @@ class ServerRoute extends BaseClass {
 	 **************************************************/
 	
 	/**
-	 * ServerRoute constructor.
+	 * ServerRouteManager constructor.
 	 *
-	 * @param ServerParameter $serverParameter
-	 * @param array           $config
+	 * @param ServerParameterInterface $serverParameter
+	 * @param ServerRouteInterface[]   $serverRoutes
+	 * @param array                    $config
 	 *
 	 * @AutoInjection(arg = "serverParameter", type = "v" value = null)
 	 */
-	public function __construct(ServerParameter $serverParameter = null, array $config = []) {
+	public function __construct(ServerParameterInterface $serverParameter = null,
+	                            array $serverRoutes = [],
+	                            array $config = []) {
 		$this->_config = $config;
 		$this->_serverParameter = $serverParameter;
+		$this->_serverRoutes = $serverRoutes;
 		
 		parent::__construct();
 	}
@@ -183,7 +201,7 @@ class ServerRoute extends BaseClass {
 	 * @param null $name
 	 * @param null $type
 	 *
-	 * @return ServerRoute
+	 * @return ServerRouteManager
 	 */
 	public function load($name = null, $type = null) {
 		!empty($name) && $name = $this->serverName();
@@ -228,7 +246,7 @@ class ServerRoute extends BaseClass {
 	 */
 	public function route() {
 		if ($this->isLocal()) {
-			$this->getServerRouteLocal()->setCallback($this->getServerParameter()->getCallback())->route();
+			$this->getServerRouteLocal()->route();
 		} else {
 			// todo: 远程或有协议（post之类）
 		}
@@ -277,11 +295,11 @@ class ServerRoute extends BaseClass {
 	/**
 	 * @return ServerRouteLocal
 	 */
-	public function getServerRouteLocal(): ServerRouteLocal {
-		if ($this->_serverRouteLocal === null) {
-			$this->_serverRouteLocal = new ServerRouteLocal($this);
+	public function getServerRouteLocal() {
+		if (empty($this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL])) {
+			$this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL] = new ServerRouteLocal($this, $this->getServerParameter());
 		}
-		return $this->_serverRouteLocal;
+		return $this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL];
 	}
 	
 	/**
@@ -289,16 +307,16 @@ class ServerRoute extends BaseClass {
 	 *
 	 * @return $this
 	 */
-	public function setServerRouteLocal(ServerRouteLocal $serverRouteLocal) {
-		$this->_serverRouteLocal = $serverRouteLocal;
+	public function setServerRouteLocal($serverRouteLocal) {
+		$this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL] = $serverRouteLocal;
 		
 		return $this;
 	}
 	
 	/**
-	 * @return ServerParameter
+	 * @return ServerParameterInterface
 	 */
-	public function getServerParameter(): ServerParameter {
+	public function getServerParameter() {
 		if ($this->_serverParameter === null) {
 			$this->_serverParameter = new ServerParameter();
 		}
@@ -307,11 +325,11 @@ class ServerRoute extends BaseClass {
 	}
 	
 	/**
-	 * @param ServerParameter $serverParameter
+	 * @param ServerParameterInterface $serverParameter
 	 *
 	 * @return $this
 	 */
-	public function _setServerParameter(ServerParameter $serverParameter) {
+	public function _setServerParameter($serverParameter) {
 		$this->_serverParameter = $serverParameter;
 		
 		return $this;

@@ -26,15 +26,34 @@ interface ServerRouteInterface {
 	
 	/**
 	 * 获取父级
+	 *
+	 * @return ServerRouteManager
 	 */
 	public function getParent();
 	
 	/**
 	 * 设置父级
 	 *
-	 * @param mixed $parent
+	 * @param ServerRouteManager $parent
 	 *
 	 * @return $this
 	 */
-	public function _setParent($parent);
+	public function setParent($parent);
+	
+	// /**
+	//  * 获取结果回调
+	//  *  如果用于本地 则直接调用回调
+	//  *  如果用于远程 调用回调取回数据返回
+	//  *
+	//  * @return callable
+	//  */
+	// public function getCallback();
+	//
+	// /**
+	//  * 设置结果回调
+	//  *
+	//  * @param callable $callback
+	//  * @return $this
+	//  */
+	// public function setCallback($callback);
 }

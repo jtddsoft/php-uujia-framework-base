@@ -2,40 +2,63 @@
 
 namespace uujia\framework\base\common\lib\Event;
 
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Server\ServerParameter;
+use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
+use uujia\framework\base\common\lib\Server\ServerRouteManager;
 use uujia\framework\base\common\traits\ResultBase;
 
+/**
+ * Class ServerRouteLocal
+ *
+ * @package uujia\framework\base\common\lib\Event
+ */
 class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 	use ResultBase;
 	
 	/**
 	 * 父级
+	 *
+	 * @var ServerRouteManager
 	 */
 	protected $_parent;
 	
 	/**
-	 * 附加参数
+	 * 服务器参数类
 	 *
-	 * @var array $_param;
+	 * @var ServerParameterInterface
 	 */
-	protected $_param = [];
+	protected $_serverParameter = null;
+	
+	// /**
+	//  * 附加参数
+	//  *
+	//  * @var array $_param;
+	//  */
+	// protected $_param = [];
+	
+	// /**
+	//  * 回调
+	//  *  （本地方式会直接回调 如果是远程方式 调用回调取回结果返回）
+	//  *
+	//  * @var callable $_callback
+	//  */
+	// protected $_callback = null;
 	
 	/**
-	 * 回调
-	 *  （本地方式会直接回调 如果是远程方式 会将结果返回）
+	 * ServerRouteLocal constructor.
 	 *
-	 * @var callable|array $_callback
-	 */
-	protected $_callback = null;
-	
-	/**
-	 * Local constructor.
+	 * @param ServerRouteManager            $parent
+	 * @param ServerParameterInterface|null $serverParameter
 	 *
-	 * @param      $parent
+	 * @AutoInjection(arg = "parent", type = "v" value = null)
+	 * @AutoInjection(arg = "serverParameter", type = "v" value = null)
 	 */
-	public function __construct($parent = null) {
+	public function __construct(ServerRouteManager $parent = null, ServerParameterInterface $serverParameter = null) {
 		$this->_parent = $parent;
+		$this->_serverParameter = $serverParameter;
 		
 		parent::__construct();
 	}
@@ -67,26 +90,32 @@ class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 		$this->_param = [];
 	}
 	
-	/**
-	 * 附加参数
-	 *
-	 * @param null|array $param
-	 * @return $this|array
-	 */
-	public function param($param = null) {
-		if ($param === null) {
-			return $this->_param;
-		} else {
-			$this->_param = $param;
-		}
-		
-		return $this;
-	}
+	// /**
+	//  * 附加参数
+	//  *
+	//  * @param null|array $param
+	//  * @return $this|array
+	//  */
+	// public function param($param = null) {
+	// 	if ($param === null) {
+	// 		return $this->_param;
+	// 	} else {
+	// 		$this->_param = $param;
+	// 	}
+	//
+	// 	return $this;
+	// }
 	
 	/**
 	 * @inheritDoc
 	 */
 	public function route() {
+		$callback = $this->getCallback();
+		
+		if ($callback && is_callable($callback)) {
+			call_user_func_array($callback, [$this, $this->getServerParameter()]);
+		}
+		
 		return $this->ok();
 	}
 	
@@ -109,36 +138,53 @@ class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 	 **************************************************/
 	
 	/**
-	 * @return mixed
+	 * @return ServerRouteManager
 	 */
 	public function getParent() {
 		return $this->_parent;
 	}
 	
 	/**
-	 * @param mixed $parent
+	 * @param ServerRouteManager $parent
 	 * @return $this
 	 */
-	public function _setParent($parent) {
+	public function setParent($parent) {
 		$this->_parent = $parent;
 		
 		return $this;
 	}
 	
 	/**
-	 * @return callable|array
+	 * @return ServerParameterInterface
 	 */
-	public function getCallback() {
-		return $this->_callback;
+	public function getServerParameter() {
+		return $this->_serverParameter;
 	}
 	
 	/**
-	 * @param callable|array $callback
+	 * @param ServerParameterInterface $serverParameter
+	 * @return $this
+	 */
+	public function setServerParameter(ServerParameterInterface $serverParameter) {
+		$this->_serverParameter = $serverParameter;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return callable
+	 */
+	public function getCallback() {
+		return $this->getServerParameter()->getCallback();
+	}
+	
+	/**
+	 * @param callable $callback
 	 *
 	 * @return $this
 	 */
-	public function setCallback($callback) {
-		$this->_callback = $callback;
+	public function _setCallback($callback) {
+		$this->getServerParameter()->setCallback($callback);
 		
 		return $this;
 	}
