@@ -6,6 +6,7 @@ use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\ServerRouteLocal;
+use uujia\framework\base\common\lib\Utils\Network;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
@@ -237,7 +238,8 @@ class ServerRouteManager extends BaseClass {
 	 * @return bool
 	 */
 	public function isLocal() {
-		return in_array($this->getServerParameter()->getHost(), ['', ServerConst::SERVER_HOST_LOCALHOST]) &&
+		return (in_array($this->getServerParameter()->getHost(), ['', ServerConst::SERVER_HOST_LOCALHOST]) ||
+		        $this->getServerParameter()->getHost() == Network::getServerIp()) &&
 		       $this->getServerParameter()->getRequestType() == ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
 	}
 	
