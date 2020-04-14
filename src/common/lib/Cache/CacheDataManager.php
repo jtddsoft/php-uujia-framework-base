@@ -186,7 +186,7 @@ class CacheDataManager extends BaseClass {
 	}
 	
 	/**
-	 * @return \Redis
+	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
 		return $this->getRedisProviderObj()->getRedisObj();

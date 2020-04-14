@@ -297,7 +297,7 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 	}
 	
 	/**
-	 * @return \Redis
+	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
 		return $this->getParent()->getRedisObj();

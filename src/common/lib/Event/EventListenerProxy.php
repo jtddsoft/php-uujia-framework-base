@@ -21,7 +21,7 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	
 	/**
 	 * 服务器参数
-	 * @var ServerParameter $_serverParameter
+	 * @var ServerParameter
 	 */
 	protected $_serverParameter;
 	

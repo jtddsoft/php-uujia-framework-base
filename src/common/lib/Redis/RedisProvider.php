@@ -10,7 +10,7 @@ class RedisProvider extends BaseClass implements RedisProviderInterface {
 	use ResultBase;
 	
 	/**
-	 * @var \Redis $_redisObj
+	 * @var \Redis|\Swoole\Coroutine\Redis $_redisObj
 	 */
 	protected $_redisObj;
 	
@@ -47,13 +47,13 @@ class RedisProvider extends BaseClass implements RedisProviderInterface {
 	/**
 	 * Redis constructor.
 	 *
-	 * @param \Redis $redisObj
+	 * @param \Redis|\Swoole\Coroutine\Redis $redisObj
 	 * @param string $host
 	 * @param int    $port
 	 * @param string $password
 	 * @param string $prefix
 	 */
-	public function __construct(\Redis $redisObj = null, string $host = '', int $port = 6379, string $password = '', string $prefix = '') {
+	public function __construct($redisObj = null, string $host = '', int $port = 6379, string $password = '', string $prefix = '') {
 		$this->_redisObj = $redisObj ?? new \Redis();
 		
 		$this->_host = $host;
@@ -191,18 +191,18 @@ class RedisProvider extends BaseClass implements RedisProviderInterface {
 	}
 	
 	/**
-	 * @return \Redis
+	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
 		return $this->_redisObj;
 	}
 	
 	/**
-	 * @param \Redis $redisObj
+	 * @param \Redis|\Swoole\Coroutine\Redis $redisObj
 	 *
 	 * @return RedisProvider
 	 */
-	public function _setRedisObj(\Redis $redisObj) {
+	public function _setRedisObj($redisObj) {
 		$this->_redisObj = $redisObj;
 		
 		return $this;

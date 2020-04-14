@@ -33,7 +33,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	const CACHE_KEY_PREFIX = 'event';
 	
 	/**
-	 * @var EventDispatcher $_parent
+	 * @var EventDispatcher
 	 */
 	protected $_parent;
 	
@@ -43,7 +43,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * 事件列表
 	 *  尽可能按需加载 触发到哪个事件就从缓存加载到列表
 	 *
-	 * @var TreeFunc $_list
+	 * @var TreeFunc
 	 */
 	protected $_list;
 	
@@ -52,21 +52,21 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 *  事件调度会传来EventHandle对象的触发形态
 	 * （EventHandle 主要取事件标识 addons.rubbish2.user.LoginBefore）
 	 *
-	 * @var EventHandleInterface $_eventHandle;
+	 * @var EventHandleInterface;
 	 */
 	protected $_eventHandle;
 	
 	/**
 	 * 配置项
 	 *
-	 * @var array $_config
+	 * @var array
 	 */
 	protected $_config = [];
 	
 	/**
 	 * 最后一次key的搜索
 	 *
-	 * @var array $_lastKeys
+	 * @var array
 	 */
 	protected $_lastKeys = [];
 	
@@ -169,7 +169,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	public function hasCache(): bool {
 		// $k = $this->getCacheKey('*');
 		//
-		// /** @var \Redis $redis */
+		// /** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		// $redis = $this->getRedisProviderObj()->getRedisObj();
 		// $iterator = null;
 		// $reKeys = $redis->scan($iterator, $k, 1);
@@ -193,7 +193,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	public function clearCache() {
 		// $k = $this->getCacheKey('*');
 		//
-		// /** @var \Redis $redis */
+		// /** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		// $redis = $this->getRedisObj();
 		//
 		// $iterator = null;
@@ -344,7 +344,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	/**
-	 * @return \Redis
+	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
 		return $this->getParent()->getRedisObj();

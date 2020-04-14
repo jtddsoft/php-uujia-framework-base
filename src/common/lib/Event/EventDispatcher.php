@@ -20,14 +20,14 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	/**
 	 * CacheDataManager对象
 	 *
-	 * @var CacheDataManagerInterface $_cacheDataManagerObj
+	 * @var CacheDataManagerInterface
 	 */
 	protected $_cacheDataManagerObj;
 	
 	/**
 	 * Redis对象
 	 *
-	 * @var RedisProviderInterface $_redisProviderObj
+	 * @var RedisProviderInterface
 	 */
 	protected $_redisProviderObj;
 	
@@ -74,7 +74,7 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	}
 	
 	/**
-	 * @return \Redis
+	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
 		return $this->getRedisProviderObj()->getRedisObj();

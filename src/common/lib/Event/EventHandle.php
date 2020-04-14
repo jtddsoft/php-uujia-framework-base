@@ -29,7 +29,7 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	/**
 	 * 是否终止事件队列
 	 *  不再触发之后的事件
-	 * @var bool $_isStopped
+	 * @var bool
 	 */
 	protected $_isStopped = false;
 	
@@ -40,7 +40,7 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	//  */
 	// protected $_name = '';
 	
-	/** @var ServerRouteLocal $_local */
+	/** @var ServerRouteLocal */
 	protected $_localObj = null;
 	
 	// todo: POST

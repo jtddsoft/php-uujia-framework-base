@@ -24,7 +24,7 @@ class EventFilter extends BaseClass {
 	
 	/**
 	 * Redis对象
-	 * @var \Redis
+	 * @var \Redis|\Swoole\Coroutine\Redis
 	 */
 	protected $_redisObj;
 	
@@ -42,7 +42,7 @@ class EventFilter extends BaseClass {
 	public function keyExist(): bool {
 		$k = $this->getJointKey('*');
 		
-		/** @var \Redis $redis */
+		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		$redis = $this->getRedisObj();
 		$iterator = null;
 		$reKeys = $redis->scan($iterator, $k, 1);
@@ -65,7 +65,7 @@ class EventFilter extends BaseClass {
 	public function keyScan($keywords = '*', $count = 20) {
 		$k = $this->getJointKey($keywords);
 		
-		/** @var \Redis $redis */
+		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		$redis = $this->getRedisObj();
 		
 		$iterator = null;
@@ -111,14 +111,14 @@ class EventFilter extends BaseClass {
 	}
 	
 	/**
-	 * @return \Redis
+	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
 		return $this->_redisObj;
 	}
 	
 	/**
-	 * @param \Redis $redisObj
+	 * @param \Redis|\Swoole\Coroutine\Redis $redisObj
 	 * @return EventFilter
 	 */
 	public function setRedisObj($redisObj) {

@@ -80,7 +80,7 @@ class Demo extends BaseService {
 		// return glob(__DIR__ . "/../config/*_config.php", GLOB_BRACE);
 		// return UU::C(Base::class)->rt()->ok();
 		
-		/** @var \Redis $redis */
+		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		$redis = $this->getRedis()->getRedisObj();
 		if ($this->getRedis()->getRedisProviderObj()->isErr()) {
 			$this->getResult()->setLastReturn($this->getRedis()->getRedisProviderObj()->getLastReturn());
