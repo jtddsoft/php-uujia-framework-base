@@ -7,14 +7,14 @@ namespace uujia\framework\base\common\lib\Tree;
 /**
  * Class TreeFunc
  *
- * @package uujia\framework\base\common\Tree
+ * @package uujia\framework\base\common\lib\Tree
  */
 class TreeFunc extends TreeNode {
 	
 	/**
 	 * 父级TreeFunc
 	 *
-	 * @var $_parent TreeFunc
+	 * @var TreeFunc
 	 */
 	protected $_parent = null;
 	
@@ -23,7 +23,7 @@ class TreeFunc extends TreeNode {
 	 *  一般为add或unshift操作时新生产的TreeFunc对象
 	 *  以便后续对新对象自定义操作
 	 *
-	 * @var TreeFunc $_lastNewItem
+	 * @var TreeFunc
 	 */
 	protected $_lastNewItem = null;
 	
@@ -32,14 +32,14 @@ class TreeFunc extends TreeNode {
 	 *  一般为set操作时新生产的TreeFunc对象
 	 *  以便后续对新对象自定义操作
 	 *
-	 * @var TreeFunc $_lastSetItem
+	 * @var TreeFunc
 	 */
 	protected $_lastSetItem = null;
 	
 	/**
 	 * 节点数据
 	 *
-	 * @var TreeFuncData $_data
+	 * @var TreeFuncData
 	 */
 	protected $_data = null;
 	

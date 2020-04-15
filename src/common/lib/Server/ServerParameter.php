@@ -14,41 +14,41 @@ use uujia\framework\base\common\lib\Base\BaseClassInterface;
  *
  * @package uujia\framework\base\common\lib\Server
  */
-class ServerParameter extends BaseClass implements BaseClassInterface, ServerParameterInterface {
+class ServerParameter extends BaseClass implements ServerParameterInterface {
 	
 	/**
 	 * 主机名 域名
-	 * @var string $_host
+	 * @var string
 	 */
 	protected $_host = '';
 	
 	/**
 	 * 请求类型
-	 * @var string $_requestType
+	 * @var string
 	 */
 	protected $_requestType = ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
 	
 	/**
 	 * 是否异步
-	 * @var bool $_async
+	 * @var bool
 	 */
 	protected $_async = false;
 	
 	/**
 	 * 远程接口地址
-	 * @var string $_url
+	 * @var string
 	 */
 	protected $_url = '';
 	
 	/**
 	 * 参数
-	 * @var array $_params
+	 * @var array
 	 */
 	protected $_params = [];
 	
 	/**
 	 * 返回值
-	 * @var array $_ret
+	 * @var array
 	 */
 	protected $_ret = [];
 	
@@ -57,7 +57,7 @@ class ServerParameter extends BaseClass implements BaseClassInterface, ServerPar
 	 *  如果用于本地 则直接调用回调 不会再舍近求远的发远程请求
 	 *  如果用于远程 调用回调取回数据返回
 	 *
-	 * @var callable $_callback
+	 * @var callable
 	 */
 	protected $_callback = null;
 	

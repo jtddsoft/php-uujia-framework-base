@@ -8,6 +8,8 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use uujia\framework\base\common\consts\ResultConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Error\ErrorCodeConfig;
+use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Utils\Response;
 use uujia\framework\base\common\traits\NameBase;
@@ -17,11 +19,11 @@ class Result extends BaseClass implements LoggerAwareInterface {
 	use ResultBase;
 	
 	// 配置对象 依赖于配置管理class 必须事先初始化
-	/** @var $errObj ErrorCodeList */
+	/** @var ErrorCodeConfig */
 	protected $errObj;
 	
 	// 日志对象 默认为抽象类 需要子类继承
-	/** @var $logObj Log */
+	/** @var Logger */
 	protected $logObj;
 	
 	// 返回类型
@@ -38,10 +40,10 @@ class Result extends BaseClass implements LoggerAwareInterface {
 	/**
 	 * 初始化依赖注入
 	 *
-	 * @param ErrorCodeList $errObj
-	 * @param Log           $logObj
+	 * @param ErrorCodeConfig $errObj
+	 * @param Logger          $logObj
 	 */
-	public function __construct(ErrorCodeList $errObj, Log $logObj) {
+	public function __construct(ErrorCodeConfig $errObj, Logger $logObj) {
 		$this->errObj = $errObj;
 		$this->logObj = $logObj;
 		
@@ -263,17 +265,18 @@ class Result extends BaseClass implements LoggerAwareInterface {
 	 * 获取配置对象
 	 *  期中保存多组错误代码（不是多个，是多组。每组包含一个数组，里面是多个错误代码，可同时支持多个组件自身的错误组。）
 	 *
-	 * @return ErrorCodeList
+	 * @return ErrorCodeConfig
 	 */
-	public function getErrObj(): ErrorCodeList {
+	public function getErrObj() {
 		return $this->errObj;
 	}
 	
 	/**
 	 * 设置配置对象（一般不要更改）*
-	 * @param ErrorCodeList $errObj
+	 *
+	 * @param ErrorCodeConfig $errObj
 	 */
-	public function _setErrObj(ErrorCodeList $errObj) {
+	public function _setErrObj($errObj) {
 		$this->errObj = $errObj;
 	}
 	
@@ -281,16 +284,16 @@ class Result extends BaseClass implements LoggerAwareInterface {
 	 * 获取日志对象
 	 *  抽象类需要子类继承
 	 *
-	 * @return Log
+	 * @return Logger
 	 */
-	public function getLogObj(): Log {
+	public function getLogObj() {
 		return $this->logObj;
 	}
 	
 	/**
 	 * 设置日志对象
 	 *
-	 * @param Log|LoggerInterface $logObj
+	 * @param Logger|LoggerInterface $logObj
 	 * @return Result
 	 */
 	public function _setLogObj($logObj) {

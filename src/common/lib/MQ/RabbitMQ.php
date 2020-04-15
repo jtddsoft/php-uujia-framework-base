@@ -3,14 +3,13 @@
 
 namespace uujia\framework\base\common\lib\MQ;
 
-use Bluerhinos\phpMQTT;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use uujia\framework\base\common\lib\Utils\Json;
 
-class RabbitMQ extends MQ {
+class RabbitMQ extends AbstractMQ {
 	
 	// 配置
 	protected $_config = [

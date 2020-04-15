@@ -1,19 +1,17 @@
 <?php
 
 
-namespace uujia\framework\base\common;
+namespace uujia\framework\base\common\lib\MQ;
 
+use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\common\lib\MQ\MQTT;
-use uujia\framework\base\common\lib\MQ\RabbitMQ;
-use uujia\framework\base\common\lib\MQ\RabbitMQExt;
 
 /**
  * Class MQCollection
  * MQ的集合
  *  （仅做对象汇总 并不能完全统一方法）
  *
- * @package uujia\framework\base\common\lib
+ * @package uujia\framework\base\common\lib\MQ
  */
 class MQCollection extends TreeFunc {
 	
@@ -30,10 +28,10 @@ class MQCollection extends TreeFunc {
 	/**
 	 * ItemKeys constructor.
 	 *
-	 * @param Config $configObj
-	 * @param        $parent
+	 * @param ConfigManager $configObj
+	 * @param               $parent
 	 */
-	public function __construct(Config $configObj, $parent = null) {
+	public function __construct(ConfigManager $configObj, $parent = null) {
 		$this->_configObj = $configObj;
 		
 		parent::__construct($parent);
@@ -178,17 +176,21 @@ class MQCollection extends TreeFunc {
 	}
 	
 	/**
-	 * @return Config
+	 * @return ConfigManager
 	 */
 	public function getConfigObj() {
 		return $this->_configObj;
 	}
 	
 	/**
-	 * @param mixed $configObj
+	 * @param ConfigManager $configObj
+	 *
+	 * @return $this
 	 */
 	public function _setConfigObj($configObj) {
 		$this->_configObj = $configObj;
+		
+		return $this;
 	}
 	
 	

@@ -14,7 +14,7 @@ use oliverlorenz\reactphpmqtt\packet\Publish;
 use React\Socket\ConnectionInterface as Connection;
 use karpy47\PhpMqttClient\MQTTClient as MQTTClientP;
 
-class MQTT extends MQ {
+class MQTT extends AbstractMQ {
 	
 	// MQTT 对象
 	/** @var MqttClient $_mqObj */

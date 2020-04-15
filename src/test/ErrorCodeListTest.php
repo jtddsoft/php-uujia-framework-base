@@ -5,14 +5,14 @@ namespace uujia\framework\base\test;
 
 
 use uujia\framework\base\common\Config;
-use uujia\framework\base\common\ErrorCodeList;
+use uujia\framework\base\common\Error;
 
 class ErrorCodeListTest {
-	/** @var ErrorCodeList $err */
+	/** @var Error $err */
 	public $err;
 	
 	public function __construct() {
-		$this->err = new ErrorCodeList(new Config());
+		$this->err = new Error(new Config());
 	}
 	
 	public function toString() {

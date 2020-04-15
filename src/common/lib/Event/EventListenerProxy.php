@@ -7,6 +7,7 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Server\ServerParameter;
+use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 
 /**
  * Class EventListenerProxy
@@ -21,7 +22,7 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	
 	/**
 	 * 服务器参数
-	 * @var ServerParameter
+	 * @var ServerParameterInterface
 	 */
 	protected $_serverParameter;
 	
@@ -29,15 +30,20 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	/**
 	 * EventListenerProxy constructor.
 	 *
-	 * @param ServerParameter $serverParameterObj
+	 * @param ServerParameterInterface $serverParameterObj
 	 */
-	public function __construct(ServerParameter $serverParameterObj) {
+	public function __construct($serverParameterObj = null) {
 		$this->_serverParameter = $serverParameterObj;
 		
 		parent::__construct();
 	}
 	
+	/**
+	 * 执行触发
+	 */
+	public function handle() {
 	
+	}
 	
 	
 	/**************************************************************
@@ -45,17 +51,21 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 **************************************************************/
 	
 	/**
-	 * @return ServerParameter
+	 * @return ServerParameterInterface
 	 */
-	public function getServerParameter(): ServerParameter {
+	public function getServerParameter() {
 		return $this->_serverParameter;
 	}
 	
 	/**
-	 * @param ServerParameter $serverParameter
+	 * @param ServerParameterInterface $serverParameter
+	 *
+	 * @return EventListenerProxy
 	 */
-	public function setServerParameter(ServerParameter $serverParameter): void {
+	public function setServerParameter($serverParameter) {
 		$this->_serverParameter = $serverParameter;
+		
+		return $this;
 	}
 	
 	

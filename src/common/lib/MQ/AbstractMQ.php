@@ -6,7 +6,7 @@ namespace uujia\framework\base\common\lib\MQ;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\ResultBase;
 
-abstract class MQ extends BaseClass implements MQInterface {
+abstract class AbstractMQ extends BaseClass implements MQInterface {
 	use ResultBase;
 	
 	// public static $_CLIENT_TYPE = [
@@ -15,6 +15,9 @@ abstract class MQ extends BaseClass implements MQInterface {
 	// 	'subscribe' => 2,   // 订阅者
 	// ];
 	
+	/**
+	 * 错误代码定义
+	 */
 	const ERROR_CODE = [
 		'0'   => 'ok',
 		'100' => '未知错误',
@@ -27,10 +30,16 @@ abstract class MQ extends BaseClass implements MQInterface {
 		'105' => '断开失败',
 	];
 	
-	// MQ 对象
+	/**
+	 * MQ 对象
+	 */
 	protected $_mqObj;
 	
-	// 配置
+	/**
+	 * 配置
+	 *
+	 * @var array
+	 */
 	protected $_config = [
 		// 'client_type' => 0,
 		'enabled' => false,              // 启用
@@ -41,18 +50,39 @@ abstract class MQ extends BaseClass implements MQInterface {
 		'password'  => "123456",        // set your password
 	];
 	
-	// 是否已初始化
+	/**
+	 * 是否已初始化
+	 *
+	 * @var bool
+	 */
 	protected $_init = false;
 	
-	// 是否已建立连接
+	/**
+	 * 是否已建立连接
+	 *
+	 * @var bool
+	 */
 	protected $_connected = false;
 	
-	// 自动连接超时时间（秒）
+	/**
+	 * 自动连接超时时间（秒）
+	 *
+	 * @var int
+	 */
 	protected $_autoConnectTimeOut = 10;
 	
-	// 订阅回调
+	/**
+	 * 订阅回调
+	 *
+	 * @var \Closure|null
+	 */
 	protected $_callbackSubscribe = null;
 	
+	/**
+	 * AbstractMQ constructor.
+	 *
+	 * @param array $config
+	 */
 	public function __construct($config = []) {
 		if (!empty($config)) {
 			$this->_config = array_merge($this->_config, $config);
@@ -76,7 +106,7 @@ abstract class MQ extends BaseClass implements MQInterface {
 	 */
 	public function initNameInfo() {
 		$this->name_info['name'] = self::class;
-		$this->name_info['intro'] = 'MQ基础类';
+		$this->name_info['intro'] = 'MQ抽象基础类';
 	}
 	
 	/**
@@ -288,7 +318,7 @@ abstract class MQ extends BaseClass implements MQInterface {
 	/**
 	 * 订阅
 	 *
-	 * @return array|\think\response\Json|MQ
+	 * @return array|\think\response\Json|$this
 	 */
 	public function subscribe() {
 		if ($this->isErr()) { return $this; } // return $this->return_error();
@@ -307,8 +337,8 @@ abstract class MQ extends BaseClass implements MQInterface {
 	/**
 	 * 发布
 	 *
-	 * @param     $content
-	 * @return array|\think\response\Json|MQ
+	 * @param string|array $content
+	 * @return array|\think\response\Json|$this
 	 */
 	public function publish($content) {
 		if ($this->isErr()) { return $this; }
@@ -322,6 +352,9 @@ abstract class MQ extends BaseClass implements MQInterface {
 		return $this;
 	}
 	
+	/**
+	 * @return mixed
+	 */
 	public function getMqObj() {
 		return $this->_mqObj;
 	}

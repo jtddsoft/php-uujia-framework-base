@@ -4,12 +4,15 @@ namespace uujia\framework\base;
 
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
+use uujia\framework\base\common\ErrorConfig;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\Log\Logger;
+use uujia\framework\base\common\lib\MQ\MQCollection;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\Log;
-use uujia\framework\base\common\ErrorCodeList;
-use uujia\framework\base\common\MQCollection;
+use uujia\framework\base\common\MQ;
 use uujia\framework\base\common\Redis;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\lib\Container\Container;
@@ -96,10 +99,10 @@ class BaseService {
 	}
 	
 	/**
-	 * @return ErrorCodeList
+	 * @return ErrorConfig
 	 */
-	public function getErrorCodeList(): ErrorCodeList {
-		return UU::C(ErrorCodeList::class);
+	public function getErrorCodeList(): ErrorConfig {
+		return UU::C(ErrorConfig::class);
 	}
 	
 	/**
@@ -107,6 +110,20 @@ class BaseService {
 	 */
 	public function getMQCollection(): MQCollection {
 		return UU::C(MQCollection::class);
+	}
+	
+	/**
+	 * @return MQ
+	 */
+	public function getMQ(): MQ {
+		return UU::C(MQ::class);
+	}
+	
+	/**
+	 * @return Logger
+	 */
+	public function getLogger(): Logger {
+		return UU::C(Logger::class);
 	}
 	
 	/**
@@ -121,6 +138,13 @@ class BaseService {
 	 */
 	public function getResult(): Result {
 		return UU::C(Result::class);
+	}
+	
+	/**
+	 * @return ConfigManager
+	 */
+	public function getConfigManager(): ConfigManager {
+		return UU::C(ConfigManager::class);
 	}
 	
 	/**

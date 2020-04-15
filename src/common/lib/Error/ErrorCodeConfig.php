@@ -1,17 +1,20 @@
 <?php
 
 
-namespace uujia\framework\base\common;
+namespace uujia\framework\base\common\lib\Error;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 
-class ErrorCodeList extends BaseClass {
+class ErrorCodeConfig extends BaseClass {
 	
 	const ERROR_CODE_NAME = 'error_code';
 	
-	/** @var Config $_configObj */
+	/**
+	 * @var ConfigManager
+	 */
 	protected $_configObj;
 	
 	/**
@@ -29,47 +32,11 @@ class ErrorCodeList extends BaseClass {
 	 * ErrorCodeList constructor.
 	 *  依赖Config
 	 *
-	 * @param Config       $configObj
-	 * @param array|string $err
+	 * @param ConfigManager $configObj
+	 * @param array|string  $err
 	 */
-	public function __construct(Config $configObj, $err = '') {
+	public function __construct(ConfigManager $configObj, $err = '') {
 		$this->_configObj = $configObj;
-		
-		$_errs = [];
-		
-		if (!empty($err)) {
-			if (is_string($err)) {
-				array_unshift($_errs, $err);
-			} elseif (is_array($err)) {
-				foreach ($err as $row) {
-					array_push($_errs, $err);
-				}
-			}
-		}
-		
-		array_push($_errs, __DIR__ . "/../config/error_code.php");
-		
-		$this->_errCodeList = $configObj
-			->add(self::ERROR_CODE_NAME, $_errs)
-			->getListValue(self::ERROR_CODE_NAME);
-		
-		
-		// // 实例化
-		// $this->_errCodeList = new TreeFunc();
-		//
-		// $configObj->getList()->set(self::$_ERROR_CODE_NAME, $this->_errCodeList);
-		//
-		// // 自身code
-		// // self::$errCodeList[] = include __DIR__ . "/../config/error_code.php";
-		// $this->add(__DIR__ . "/../config/error_code.php");
-		//
-		// if (!empty($err)) {
-		// 	if (is_string($err)) {
-		// 		$this->unshift($err);
-		// 	} elseif (is_array($err)) {
-		// 		$this->add($err);
-		// 	}
-		// }
 		
 		parent::__construct();
 	}
@@ -208,16 +175,16 @@ class ErrorCodeList extends BaseClass {
 	}
 	
 	/**
-	 * @return Config
+	 * @return ConfigManager
 	 */
-	public function getConfigObj(): Config {
+	public function getConfigObj() {
 		return $this->_configObj;
 	}
 	
 	/**
-	 * @param Config $configObj
+	 * @param ConfigManager $configObj
 	 */
-	public function _setConfigObj(Config $configObj) {
+	public function _setConfigObj($configObj) {
 		$this->_configObj = $configObj;
 	}
 }

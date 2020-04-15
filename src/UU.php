@@ -2,7 +2,7 @@
 
 namespace uujia\framework\base;
 
-use uujia\framework\base\common\Config;
+
 use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\traits\InstanceBase;
@@ -17,7 +17,9 @@ class UU {
 	use NameBase;
 	use InstanceBase;
 	
-	/** @var $_container Container */
+	/**
+	 * @var Container
+	 */
 	protected $_container;
 	
 	/**
