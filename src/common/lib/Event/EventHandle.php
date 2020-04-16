@@ -14,6 +14,17 @@ use uujia\framework\base\common\traits\ResultBase;
  * 事件具体监听及触发者
  *  每个事件类都要继承
  *
+ * 事件定义（首字母小写驼峰）：
+ *  addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}:{uuid}
+ * 示例：
+ *  app.order.goods.addBefore:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
+ *
+ * 事件完整定义（缓存中的完整定义）：
+ *  {app_name}:event:
+ *      addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}:{uuid}
+ *  示例：
+ *      shopMall:event:app.order.goods.addBefore:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
+ *
  * @package uujia\framework\base\common\lib\Event
  */
 abstract class EventHandle extends BaseClass implements EventHandleInterface, StoppableEventInterface {
