@@ -72,7 +72,7 @@ class ServerRouteManager extends BaseClass {
 	 *  通过名称查找对应服务器
 	 * @var string
 	 */
-	protected $_serverName = 'main';
+	protected $_serverName = 'main';// todo: 放到ServerParameter中
 	
 	/**
 	 * 服务类型
@@ -295,7 +295,7 @@ class ServerRouteManager extends BaseClass {
 	}
 	
 	/**
-	 * @return ServerRouteLocal
+	 * @return ServerRouteInterface
 	 */
 	public function getServerRouteLocal() {
 		if (empty($this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL])) {
@@ -331,7 +331,7 @@ class ServerRouteManager extends BaseClass {
 	 *
 	 * @return $this
 	 */
-	public function _setServerParameter($serverParameter) {
+	public function setServerParameter($serverParameter) {
 		$this->_serverParameter = $serverParameter;
 		
 		return $this;

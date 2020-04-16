@@ -8,6 +8,7 @@ use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Server\ServerParameter;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
+use uujia\framework\base\common\lib\Server\ServerRouteManager;
 
 /**
  * Class EventListenerProxy
@@ -21,6 +22,12 @@ use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 class EventListenerProxy extends BaseClass implements EventListenerProxyInterface {
 	
 	/**
+	 * 服务器路由管理
+	 * @var ServerRouteManager
+	 */
+	protected $_serverRouteManagerObj;
+	
+	/**
 	 * 服务器参数
 	 * @var ServerParameterInterface
 	 */
@@ -30,10 +37,13 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	/**
 	 * EventListenerProxy constructor.
 	 *
+	 * @param ServerRouteManager       $serverRouteManagerObj
 	 * @param ServerParameterInterface $serverParameterObj
 	 */
-	public function __construct($serverParameterObj = null) {
-		$this->_serverParameter = $serverParameterObj;
+	public function __construct(ServerRouteManager $serverRouteManagerObj,
+	                            ServerParameterInterface $serverParameterObj = null) {
+		$this->_serverRouteManagerObj = $serverRouteManagerObj;
+		$this->_serverParameter = $serverParameterObj ?? new ServerParameter();
 		
 		parent::__construct();
 	}
@@ -42,7 +52,9 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 * 执行触发
 	 */
 	public function handle() {
-	
+		$this->getServerRouteManagerObj()
+		     ->setServerParameter($this->getServerParameter())
+		     ->load();
 	}
 	
 	
@@ -68,6 +80,22 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 		return $this;
 	}
 	
+	/**
+	 * @return ServerRouteManager
+	 */
+	public function getServerRouteManagerObj() {
+		return $this->_serverRouteManagerObj;
+	}
+	
+	/**
+	 * @param ServerRouteManager $serverRouteManagerObj
+	 * @return $this
+	 */
+	public function setServerRouteManagerObj($serverRouteManagerObj) {
+		$this->_serverRouteManagerObj = $serverRouteManagerObj;
+		
+		return $this;
+	}
 	
 	
 }
