@@ -15,6 +15,11 @@ use uujia\framework\base\common\lib\Utils\Response;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
+/**
+ * Class Result
+ *
+ * @package uujia\framework\base\common
+ */
 class Result extends BaseClass implements LoggerAwareInterface {
 	use ResultBase;
 	

@@ -12,9 +12,9 @@ interface ServerConstInterface {
 	/**
 	 * Type 事件类型
 	 */
-	const REQUEST_TYPE_LOCAL_NORMAL    = 'LOCAL'; // 本地通用事件
-	//const REQUEST_TYPE_REMOTE_RABBITMQ = 'RabbitMQ'; // 远程RabbitMq事件
-	//const REQUEST_TYPE_REMOTE_POST     = 'Post'; // 远程POST协议
+	const REQUEST_TYPE_LOCAL_NORMAL = 'LOCAL';       // 本地通用事件
+	const REQUEST_TYPE_REMOTE_RABBITMQ = 'RabbitMQ'; // 远程RabbitMq事件
+	const REQUEST_TYPE_REMOTE_POST = 'Post';         // 远程POST协议
 	
 	/**
 	 * Server 服务器名称（多服务器分布 用于识别不同服务器的名称）
@@ -36,5 +36,23 @@ interface ServerConstInterface {
 	const KEY_ASYNC = 'async';
 	const KEY_URL = 'url';
 	
+	// name
+	const NAME_MAIN = 'main';
+	
+	// type
+	const TYPE_EVENT = 'event';
+	
+	// local
+	const HOST_LOCAL = 'localhost';
+	
+	/**
+	 * 路由服务集合名称Key
+	 *  本地路由服务
+	 *  POST
+	 *  MQ
+	 */
+	const SERVER_ROUTE_NAME_LOCAL = 'server_route_local';
+	const SERVER_ROUTE_NAME_POST = 'server_route_post';
+	const SERVER_ROUTE_NAME_MQ = 'server_route_mq';
 	
 }

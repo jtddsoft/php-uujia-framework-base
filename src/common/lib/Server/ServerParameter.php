@@ -16,6 +16,31 @@ use uujia\framework\base\common\lib\Base\BaseClassInterface;
  */
 class ServerParameter extends BaseClass implements ServerParameterInterface {
 	
+	/**************************************************
+	 * input
+	 * name type
+	 **************************************************/
+	
+	/**
+	 * 服务器名称
+	 *  通过名称查找对应服务器
+	 * @var string
+	 */
+	protected $_serverName = 'main';
+	
+	/**
+	 * 服务类型
+	 *  例如：事件event
+	 *
+	 * @var string
+	 */
+	protected $_serverType = 'event';
+	
+	/**************************************************
+	 * input
+	 * server param
+	 **************************************************/
+	
 	/**
 	 * 主机名 域名
 	 * @var string
@@ -76,6 +101,39 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	/**************************************************************
 	 * var
 	 **************************************************************/
+	
+	/**
+	 * 服务器名称
+	 *
+	 * @param null $serverName
+	 * @return $this|string
+	 */
+	public function serverName($serverName = null) {
+		if ($serverName === null) {
+			return $this->_serverName;
+		} else {
+			$this->_serverName = $serverName;
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 服务类型
+	 *  例如：event
+	 *
+	 * @param null $serverType
+	 * @return $this|string
+	 */
+	public function serverType($serverType = null) {
+		if ($serverType === null) {
+			return $this->_serverType;
+		} else {
+			$this->_serverType = $serverType;
+		}
+		
+		return $this;
+	}
 	
 	/**
 	 * @param null $value
@@ -210,7 +268,7 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	/**
 	 * @return string
 	 */
-	public function getUrl() {
+	public function getUrl(): string {
 		return $this->_url;
 	}
 	
@@ -292,6 +350,42 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	 */
 	public function setAsync(bool $async) {
 		$this->_async = $async;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getServerName(): string {
+		return $this->_serverName;
+	}
+	
+	/**
+	 * @param string $serverName
+	 *
+	 * @return $this
+	 */
+	public function setServerName(string $serverName) {
+		$this->_serverName = $serverName;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getServerType(): string {
+		return $this->_serverType;
+	}
+	
+	/**
+	 * @param string $serverType
+	 *
+	 * @return $this
+	 */
+	public function setServerType(string $serverType) {
+		$this->_serverType = $serverType;
 		
 		return $this;
 	}

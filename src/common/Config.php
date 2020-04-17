@@ -6,6 +6,11 @@ namespace uujia\framework\base\common;
 
 use uujia\framework\base\common\lib\Config\ConfigManager;
 
+/**
+ * Class Config
+ *
+ * @package uujia\framework\base\common
+ */
 class Config {
 	
 	/**

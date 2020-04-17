@@ -6,6 +6,11 @@ namespace uujia\framework\base\common;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\NameBase;
 
+/**
+ * Class Base
+ *
+ * @package uujia\framework\base\common
+ */
 class Base extends BaseClass {
 	
 	/** @var $_ret Result */

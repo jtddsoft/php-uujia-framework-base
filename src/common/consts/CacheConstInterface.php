@@ -2,6 +2,11 @@
 
 namespace uujia\framework\base\common\consts;
 
+/**
+ * Interface CacheConstInterface
+ *
+ * @package uujia\framework\base\common\consts
+ */
 interface CacheConstInterface {
 	
 	/***********************************

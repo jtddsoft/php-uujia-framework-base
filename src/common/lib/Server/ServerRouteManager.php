@@ -20,25 +20,6 @@ class ServerRouteManager extends BaseClass {
 	use ResultBase;
 	use InstanceBase;
 	
-	// name
-	const NAME_MAIN = 'main';
-	
-	// type
-	const TYPE_EVENT = 'event';
-	
-	// local
-	const HOST_LOCAL = 'localhost';
-	
-	/**
-	 * 路由服务集合名称Key
-	 *  本地路由服务
-	 *  POST
-	 *  MQ
-	 */
-	const SERVER_ROUTE_NAME_LOCAL = 'server_route_local';
-	const SERVER_ROUTE_NAME_POST  = 'server_route_post';
-	const SERVER_ROUTE_NAME_MQ    = 'server_route_mq';
-
 	/**
 	 * 服务器参数类
 	 *
@@ -54,38 +35,12 @@ class ServerRouteManager extends BaseClass {
 	 */
 	protected $_serverRoutes = [];
 	
-	
-	
 	/**
 	 * 所有服务器配置
+	 *
 	 * @var array
 	 */
 	protected $_config = [];
-	
-	/**************************************************
-	 * input
-	 * name type
-	 **************************************************/
-	
-	/**
-	 * 服务器名称
-	 *  通过名称查找对应服务器
-	 * @var string
-	 */
-	protected $_serverName = 'main';// todo: 放到ServerParameter中
-	
-	/**
-	 * 服务类型
-	 *  例如：事件event
-	 *
-	 * @var string
-	 */
-	protected $_serverType = 'event';
-	
-	/**************************************************
-	 * input
-	 * param
-	 **************************************************/
 	
 	
 	/**************************************************
@@ -95,6 +50,7 @@ class ServerRouteManager extends BaseClass {
 	
 	/**
 	 * 本机服务器名称
+	 *
 	 * @var string
 	 */
 	protected $_name = '';
@@ -115,15 +71,16 @@ class ServerRouteManager extends BaseClass {
 	public function __construct(ServerParameterInterface $serverParameter = null,
 	                            array $serverRoutes = [],
 	                            array $config = []) {
-		$this->_config = $config;
+		$this->_config          = $config;
 		$this->_serverParameter = $serverParameter;
-		$this->_serverRoutes = $serverRoutes;
+		$this->_serverRoutes    = $serverRoutes;
 		
 		parent::__construct();
 	}
 	
 	/**
 	 * 初始化
+	 *
 	 * @return $this
 	 */
 	public function init() {
@@ -131,7 +88,7 @@ class ServerRouteManager extends BaseClass {
 		
 		// 初始化
 		$this->_serverName = 'main';
-		$this->_type = self::TYPE_EVENT;
+		$this->_type       = ServerConst::TYPE_EVENT;
 		
 		return $this;
 	}
@@ -140,7 +97,7 @@ class ServerRouteManager extends BaseClass {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name']  = self::class;
 		$this->name_info['intro'] = '服务器配置';
 	}
 	
@@ -148,6 +105,7 @@ class ServerRouteManager extends BaseClass {
 	 * 服务配置
 	 *
 	 * @param null|array $config
+	 *
 	 * @return $this|array
 	 */
 	public function config($config = null) {
@@ -164,39 +122,6 @@ class ServerRouteManager extends BaseClass {
 	}
 	
 	/**
-	 * 服务器名称
-	 *
-	 * @param null $serverName
-	 * @return $this|string
-	 */
-	public function serverName($serverName = null) {
-		if ($serverName === null) {
-			return $this->_serverName;
-		} else {
-			$this->_serverName = $serverName;
-		}
-		
-		return $this;
-	}
-	
-	/**
-	 * 服务类型
-	 *  例如：event
-	 *
-	 * @param null $serverType
-	 * @return $this|string
-	 */
-	public function serverType($serverType = null) {
-		if ($serverType === null) {
-			return $this->_serverType;
-		} else {
-			$this->_serverType = $serverType;
-		}
-		
-		return $this;
-	}
-	
-	/**
 	 * 加载配置
 	 *
 	 * @param null $name
@@ -205,8 +130,8 @@ class ServerRouteManager extends BaseClass {
 	 * @return ServerRouteManager
 	 */
 	public function load($name = null, $type = null) {
-		!empty($name) && $name = $this->serverName();
-		!empty($type) && $type = $this->serverType();
+		!empty($name) && $name = $this->getServerParameter()->serverName();
+		!empty($type) && $type = $this->getServerParameter()->serverType();
 		// !empty($requestType) && $requestType = $this->requestType();
 		
 		$_config = $this->getConfig();
@@ -215,19 +140,19 @@ class ServerRouteManager extends BaseClass {
 		$_host = $_server[ServerConst::KEY_HOST];
 		$_data = $_server[ServerConst::KEY_TYPE][$type];
 		
-		$_url = $_data[ServerConst::KEY_URL] ?? '';
+		$_url         = $_data[ServerConst::KEY_URL] ?? '';
 		$_requestType = $_data[ServerConst::KEY_REQUEST_TYPE] ?? ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
-		$_async = $_data[ServerConst::KEY_ASYNC] ?? false;
+		$_async       = $_data[ServerConst::KEY_ASYNC] ?? false;
 		
 		// $this->_setHost($_host);
 		// $this->_setServerTypeData($_data);
 		// $this->_setRequestType($_requestType);
 		
 		$this->getServerParameter()
-			->setHost($_host)
-			->setUrl($_url)
-			->setAsync($_async)
-			->setRequestType($_requestType);
+		     ->setHost($_host)
+		     ->setUrl($_url)
+		     ->setAsync($_async)
+		     ->setRequestType($_requestType);
 		
 		return $this;
 	}
@@ -240,7 +165,7 @@ class ServerRouteManager extends BaseClass {
 	public function isLocal() {
 		return (in_array($this->getServerParameter()->getHost(), ['', ServerConst::SERVER_HOST_LOCALHOST]) ||
 		        $this->getServerParameter()->getHost() == Network::getServerIp()) &&
-		       $this->getServerParameter()->getRequestType() == ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
+		        $this->getServerParameter()->getRequestType() == ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
 	}
 	
 	/**
@@ -298,10 +223,10 @@ class ServerRouteManager extends BaseClass {
 	 * @return ServerRouteInterface
 	 */
 	public function getServerRouteLocal() {
-		if (empty($this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL])) {
-			$this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL] = new ServerRouteLocal($this, $this->getServerParameter());
+		if (empty($this->_serverRoutes[ServerConst::SERVER_ROUTE_NAME_LOCAL])) {
+			$this->_serverRoutes[ServerConst::SERVER_ROUTE_NAME_LOCAL] = new ServerRouteLocal($this, $this->getServerParameter());
 		}
-		return $this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL];
+		return $this->_serverRoutes[ServerConst::SERVER_ROUTE_NAME_LOCAL];
 	}
 	
 	/**
@@ -310,7 +235,7 @@ class ServerRouteManager extends BaseClass {
 	 * @return $this
 	 */
 	public function setServerRouteLocal($serverRouteLocal) {
-		$this->_serverRoutes[self::SERVER_ROUTE_NAME_LOCAL] = $serverRouteLocal;
+		$this->_serverRoutes[ServerConst::SERVER_ROUTE_NAME_LOCAL] = $serverRouteLocal;
 		
 		return $this;
 	}

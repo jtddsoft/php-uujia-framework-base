@@ -2,6 +2,11 @@
 
 namespace uujia\framework\base\common\consts;
 
+/**
+ * Interface ResultConstInterface
+ *
+ * @package uujia\framework\base\common\consts
+ */
 interface ResultConstInterface {
 	
 	// 返回ok模板

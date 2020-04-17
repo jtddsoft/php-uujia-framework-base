@@ -7,6 +7,11 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 
+/**
+ * Class Redis
+ *
+ * @package uujia\framework\base\common
+ */
 class Redis extends BaseClass {
 	
 	// const KEY_CONTAINER_REDIS_ALIAS = 'redisProvider';

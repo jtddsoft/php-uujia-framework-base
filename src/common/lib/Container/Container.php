@@ -192,7 +192,18 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		if ($data->_getFactoryFunc() === null) {
 			// 构建工厂
 			$_factoryFunc = function (TreeFuncData $data, TreeFunc $it, Container $c) use ($id) {
+				/**
+				 * 别名和映射的区别在于 key键名不同
+				 * 设a为真实类的完整名称 b为a的昵称
+				 *  别名：key键名为a 使用时用他的昵称b 经过翻译实际用a去访问
+				 *  映射：key键名为b 使用时用他的昵称b 映射出a用a去访问
+				 *       由于key的键名与实际a不同 因此可以存储a的多份实例 用他不同的映射昵称去区分
+				 */
+				
+				// 查找别名
 				$it->getParent()->hasAlias($id) && $id = $it->getParent()->getAlias($id);
+				// 查找映射
+				$it->getParent()->hasAs($id) && $id = $it->getParent()->getAs($id);
 				
 				if(is_string($id) && class_exists($id)){
 					try {

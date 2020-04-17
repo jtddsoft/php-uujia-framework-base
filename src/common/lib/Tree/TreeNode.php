@@ -36,6 +36,11 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	public $_aliasKeys = [];
 	
 	/**
+	 * key映射
+	 */
+	public $_asKeys = [];
+	
+	/**
 	 * 迭代器游标位置
 	 */
 	protected $_position = 0;
@@ -533,6 +538,11 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 		return $this;
 	}
 	
+	/**************************************************
+	 * 别名key
+	 * key键名为a，b是a的别名，用b先翻译成a再去访问
+	 **************************************************/
+	
 	/**
 	 * 清空别名列表
 	 *
@@ -599,6 +609,85 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	 */
 	public function removeAlias(string $a) {
 		unset($this->_aliasKeys[$a]);
+		
+		return $this;
+	}
+	
+	/**************************************************
+	 * 映射key
+	 * key键名为b，a为b的真实名称映射，key虽是b但应该用a去访问
+	 **************************************************/
+	
+	/**
+	 * 清空映射列表
+	 *
+	 * @return $this
+	 */
+	public function clearAs() {
+		$this->_asKeys = [];
+		
+		return $this;
+	}
+	
+	/**
+	 * 根据映射获取真实key
+	 *  用于对key重新取名 但表示含义还是原有名称
+	 *  例如：一个class按正常情况只会在容器中存在1个实例 这是由key决定的唯一的
+	 *       如果想存在多个就需要多个不同名称的key 但仍表示这个class
+	 *       容器在自动注入时仍会按真实class名称创建实例
+	 *
+	 * @param string $a
+	 *
+	 * @return string|null
+	 */
+	public function getAs(string $a) {
+		if (!$this->hasAs($a)) {
+			return null;
+		}
+		
+		return $this->_asKeys[$a];
+	}
+	
+	/**
+	 * 映射Key是否存在
+	 *
+	 * @param string $a
+	 *
+	 * @return bool
+	 */
+	public function hasAs(string $a): bool {
+		return array_key_exists($a, $this->_asKeys);
+	}
+	
+	/**
+	 * 配置映射
+	 *
+	 * @param string|array $a
+	 * @param string       $k
+	 *
+	 * @return $this
+	 */
+	public function setAs($a, string $k = '') {
+		if (is_array($a)) {
+			foreach ($a as $aKey => $aValue) {
+				$this->_asKeys[$aKey] = $aValue;
+			}
+		} else {
+			$this->_asKeys[$a] = $k;
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 移除映射
+	 *
+	 * @param string $a
+	 *
+	 * @return $this
+	 */
+	public function removeAs(string $a) {
+		unset($this->_asKeys[$a]);
 		
 		return $this;
 	}

@@ -5,6 +5,11 @@ namespace uujia\framework\base\common;
 
 use uujia\framework\base\common\traits\NameBase;
 
+/**
+ * Class Runner
+ *
+ * @package uujia\framework\base\common
+ */
 class Runner extends Base {
 	use NameBase;
 	

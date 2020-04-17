@@ -5,14 +5,14 @@ namespace uujia\framework\base\common;
 
 
 use uujia\framework\base\common\consts\ServerConst;
-use uujia\framework\base\common\lib\Event\EventServer;
-use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\common\lib\Utils\Arr;
 use uujia\framework\base\common\lib\Utils\Str as UUStr;
-use uujia\framework\base\common\traits\NameBase;
-use uujia\framework\base\common\traits\ResultBase;
 
+/**
+ * Class Event
+ *
+ * @package uujia\framework\base\common
+ */
 class Event extends Base {
 	// use NameBase;
 	// use ResultBase;
