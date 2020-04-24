@@ -72,15 +72,16 @@ class TreeFuncData extends BaseClass {
 	 * @param null $cache
 	 */
 	public function __construct($parent, $factoryFunc = null, $cache = null) {
-		$this->_parent = $parent;
+		$this->_parent      = $parent;
 		$this->_factoryFunc = $factoryFunc;
-		$this->_cache = $cache;
+		$this->_cache       = $cache;
 		
 		parent::__construct();
 	}
 	
 	/**
 	 * 初始化
+	 *
 	 * @return $this
 	 */
 	public function init() {
@@ -93,7 +94,7 @@ class TreeFuncData extends BaseClass {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name']  = self::class;
 		$this->name_info['intro'] = '列表项数据管理';
 	}
 	
@@ -101,7 +102,9 @@ class TreeFuncData extends BaseClass {
 	 * 获取
 	 *
 	 * @param array $param
-	 * @param bool  $doNotCache
+	 * @param bool  $doNotCache     不保存到缓存
+	 * @param bool  $doNotLoadCache 不加载缓存
+	 *
 	 * @return mixed|null
 	 */
 	public function get($param = [], $doNotCache = false, $doNotLoadCache = false) {
@@ -129,6 +132,7 @@ class TreeFuncData extends BaseClass {
 	 * 获取and缓存
 	 *
 	 * @param array $param
+	 *
 	 * @return mixed|null
 	 */
 	public function getAndCache($param = []) {
@@ -154,6 +158,7 @@ class TreeFuncData extends BaseClass {
 	 *  });
 	 *
 	 * @param \Closure $f
+	 *
 	 * @return $this
 	 */
 	public function set(\Closure $f): TreeFuncData {
@@ -167,6 +172,7 @@ class TreeFuncData extends BaseClass {
 	 * 缓存实例
 	 *
 	 * @param null $v
+	 *
 	 * @return mixed
 	 */
 	public function cache($v = null) {
@@ -218,6 +224,7 @@ class TreeFuncData extends BaseClass {
 	
 	/**
 	 * @param bool $isAutoCache
+	 *
 	 * @return $this
 	 */
 	public function setIsAutoCache(bool $isAutoCache) {
@@ -239,6 +246,7 @@ class TreeFuncData extends BaseClass {
 	
 	/**
 	 * @param bool $isLoadCache
+	 *
 	 * @return $this
 	 */
 	public function setIsLoadCache(bool $isLoadCache) {
@@ -256,6 +264,7 @@ class TreeFuncData extends BaseClass {
 	
 	/**
 	 * @param \Closure $factoryFunc
+	 *
 	 * @return $this
 	 */
 	public function _setFactoryFunc($factoryFunc) {
@@ -273,6 +282,7 @@ class TreeFuncData extends BaseClass {
 	
 	/**
 	 * @param array $other
+	 *
 	 * @return $this
 	 */
 	public function _setOther(array $other) {
@@ -286,6 +296,7 @@ class TreeFuncData extends BaseClass {
 	 *
 	 * @param $key
 	 * @param $value
+	 *
 	 * @return $this
 	 */
 	public function setKeyOther($key, $value) {

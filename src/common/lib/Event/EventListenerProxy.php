@@ -23,12 +23,14 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	
 	/**
 	 * 服务器路由管理
+	 *
 	 * @var ServerRouteManager
 	 */
 	protected $_serverRouteManagerObj;
 	
 	/**
 	 * 服务器参数
+	 *
 	 * @var ServerParameterInterface
 	 */
 	protected $_serverParameter;
@@ -43,7 +45,7 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	public function __construct(ServerRouteManager $serverRouteManagerObj,
 	                            ServerParameterInterface $serverParameterObj = null) {
 		$this->_serverRouteManagerObj = $serverRouteManagerObj;
-		$this->_serverParameter = $serverParameterObj ?? new ServerParameter();
+		$this->_serverParameter       = $serverParameterObj ?? new ServerParameter();
 		
 		parent::__construct();
 	}
@@ -55,8 +57,41 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 		$this->getServerRouteManagerObj()
 		     ->setServerParameter($this->getServerParameter())
 		     ->load();
+		
+		
 	}
 	
+	/**************************************************************
+	 * data ServerParameter
+	 **************************************************************/
+	
+	/**
+	 * 设置服务名称
+	 *
+	 * @param string $name
+	 *
+	 * @return $this
+	 */
+	public function setSPServerName($name = '') {
+		$this->getServerParameter()
+		     ->setServerName($name);
+		
+		return $this;
+	}
+	
+	/**
+	 * 设置服务类型
+	 *
+	 * @param string $type
+	 *
+	 * @return $this
+	 */
+	public function setSPServerType($type = '') {
+		$this->getServerParameter()
+		     ->setServerType($type);
+		
+		return $this;
+	}
 	
 	/**************************************************************
 	 * get set
@@ -72,7 +107,7 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	/**
 	 * @param ServerParameterInterface $serverParameter
 	 *
-	 * @return EventListenerProxy
+	 * @return $this
 	 */
 	public function setServerParameter($serverParameter) {
 		$this->_serverParameter = $serverParameter;
@@ -89,6 +124,7 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	
 	/**
 	 * @param ServerRouteManager $serverRouteManagerObj
+	 *
 	 * @return $this
 	 */
 	public function setServerRouteManagerObj($serverRouteManagerObj) {

@@ -8,7 +8,7 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 
-class CacheDataManager extends BaseClass {
+class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 	
 	/**
 	 * 缓存Key前缀

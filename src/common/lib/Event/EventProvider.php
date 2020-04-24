@@ -75,7 +75,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * EventProvider constructor.
 	 *
 	 * @param null  $parent
-	 * @param array $config
+	 * @param array $config 暂用做保留*
 	 * @param array $cacheKeyPrefix
 	 */
 	public function __construct($parent = null, $config = [], $cacheKeyPrefix = []) {
@@ -120,6 +120,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	/**
+	 * 读取缓存
 	 * @inheritDoc
 	 */
 	public function fromCache() {
@@ -140,16 +141,19 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// }
 		
 		// $reData = $redis->zrange($k, 0, -1);
-		$i = 0;
-		while(!empty($reData = $redis->zrange($k, $i, 10))) {
-			$i++;
-			
-			yield $reData;
-		}
 		
+		foreach ($this->scanCacheKey('*') as $_key) {
+			$i = 0;
+			while(!empty($cacheData = $redis->zrange($_key, $i, 10))) {
+				$i++;
+				
+				yield from $this->makeCacheToServerParameter($_key, $cacheData);
+			}
+		}
 	}
 	
 	/**
+	 * 调用缓存管理器收集数据记入缓存
 	 * @inheritDoc
 	 */
 	public function toCache() {
@@ -216,6 +220,44 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	/**
+	 * 将缓存构建到监听代理服务参数对象
+	 *
+	 * @param string $key
+	 * @param array  $cacheData
+	 *
+	 * @return \Generator
+	 */
+	private function makeCacheToServerParameter($key, $cacheData = []) {
+		$_serverRouteManagerObj = $this->getServerRouteManager();
+		
+		foreach ($cacheData as $i => $item) {
+			$_dataCache = json_decode($item, true);
+			
+			$this->getList()
+			     ->addKeyNewItemData($key, function ($data, $it, $params) use ($_dataCache, $_serverRouteManagerObj) {
+				     $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
+				     $_eventListenerProxyObj->setSPServerName($_dataCache['']);
+			     
+			     
+					
+					
+					$_params = $itemProvider->getParams();
+					$itemProvider->setParams(array_merge($_params, $_params));
+					$itemProvider->setCacheKeyPrefix($cachePrefixs);
+					$itemProvider->setParent($this);
+					$res = $itemProvider->make();
+					
+					return $res;
+				});
+			
+			
+			
+			
+			yield;
+		}
+	}
+	
+	/**
 	 * 获取拼接后的缓存key
 	 *
 	 * @param string $currKey 当前key
@@ -230,6 +272,21 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		return EventFilter::factory()
 		                  ->setProfix($this->getCacheKeyPrefix())
 		                  ->getJointKey($currKey);
+	}
+	
+	/**
+	 * 遍历符合条件的缓存key
+	 *
+	 * @param string $currKey 当前key
+	 *
+	 * @return \Generator
+	 */
+	public function scanCacheKey($currKey = '*') {
+		foreach (EventFilter::factory()
+		                    ->setProfix($this->getCacheKeyPrefix())
+		                    ->keyScan($currKey, 0) as $_key) {
+			yield $_key;
+		}
 	}
 	
 	
@@ -359,6 +416,13 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		$cdProvider = $cdMgr->getProviderList()->get(CacheConst::DATA_PROVIDER_KEY_EVENT);
 		
 		return $cdProvider;
+	}
+	
+	/**
+	 * @return ServerRouteManager
+	 */
+	public function getServerRouteManager(): ServerRouteManager {
+		return $this->getParent()->getServerRouteManagerObj();
 	}
 	
 }

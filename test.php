@@ -100,6 +100,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			echo Json::je($demo->event());
 			break;
+			
+		case 'evt':
+			echo \uujia\framework\base\common\consts\CacheConstInterface::DATA_PROVIDER_KEY_EVENT;
+			break;
 	}
 	
 }

@@ -20,6 +20,12 @@ interface CacheDataManagerInterface {
 	
 	public function getRedisObj();
 	
-	
+	/**
+	 * 设置（添加或修改）缓存数据供应商
+	 *
+	 * @param $key
+	 * @param CacheDataProviderInterface $itemProvider
+	 */
+	public function regProvider($key, $itemProvider);
 	
 }

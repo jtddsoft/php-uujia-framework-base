@@ -8,6 +8,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
+use uujia\framework\base\common\lib\Server\ServerRouteManager;
 
 /**
  * Class EventDispatcher
@@ -32,6 +33,13 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	protected $_redisProviderObj;
 	
 	/**
+	 * ServerRouteManager对象
+	 *
+	 * @var ServerRouteManager
+	 */
+	protected $_serverRouteManagerObj;
+	
+	/**
 	 * EventDispatcher constructor.
 	 *
 	 * @param CacheDataManagerInterface|null $cacheDataManagerObj
@@ -39,9 +47,12 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null, RedisProviderInterface $redisProviderObj = null) {
-		$this->_cacheDataManagerObj = $cacheDataManagerObj;
-		$this->_redisProviderObj = $redisProviderObj;
+	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null,
+	                            RedisProviderInterface $redisProviderObj = null,
+	                            ServerRouteManager $serverRouteManagerObj = null) {
+		$this->_cacheDataManagerObj   = $cacheDataManagerObj;
+		$this->_redisProviderObj      = $redisProviderObj;
+		$this->_serverRouteManagerObj = $serverRouteManagerObj;
 		
 		parent::__construct();
 	}
@@ -55,7 +66,6 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	}
 	
 	
-	
 	/**
 	 * @return RedisProviderInterface
 	 */
@@ -65,11 +75,12 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	
 	/**
 	 * @param RedisProviderInterface $redisProviderObj
+	 *
 	 * @return $this
 	 */
 	public function setRedisProviderObj($redisProviderObj) {
 		$this->_redisProviderObj = $redisProviderObj;
-	
+		
 		return $this;
 	}
 	
@@ -89,10 +100,29 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	
 	/**
 	 * @param CacheDataManagerInterface $cacheDataManagerObj
+	 *
 	 * @return $this
 	 */
 	public function setCacheDataManagerObj($cacheDataManagerObj) {
 		$this->_cacheDataManagerObj = $cacheDataManagerObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return ServerRouteManager
+	 */
+	public function getServerRouteManagerObj(): ServerRouteManager {
+		return $this->_serverRouteManagerObj;
+	}
+	
+	/**
+	 * @param ServerRouteManager $serverRouteManagerObj
+	 *
+	 * @return $this
+	 */
+	public function setServerRouteManagerObj(ServerRouteManager $serverRouteManagerObj) {
+		$this->_serverRouteManagerObj = $serverRouteManagerObj;
 		
 		return $this;
 	}

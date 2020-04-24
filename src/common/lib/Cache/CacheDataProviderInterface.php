@@ -29,6 +29,7 @@ interface CacheDataProviderInterface {
 	
 	/**
 	 * 写入缓存
+	 *  需要写入服务器名称（main）、服务类型（event之类）
 	 */
 	public function toCache();
 	
