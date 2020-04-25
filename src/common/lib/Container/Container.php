@@ -282,6 +282,11 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 						// 		return $_arg;
 						// 	});
 						
+						// 如果存在容器接纳 将自身实例传入
+						if (is_callable([$ins, '_setContainer'])) {
+							call_user_func_array([$ins, '_setContainer'], [$this]);
+						}
+						
 						return $ins;
 					} catch (\ReflectionException $e) {
 						// todo: 报错反射异常

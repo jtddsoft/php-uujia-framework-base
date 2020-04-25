@@ -378,7 +378,7 @@ class Reflection {
 	/**
 	 * @return \ReflectionMethod
 	 */
-	public function getRefMethod(): \ReflectionMethod {
+	public function getRefMethod() {
 		try {
 			if (is_null($this->_refMethod)) {
 				$this->_setRefMethod(new \ReflectionMethod($this->getClassName(), $this->getMethodName()));
@@ -402,9 +402,9 @@ class Reflection {
 	}
 	
 	/**
-	 * @return \ReflectionProperty
+	 * @return \ReflectionProperty|null
 	 */
-	public function getRefProperty(): \ReflectionProperty {
+	public function getRefProperty() {
 		try {
 			if (is_null($this->_refProperty)) {
 				$this->_setRefProperty(new \ReflectionProperty($this->getClassName(), $this->getPropertyName()));
@@ -438,7 +438,7 @@ class Reflection {
 			
 			return $this->_refParameters;
 		} catch (\ReflectionException $e) {
-			return null;
+			return [];
 		}
 	}
 	

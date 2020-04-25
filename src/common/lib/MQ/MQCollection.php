@@ -26,7 +26,7 @@ class MQCollection extends TreeFunc {
 	protected $_configObj;
 	
 	/**
-	 * ItemKeys constructor.
+	 * MQCollection constructor.
 	 *
 	 * @param ConfigManager $configObj
 	 * @param               $parent

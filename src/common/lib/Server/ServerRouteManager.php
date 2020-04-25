@@ -126,10 +126,11 @@ class ServerRouteManager extends BaseClass {
 	 *
 	 * @param null $name
 	 * @param null $type
+	 * @param bool $notEmptyIgnore 如果不是空就忽略设置
 	 *
 	 * @return ServerRouteManager
 	 */
-	public function load($name = null, $type = null) {
+	public function load($name = null, $type = null, $notEmptyIgnore = false) {
 		!empty($name) && $name = $this->getServerParameter()->serverName();
 		!empty($type) && $type = $this->getServerParameter()->serverType();
 		// !empty($requestType) && $requestType = $this->requestType();
@@ -149,10 +150,12 @@ class ServerRouteManager extends BaseClass {
 		// $this->_setRequestType($_requestType);
 		
 		$this->getServerParameter()
-		     ->setHost($_host)
-		     ->setUrl($_url)
-		     ->setAsync($_async)
-		     ->setRequestType($_requestType);
+		     ->setServerName($name, $notEmptyIgnore)
+		     ->setServerType($type, $notEmptyIgnore)
+		     ->setHost($_host, $notEmptyIgnore)
+		     ->setUrl($_url, $notEmptyIgnore)
+		     ->setAsync($_async, $notEmptyIgnore)
+		     ->setRequestType($_requestType, $notEmptyIgnore);
 		
 		return $this;
 	}
@@ -165,7 +168,7 @@ class ServerRouteManager extends BaseClass {
 	public function isLocal() {
 		return (in_array($this->getServerParameter()->getHost(), ['', ServerConst::SERVER_HOST_LOCALHOST]) ||
 		        $this->getServerParameter()->getHost() == Network::getServerIp()) &&
-		        $this->getServerParameter()->getRequestType() == ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
+		       $this->getServerParameter()->getRequestType() == ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
 	}
 	
 	/**

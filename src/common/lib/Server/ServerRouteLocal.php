@@ -113,7 +113,7 @@ class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 		$callback = $this->getCallback();
 		
 		if ($callback && is_callable($callback)) {
-			call_user_func_array($callback, [$this, $this->getServerParameter()]);
+			call_user_func_array($callback, [$this, $this->getServerParameter(), $this->getParent()]);
 		}
 		
 		return $this->ok();

@@ -71,9 +71,11 @@ interface ServerParameterInterface {
 	
 	/**
 	 * @param string $host
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
+	 *
 	 * @return $this
 	 */
-	public function setHost(string $host);
+	public function setHost(string $host, $notEmptyIgnore = false);
 	
 	/**
 	 * @return string
@@ -82,9 +84,26 @@ interface ServerParameterInterface {
 	
 	/**
 	 * @param string $requestType
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
+	 *
 	 * @return $this
 	 */
-	public function setRequestType($requestType);
+	public function setRequestType($requestType, $notEmptyIgnore = false);
+	
+	/**
+	 * @return bool
+	 */
+	public function isAsync(): bool;
+	
+	/**
+	 * 设置是否异步 todo: 未支持
+	 *
+	 * @param bool $async
+	 * @param bool $notEmptyIgnore 如果不是空就忽略设置
+	 *
+	 * @return $this
+	 */
+	public function setAsync(bool $async, $notEmptyIgnore = false);
 	
 	/**
 	 * @return string
@@ -93,9 +112,11 @@ interface ServerParameterInterface {
 	
 	/**
 	 * @param string $url
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
+	 *
 	 * @return $this
 	 */
-	public function setUrl(string $url);
+	public function setUrl(string $url, $notEmptyIgnore = false);
 	
 	/**
 	 * @return array
@@ -134,15 +155,29 @@ interface ServerParameterInterface {
 	public function setCallback(callable $callback);
 	
 	/**
-	 * @return bool
+	 * @return string
 	 */
-	public function isAsync(): bool;
+	public function getServerName();
 	
 	/**
-	 * @param bool $async
+	 * @param string $serverName
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
 	 *
 	 * @return $this
 	 */
-	public function setAsync(bool $async);
+	public function setServerName(string $serverName, $notEmptyIgnore = false);
+	
+	/**
+	 * @return string
+	 */
+	public function getServerType(): string;
+	
+	/**
+	 * @param string $serverType
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
+	 *
+	 * @return $this
+	 */
+	public function setServerType(string $serverType, $notEmptyIgnore = false);
 	
 }

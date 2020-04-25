@@ -7,7 +7,7 @@ namespace uujia\framework\base\common\consts;
  *
  * @package uujia\framework\base\common\consts
  */
-class EventConst implements CacheConstInterface {
+class EventConst implements EventConstInterface {
 
 	
 }

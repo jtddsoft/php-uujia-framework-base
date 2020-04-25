@@ -24,9 +24,10 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	/**
 	 * 服务器名称
 	 *  通过名称查找对应服务器
+	 *
 	 * @var string
 	 */
-	protected $_serverName = 'main';
+	protected $_serverName = ''; // main
 	
 	/**
 	 * 服务类型
@@ -34,7 +35,7 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	 *
 	 * @var string
 	 */
-	protected $_serverType = 'event';
+	protected $_serverType = ''; // event
 	
 	/**************************************************
 	 * input
@@ -43,36 +44,42 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	
 	/**
 	 * 主机名 域名
+	 *
 	 * @var string
 	 */
 	protected $_host = '';
 	
 	/**
 	 * 请求类型
+	 *
 	 * @var string
 	 */
 	protected $_requestType = ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
 	
 	/**
 	 * 是否异步
+	 *
 	 * @var bool
 	 */
 	protected $_async = false;
 	
 	/**
 	 * 远程接口地址
+	 *
 	 * @var string
 	 */
 	protected $_url = '';
 	
 	/**
 	 * 参数
+	 *
 	 * @var array
 	 */
 	protected $_params = [];
 	
 	/**
 	 * 返回值
+	 *
 	 * @var array
 	 */
 	protected $_ret = [];
@@ -94,8 +101,30 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name']  = self::class;
 		$this->name_info['intro'] = '服务器参数类';
+	}
+	
+	/**
+	 * 复位 属性归零
+	 *
+	 * @param array $exclude
+	 *
+	 * @return $this
+	 */
+	public function reset($exclude = []) {
+		!in_array('serverName', $exclude) && $this->_serverName = '';
+		!in_array('serverName', $exclude) && $this->_serverType = '';
+		
+		!in_array('host', $exclude) && $this->_host = '';
+		!in_array('requestType', $exclude) && $this->_requestType = ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
+		!in_array('async', $exclude) && $this->_async = false;
+		!in_array('url', $exclude) && $this->_url = '';
+		!in_array('params', $exclude) && $this->_params = [];
+		!in_array('ret', $exclude) && $this->_ret = [];
+		!in_array('callback', $exclude) && $this->_callback = null;
+		
+		return parent::reset();
 	}
 	
 	/**************************************************************
@@ -106,6 +135,7 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	 * 服务器名称
 	 *
 	 * @param null $serverName
+	 *
 	 * @return $this|string
 	 */
 	public function serverName($serverName = null) {
@@ -123,6 +153,7 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	 *  例如：event
 	 *
 	 * @param null $serverType
+	 *
 	 * @return $this|string
 	 */
 	public function serverType($serverType = null) {
@@ -240,10 +271,14 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	
 	/**
 	 * @param string $host
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
+	 *
 	 * @return $this
 	 */
-	public function setHost(string $host) {
-		$this->_host = $host;
+	public function setHost(string $host, $notEmptyIgnore = false) {
+		if (!$notEmptyIgnore || empty($this->_host)) {
+			$this->_host = $host;
+		}
 		
 		return $this;
 	}
@@ -257,10 +292,35 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	
 	/**
 	 * @param string $requestType
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
+	 *
 	 * @return $this
 	 */
-	public function setRequestType($requestType) {
-		$this->_requestType = $requestType;
+	public function setRequestType($requestType, $notEmptyIgnore = false) {
+		if (!$notEmptyIgnore || empty($this->_requestType)) {
+			$this->_requestType = $requestType;
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isAsync(): bool {
+		return $this->_async;
+	}
+	
+	/**
+	 * 设置是否异步 todo: 未支持
+	 *
+	 * @param bool $async
+	 * @param bool $notEmptyIgnore 如果不是空就忽略设置
+	 *
+	 * @return $this
+	 */
+	public function setAsync(bool $async, $notEmptyIgnore = false) {
+		$this->_async = $async;
 		
 		return $this;
 	}
@@ -274,10 +334,14 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	
 	/**
 	 * @param string $url
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
+	 *
 	 * @return $this
 	 */
-	public function setUrl(string $url) {
-		$this->_url = $url;
+	public function setUrl(string $url, $notEmptyIgnore = false) {
+		if (!$notEmptyIgnore || empty($this->_url)) {
+			$this->_url = $url;
+		}
 		
 		return $this;
 	}
@@ -337,24 +401,6 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	}
 	
 	/**
-	 * @return bool
-	 */
-	public function isAsync(): bool {
-		return $this->_async;
-	}
-	
-	/**
-	 * @param bool $async
-	 *
-	 * @return $this
-	 */
-	public function setAsync(bool $async) {
-		$this->_async = $async;
-		
-		return $this;
-	}
-	
-	/**
 	 * @return string
 	 */
 	public function getServerName(): string {
@@ -363,11 +409,14 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	
 	/**
 	 * @param string $serverName
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
 	 *
 	 * @return $this
 	 */
-	public function setServerName(string $serverName) {
-		$this->_serverName = $serverName;
+	public function setServerName(string $serverName, $notEmptyIgnore = false) {
+		if (!$notEmptyIgnore || empty($this->_serverName)) {
+			$this->_serverName = $serverName;
+		}
 		
 		return $this;
 	}
@@ -381,11 +430,14 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	
 	/**
 	 * @param string $serverType
+	 * @param bool   $notEmptyIgnore 如果不是空就忽略设置
 	 *
 	 * @return $this
 	 */
-	public function setServerType(string $serverType) {
-		$this->_serverType = $serverType;
+	public function setServerType(string $serverType, $notEmptyIgnore = false) {
+		if (!$notEmptyIgnore || empty($this->_serverType)) {
+			$this->_serverType = $serverType;
+		}
 		
 		return $this;
 	}

@@ -41,43 +41,47 @@ class Json {
 	/**
 	 * json_decode
 	 *
-	 * @param $json
+	 * @param string $json
+	 * @param bool   $assoc
+	 * @param int    $depth
+	 * @param int    $options
 	 *
 	 * @return mixed
 	 */
-	public static function decode($json) {
-		return json_decode($json, true);
+	public static function decode($json, $assoc = true, $depth = 512, $options = 0) {
+		return json_decode($json, $assoc, $depth, $options);
 	}
 	
 	/**
 	 * 是否json
 	 *
 	 * @param $string
+	 *
 	 * @return bool
 	 */
 	public static function isJson($string) {
 		json_decode($string);
-		return(json_last_error() == JSON_ERROR_NONE);
+		return (json_last_error() == JSON_ERROR_NONE);
 	}
 	
 	/**
 	 * 解析json串
+	 *
 	 * @param string $json_str
+	 *
 	 * @return bool|array
 	 */
 	public static function analyJson($json_str) {
 		$json_str = str_replace('＼＼', '', $json_str);
-		$out_arr = array();
+		$out_arr  = [];
 		preg_match('/{.*}/', $json_str, $out_arr);
 		if (!empty($out_arr)) {
-			$result = json_decode($out_arr[0], TRUE);
+			$result = json_decode($out_arr[0], true);
 		} else {
-			return FALSE;
+			return false;
 		}
 		return $result;
 	}
-	
-	
 	
 	
 }

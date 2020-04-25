@@ -20,5 +20,14 @@ interface BaseClassInterface {
 	 */
 	public function initNameInfo();
 	
+	/**
+	 * 复位 属性归零
+	 *
+	 * @param array $exclude
+	 *
+	 * @return $this
+	 */
+	public function reset($exclude = []);
+	
 	
 }

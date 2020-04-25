@@ -8,12 +8,15 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use uujia\framework\base\common\Config;
 use uujia\framework\base\common\consts\CacheConst;
+use uujia\framework\base\common\consts\EventConst;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
+use uujia\framework\base\common\lib\Server\ServerParameterInterface;
+use uujia\framework\base\common\lib\Server\ServerRouteInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
@@ -82,15 +85,17 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		$this->_parent = $parent;
 		$this->_config = $config;
 		
-		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+		$this->_cacheKeyPrefix   = $cacheKeyPrefix;
 		$this->_cacheKeyPrefix[] = self::CACHE_KEY_PREFIX;
-	
+		
 		parent::__construct();
 	}
 	
 	/**
 	 * 为事件调度提供事件列表
+	 *
 	 * @param EventHandleInterface|object $event
+	 *
 	 * @inheritDoc
 	 */
 	public function getListenersForEvent(object $event): iterable {
@@ -121,6 +126,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	
 	/**
 	 * 读取缓存
+	 *
 	 * @inheritDoc
 	 */
 	public function fromCache() {
@@ -144,7 +150,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		
 		foreach ($this->scanCacheKey('*') as $_key) {
 			$i = 0;
-			while(!empty($cacheData = $redis->zrange($_key, $i, 10))) {
+			while (!empty($cacheData = $redis->zrange($_key, $i, 10))) {
 				$i++;
 				
 				yield from $this->makeCacheToServerParameter($_key, $cacheData);
@@ -154,6 +160,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	
 	/**
 	 * 调用缓存管理器收集数据记入缓存
+	 *
 	 * @inheritDoc
 	 */
 	public function toCache() {
@@ -161,13 +168,14 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		$this->getParent()
 		     ->getCacheDataManagerObj()
 		     ->getProviderList()
-			 ->getKeyDataValue(CacheConst::DATA_PROVIDER_KEY_EVENT);
+		     ->getKeyDataValue(CacheConst::DATA_PROVIDER_KEY_EVENT);
 		
 		return $this;
 	}
 	
 	/**
 	 * 缓存是否存在
+	 *
 	 * @return bool
 	 */
 	public function hasCache(): bool {
@@ -230,37 +238,133 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	private function makeCacheToServerParameter($key, $cacheData = []) {
 		$_serverRouteManagerObj = $this->getServerRouteManager();
 		
-		foreach ($cacheData as $i => $item) {
-			$_dataCache = json_decode($item, true);
+		// 如果列表不存在对应的key 说明从未构建过
+		if (!($this->getList()->has($key))) {
+			$this->getList()->set($key, new TreeFunc());
+			$evtItem = $this->getList()->get($key);
 			
-			$this->getList()
-			     ->addKeyNewItemData($key, function ($data, $it, $params) use ($_dataCache, $_serverRouteManagerObj) {
-				     $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
-				     $_eventListenerProxyObj->setSPServerName($_dataCache['']);
-			     
-			     
+			// 构建
+			foreach ($cacheData as $i => $item) {
+				if (!Json::isJson($item)) {
+					// todo: 错误处理
+					continue;
+				}
+				
+				$_dataCache = Json::decode($item);
+				
+				$evtLPItem = new TreeFunc();
+				$evtItem->_setLastNewItem($evtLPItem);
+				
+				$evtLPItem->getData()
+				        ->set(function ($data, $it, $params) use ($_dataCache, $_serverRouteManagerObj) {
+					        $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
+					        $_eventListenerProxyObj
+						        ->resetSP()
+						        ->setSPServerName($_dataCache[EventConst::CACHE_SP_SERVERNAME] ?? '')
+						        ->setSPServerType($_dataCache[EventConst::CACHE_SP_SERVERTYPE] ?? '')
+						        ->setSPParam($_dataCache[EventConst::CACHE_SP__PARAM] ?? [])
+						        ->_setContainer($this->getContainer())
+						        ->make();
 					
-					
-					$_params = $itemProvider->getParams();
-					$itemProvider->setParams(array_merge($_params, $_params));
-					$itemProvider->setCacheKeyPrefix($cachePrefixs);
-					$itemProvider->setParent($this);
-					$res = $itemProvider->make();
-					
-					return $res;
-				});
+					        return $_eventListenerProxyObj;
+				        });
+				
+				$evtItem->add($evtLPItem);
+				
+				yield $evtLPItem->getData()->get();
+			}
+		} else {
+			$evtItem = $this->getList()->get($key);
 			
-			
-			
-			
-			yield;
+			foreach ($evtItem as $i => $evtLPItem) {
+				yield $evtLPItem->getData()->get();
+			}
 		}
+		
+		// foreach ($cacheData as $i => $item) {
+		// 	if (!Json::isJson($item)) {
+		// 		// todo: 错误处理
+		// 		continue;
+		// 	}
+		//
+		// 	$_dataCache = Json::decode($item);
+		//
+		// 	$this->getList()
+		// 	     ->addKeyNewItemData($key,
+		// 		     // subItem
+		// 		     function ($data, $it, $params) use ($_dataCache, $_serverRouteManagerObj) {
+		// 			     $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
+		// 			     $_eventListenerProxyObj
+		// 				     ->setSPServerName($_dataCache[EventConst::CACHE_SP_SERVERNAME] ?? '')
+		// 				     ->setSPServerType($_dataCache[EventConst::CACHE_SP_SERVERTYPE] ?? '')
+		// 				     ->_setContainer($this->getContainer())
+		// 				     ->make();
+		//
+		// 			     return $_eventListenerProxyObj;
+		// 		     });
+		//
+		// 	// // item
+		// 	// function ($data, $it, $params) {
+		// 	//     // 获取汇总列表中所有配置
+		// 	//     /** @var TreeFunc $it */
+		// 	//     $it->cleanResults();
+		// 	//
+		// 	//     /**
+		// 	//      * 遍历指定key下所有缓存供应商收集数据
+		// 	//      */
+		// 	//     $it->wForEach(function ($_item, $index, $me, $params) {
+		// 	//      /** @var TreeFunc $_item */
+		// 	//      /** @var TreeFunc $me */
+		// 	//
+		// 	//      $reEvtLP = $_item->getData()->get($params, false, false);
+		// 	//
+		// 	//      if (!($reEvtLP instanceof EventListenerProxy)) {
+		// 	// 	     // todo: 类型不匹配 应该为事件监听代理对象
+		// 	// 	     return false;
+		// 	//      }
+		// 	//
+		// 	//      /** @var EventListenerProxyInterface $eventListenerProxy */
+		// 	//      $eventListenerProxy = $reEvtLP;
+		// 	//      $re                 = $eventListenerProxy->handle();
+		// 	//
+		// 	//      // Local返回值复制
+		// 	//      $_item->getData()->setLastReturn($re);
+		// 	//
+		// 	//      // 加入到返回值列表
+		// 	//      $me->setLastReturn($re);
+		// 	//
+		// 	//      if ($_item->getData()->isErr()) {
+		// 	// 	     return false;
+		// 	//      }
+		// 	//
+		// 	//      return true;
+		// 	//     }, $params);
+		// 	//
+		// 	//     // return $this->ok();
+		// 	//     return $it->getLastReturn();
+		// 	// });
+		//
+		// 	yield $this
+		// 		->getList()
+		//
+		// 		// set item
+		// 		// 获取最后一次配置数据
+		// 		->getLastSetItemData()
+		//
+		// 		// add subitem
+		// 		// 从Data返回Item
+		// 		->getParent()
+		// 		// 获取最后一次新增的子项
+		// 		->getLastNewItemData()
+		// 		->get();
+		// }
 	}
 	
 	/**
 	 * 获取拼接后的缓存key
 	 *
 	 * @param string $currKey 当前key
+	 *
 	 * @return string
 	 */
 	public function getCacheKey($currKey = '') {
@@ -303,6 +407,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * 获取列表项
 	 *
 	 * @param string $key
+	 *
 	 * @return TreeFuncData
 	 */
 	public function getListData(string $key): TreeFuncData {
@@ -313,6 +418,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * 获取列表项值
 	 *
 	 * @param string $key
+	 *
 	 * @return array|string|int|null
 	 */
 	public function getListDataValue(string $key) {
@@ -323,6 +429,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * 获取列表项
 	 *
 	 * @param string $key
+	 *
 	 * @return TreeFunc
 	 */
 	public function getListValue(string $key): TreeFunc {
@@ -356,6 +463,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	
 	/**
 	 * @param EventHandleInterface $eventHandle
+	 *
 	 * @return $this
 	 */
 	public function setEventHandle(EventHandleInterface $eventHandle) {
@@ -412,7 +520,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	public function getCacheDataProvider() {
-		$cdMgr = $this->getCacheDataManager();
+		$cdMgr      = $this->getCacheDataManager();
 		$cdProvider = $cdMgr->getProviderList()->get(CacheConst::DATA_PROVIDER_KEY_EVENT);
 		
 		return $cdProvider;

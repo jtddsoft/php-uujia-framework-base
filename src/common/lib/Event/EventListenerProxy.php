@@ -8,6 +8,7 @@ use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Server\ServerParameter;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
+use uujia\framework\base\common\lib\Server\ServerRouteInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
 
 /**
@@ -50,13 +51,31 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 		parent::__construct();
 	}
 	
+	/**************************************************************
+	 * 构建 触发
+	 **************************************************************/
+	
+	/**
+	 * 构建
+	 */
+	public function make() {
+		$this->setSPCallBack(
+			function (ServerRouteInterface $serverRoute,
+			          ServerParameterInterface $serverParameter,
+			          ServerRouteManager $serverRouteManager) {
+				if (!$this->getContainer()) {
+					return ;
+				}
+			});
+	}
+	
 	/**
 	 * 执行触发
 	 */
 	public function handle() {
 		$this->getServerRouteManagerObj()
 		     ->setServerParameter($this->getServerParameter())
-		     ->load();
+		     ->load(null, null, true);
 		
 		
 	}
@@ -64,6 +83,18 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	/**************************************************************
 	 * data ServerParameter
 	 **************************************************************/
+	
+	/**
+	 * 重置ServerParameter
+	 *
+	 * @return $this
+	 */
+	public function resetSP() {
+		$this->getServerParameter()
+		     ->reset();
+		
+		return $this;
+	}
 	
 	/**
 	 * 设置服务名称
@@ -89,6 +120,34 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	public function setSPServerType($type = '') {
 		$this->getServerParameter()
 		     ->setServerType($type);
+		
+		return $this;
+	}
+	
+	/**
+	 * 设置服务回调
+	 *
+	 * @param \Closure $callback
+	 *
+	 * @return $this
+	 */
+	public function setSPCallBack(\Closure $callback) {
+		$this->getServerParameter()
+		     ->setCallback($callback);
+		
+		return $this;
+	}
+	
+	/**
+	 * 设置ServerParameter执行时附加参数
+	 *
+	 * @param array $param
+	 *
+	 * @return $this
+	 */
+	public function setSPParam($param = []) {
+		$this->getServerParameter()
+		     ->_setParams($param);
 		
 		return $this;
 	}
