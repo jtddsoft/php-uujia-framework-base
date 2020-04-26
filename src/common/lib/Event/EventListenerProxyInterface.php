@@ -4,10 +4,20 @@
 namespace uujia\framework\base\common\lib\Event;
 
 
+use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
 
 interface EventListenerProxyInterface {
+	
+	/**************************************************************
+	 * 构建 触发
+	 **************************************************************/
+	
+	/**
+	 * 构建
+	 */
+	public function make();
 	
 	/**
 	 * 执行触发
@@ -17,6 +27,29 @@ interface EventListenerProxyInterface {
 	/**************************************************************
 	 * data ServerParameter
 	 **************************************************************/
+	
+	/**
+	 * 载入缓存数据
+	 *
+	 * @param EventCacheDataInterface $cacheDataObj
+	 *
+	 * @return $this
+	 */
+	public function loadCache(EventCacheDataInterface $cacheDataObj);
+	
+	/**
+	 * 重置ServerParameter
+	 *
+	 * @return $this
+	 */
+	public function resetSP();
+	
+	/**
+	 * 清空ServerParameter返回值
+	 *
+	 * @return $this
+	 */
+	public function clearSPRet();
 	
 	/**
 	 * 设置服务名称
@@ -35,6 +68,24 @@ interface EventListenerProxyInterface {
 	 * @return $this
 	 */
 	public function setSPServerType($type = '');
+	
+	/**
+	 * 设置服务回调
+	 *
+	 * @param \Closure $callback
+	 *
+	 * @return $this
+	 */
+	public function setSPCallBack(\Closure $callback);
+	
+	/**
+	 * 设置ServerParameter执行时附加参数
+	 *
+	 * @param array $param
+	 *
+	 * @return $this
+	 */
+	public function setSPParam($param = []);
 	
 	/**************************************************************
 	 * get set

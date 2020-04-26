@@ -127,6 +127,17 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 		return parent::reset();
 	}
 	
+	/**
+	 * 复位返回值
+	 *
+	 * @return $this
+	 */
+	public function resetRet() {
+		$this->_ret = [];
+		
+		return $this;
+	}
+	
 	/**************************************************************
 	 * var
 	 **************************************************************/

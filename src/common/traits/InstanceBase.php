@@ -27,4 +27,8 @@ trait InstanceBase {
 		return static::$instance;
 	}
 	
+	public static function factory() {
+		return static::getInstance();
+	}
+	
 }

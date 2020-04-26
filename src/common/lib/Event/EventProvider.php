@@ -14,6 +14,8 @@ use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
+use uujia\framework\base\common\lib\Event\Cache\EventCacheData;
+use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
@@ -233,7 +235,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @param string $key
 	 * @param array  $cacheData
 	 *
-	 * @return \Generator
+	 * @return \Generator 事件监听代理EventListenerProxy
 	 */
 	private function makeCacheToServerParameter($key, $cacheData = []) {
 		$_serverRouteManagerObj = $this->getServerRouteManager();
@@ -245,39 +247,60 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 			
 			// 构建
 			foreach ($cacheData as $i => $item) {
-				if (!Json::isJson($item)) {
-					// todo: 错误处理
-					continue;
-				}
+				// if (!Json::isJson($item)) {
+				// 	// todo: 错误处理
+				// 	continue;
+				// }
+				//
+				// $_dataCache = Json::decode($item);
 				
-				$_dataCache = Json::decode($item);
+				/**
+				 * 加载缓存数据解析
+				 * @var EventCacheDataInterface $cacheDataObj
+				 */
+				$cacheDataObj = EventCacheData::getInstance();
+				$cacheDataObj->parse($item);
 				
+				/**
+				 * 添加监听代理到事件列表
+				 *  事件列表由事件名作为key 多个事件监听代理作为value列表项
+				 *  {eventName1} => [
+				 *      {eventListenerProxy1},
+				 *      {eventListenerProxy2},
+				 *      ...
+				 *  ],
+				 *  {eventName2}...
+				 */
 				$evtLPItem = new TreeFunc();
 				$evtItem->_setLastNewItem($evtLPItem);
 				
 				$evtLPItem->getData()
-				        ->set(function ($data, $it, $params) use ($_dataCache, $_serverRouteManagerObj) {
+				        ->set(function ($data, $it, $params) use ($cacheDataObj, $_serverRouteManagerObj) {
 					        $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
 					        $_eventListenerProxyObj
-						        ->resetSP()
-						        ->setSPServerName($_dataCache[EventConst::CACHE_SP_SERVERNAME] ?? '')
-						        ->setSPServerType($_dataCache[EventConst::CACHE_SP_SERVERTYPE] ?? '')
-						        ->setSPParam($_dataCache[EventConst::CACHE_SP__PARAM] ?? [])
 						        ->_setContainer($this->getContainer())
-						        ->make();
+						        ->loadCache($cacheDataObj);
 					
 					        return $_eventListenerProxyObj;
 				        });
 				
 				$evtItem->add($evtLPItem);
 				
-				yield $evtLPItem->getData()->get();
+				/** @var EventListenerProxy $evtLPObj */
+				$evtLPObj = $evtLPItem->getData()->get();
+				yield $evtLPObj;
 			}
 		} else {
+			// 清空返回值
+			$this->clearSPRet($key);
+			
 			$evtItem = $this->getList()->get($key);
 			
 			foreach ($evtItem as $i => $evtLPItem) {
-				yield $evtLPItem->getData()->get();
+				/** @var EventListenerProxy $evtLPObj */
+				$evtLPObj = $evtLPItem->getData()->get();
+				
+				yield $evtLPObj;
 			}
 		}
 		
@@ -393,6 +416,35 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		}
 	}
 	
+	/**
+	 * 清空返回值
+	 *
+	 * @param string $k
+	 *
+	 * @return $this
+	 */
+	public function clearSPRet($k) {
+		if (empty($k)) {
+			return $this;
+		}
+		
+		$evtItem = $this->getList()->get($k);
+		if (empty($evtItem)) {
+			return $this;
+		}
+		
+		$evtItem->forEach(function (&$item, $k, $me, $params) {
+			/** @var TreeFunc $item */
+			
+			/** @var EventListenerProxyInterface $evtLP */
+			$evtLP = $item->getDataValue();
+			$evtLP->clearSPRet();
+			
+			return true;
+		});
+		
+		return $this;
+	}
 	
 	/**
 	 * 获取列表

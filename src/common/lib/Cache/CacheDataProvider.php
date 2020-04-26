@@ -4,13 +4,11 @@
 namespace uujia\framework\base\common\lib\Cache;
 
 
+use uujia\framework\base\common\consts\CacheConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 
 class CacheDataProvider extends BaseClass implements CacheDataProviderInterface {
-	
-	// 缓存有效时间
-	const CACHE_EXPIRES_TIME = 120 * 1000;
 	
 	/**
 	 * @var CacheDataManagerInterface $_parent
@@ -80,7 +78,7 @@ class CacheDataProvider extends BaseClass implements CacheDataProviderInterface 
 		$this->_parent = $parent;
 		$this->_cacheKeyPrefix = $cacheKeyPrefix;
 		$this->_config = $config;
-		$this->_cache_expires_time = $config['cache_expires_time'] ?? self::CACHE_EXPIRES_TIME;
+		$this->_cache_expires_time = $config['cache_expires_time'] ?? CacheConst::CACHE_EXPIRES_EVENT_TIME;
 		
 		parent::__construct();
 	}

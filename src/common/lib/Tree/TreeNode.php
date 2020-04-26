@@ -718,12 +718,14 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	
 	/**
 	 * 遍历
-	 *  forEach(function ($item, $i, $obj) {
+	 *  forEach(function ($item, $k, $me, $params) {
 	 *      $item->data = 123;
 	 *  })
 	 *
 	 * @param \Closure $func
 	 * @param array    $params
+	 *
+	 * @return $this
 	 */
 	public function forEach(\Closure $func, $params = []) {
 		foreach ($this->_children as $k => &$item) {
@@ -732,6 +734,8 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 				break;
 			}
 		}
+		
+		return $this;
 	}
 	
 	/**
@@ -795,6 +799,20 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 			$item = $this->_children[$index];
 			
 			yield $item;
+		}
+	}
+	
+	/**
+	 * @return iterable
+	 */
+	public function wForEachIK(): iterable {
+		// 如果权值排序索引映射表为空 就做一次重新排序映射
+		$this->_weightIndex === null && $this->weight();
+		
+		foreach ($this->_weightIndex as $i => $index) {
+			$item = $this->_children[$index];
+			
+			yield [$i => $item];
 		}
 	}
 	

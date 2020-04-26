@@ -3,9 +3,11 @@
 
 namespace uujia\framework\base\common\lib\Event;
 
+use uujia\framework\base\common\consts\EventConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
+use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Server\ServerParameter;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
@@ -64,7 +66,7 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 			          ServerParameterInterface $serverParameter,
 			          ServerRouteManager $serverRouteManager) {
 				if (!$this->getContainer()) {
-					return ;
+					return;
 				}
 			});
 	}
@@ -85,6 +87,23 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 **************************************************************/
 	
 	/**
+	 * 载入缓存数据
+	 *
+	 * @param EventCacheDataInterface $cacheDataObj
+	 *
+	 * @return $this
+	 */
+	public function loadCache(EventCacheDataInterface $cacheDataObj) {
+		$this->resetSP()
+		     ->setSPServerName($cacheData[EventConst::CACHE_SP_SERVERNAME] ?? '')
+		     ->setSPServerType($cacheData[EventConst::CACHE_SP_SERVERTYPE] ?? '')
+		     ->setSPParam($cacheData[EventConst::CACHE_SP__PARAM] ?? [])
+		     ->make();
+		
+		return $this;
+	}
+	
+	/**
 	 * 重置ServerParameter
 	 *
 	 * @return $this
@@ -92,6 +111,18 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	public function resetSP() {
 		$this->getServerParameter()
 		     ->reset();
+		
+		return $this;
+	}
+	
+	/**
+	 * 清空ServerParameter返回值
+	 *
+	 * @return $this
+	 */
+	public function clearSPRet() {
+		$this->getServerParameter()
+		     ->resetRet();
 		
 		return $this;
 	}

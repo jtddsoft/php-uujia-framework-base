@@ -20,7 +20,6 @@ class BaseClass implements BaseClassInterface {
 	 * BaseClass constructor.
 	 */
 	public function __construct() {
-		
 		$this->init();
 		$this->reset();
 	}
