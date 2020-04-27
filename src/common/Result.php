@@ -7,6 +7,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use uujia\framework\base\common\consts\ResultConst;
+use uujia\framework\base\common\interfaces\ResultInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Error\ErrorCodeConfig;
 use uujia\framework\base\common\lib\Log\Logger;
@@ -20,7 +21,7 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common
  */
-class Result extends BaseClass implements LoggerAwareInterface {
+class Result extends BaseClass implements ResultInterface, LoggerAwareInterface {
 	use ResultBase;
 	
 	// 配置对象 依赖于配置管理class 必须事先初始化

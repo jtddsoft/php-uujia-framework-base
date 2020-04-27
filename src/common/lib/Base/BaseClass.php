@@ -43,6 +43,18 @@ class BaseClass implements BaseClassInterface {
 	}
 	
 	/**
+	 * 分配
+	 *  对象数据克隆
+	 *
+	 * @param $data
+	 *
+	 * @return $this
+	 */
+	public function assign($data) {
+		return $this;
+	}
+	
+	/**
 	 * 复位 属性归零
 	 *
 	 * @param array $exclude

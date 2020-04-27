@@ -34,6 +34,23 @@ trait ResultBase{
 	// 返回列表
 	public $_results = [];
 	
+	/**
+	 * 分配
+	 *  将最后一次返回值分配入对象
+	 *
+	 * @param array $lastReturn
+	 * @param bool  $isCleanResults
+	 *
+	 * @return $this
+	 */
+	public function assignLastReturn($lastReturn = [], $isCleanResults = true) {
+		$isCleanResults && $this->cleanResults();
+		
+		$this->setLastReturn($lastReturn);
+		
+		return $this;
+	}
+	
 	/**************************************************************
 	 * 返回输出
 	 **************************************************************/
@@ -292,7 +309,8 @@ trait ResultBase{
 	}
 	
 	/**
-	 * @param array $returns
+	 * @param array $results
+	 *
 	 * @return $this
 	 */
 	public function _setResults(array $results) {

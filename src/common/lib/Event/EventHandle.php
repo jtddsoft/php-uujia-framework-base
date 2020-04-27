@@ -35,7 +35,12 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * 唯一标识
 	 *  此处的值是Demo 继承类需要重新生成
 	 */
-	protected $_uuid = 'cdd64cb6-29b8-4663-b1b5-f4f515ed28ca';
+	protected $_uuid = '';
+	
+	/**
+	 * 触发的事件名称
+	 */
+	protected $_triggerName = '';
 	
 	/**
 	 * 是否终止事件队列
@@ -97,12 +102,18 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		return $this->_isStopped;
 	}
 	
-	public function _trigger() {
-	
+	public function _trigger($triggerName = '') {
+		$tName = empty($triggerName) ? $this->getTriggerName() : $triggerName;
+		
+		
 	}
 	
-	public function t() {
-		return $this->_trigger();
+	public function t($triggerName = '') {
+		return $this->_trigger($triggerName);
+	}
+	
+	public function handle($triggerName = '') {
+		return $this->_trigger($triggerName);
 	}
 	
 	public function _listen($params) {
@@ -188,6 +199,23 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		return $this;
 	}
 	
+	/**
+	 * @return string
+	 */
+	public function getTriggerName(): string {
+		return $this->_triggerName;
+	}
+	
+	/**
+	 * @param string $triggerName
+	 *
+	 * @return $this
+	 */
+	public function setTriggerName(string $triggerName) {
+		$this->_triggerName = $triggerName;
+		
+		return $this;
+	}
 	
 	
 }

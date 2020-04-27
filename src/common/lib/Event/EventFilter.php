@@ -28,12 +28,6 @@ class EventFilter extends BaseClass {
 	 */
 	protected $_redisObj;
 	
-	/**
-	 * @return $this
-	 */
-	public static function factory() {
-		return self::getInstance();
-	}
 	
 	/**
 	 * 缓存是否存在

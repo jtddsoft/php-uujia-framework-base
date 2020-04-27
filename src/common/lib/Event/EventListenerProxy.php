@@ -62,12 +62,20 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 */
 	public function make() {
 		$this->setSPCallBack(
+			// 如果本地触发将执行的操作
 			function (ServerRouteInterface $serverRoute,
 			          ServerParameterInterface $serverParameter,
 			          ServerRouteManager $serverRouteManager) {
+				/**
+				 * 调用容器执行对应事件对象中的触发方法
+				 */
+				
+				// 判断容器对象是否存在
 				if (!$this->getContainer()) {
 					return;
 				}
+				
+				
 			});
 	}
 	

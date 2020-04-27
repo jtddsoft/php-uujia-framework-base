@@ -15,6 +15,8 @@ trait InstanceBase {
 	
 	/**
 	 * 单例模式获取实例
+	 *
+	 * @return $this
 	 */
 	public static function getInstance() {
 		if (null === static::$instance) {
@@ -27,7 +29,17 @@ trait InstanceBase {
 		return static::$instance;
 	}
 	
+	/**
+	 * @return $this
+	 */
 	public static function factory() {
+		return static::getInstance();
+	}
+	
+	/**
+	 * @return $this
+	 */
+	public static function me() {
 		return static::getInstance();
 	}
 	

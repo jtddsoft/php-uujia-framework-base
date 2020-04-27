@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\lib\Event\Cache;
 
 /**
- * Class EventCacheDataInterface
+ * interface EventCacheDataInterface
  *
  * @package uujia\framework\base\common\lib\Event\Cache
  */
