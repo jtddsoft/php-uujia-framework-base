@@ -11,9 +11,9 @@ trait ResultBase{
 	// ResultConst
 	
 	// 错误代码构造方法工厂（构造回调Func） 用时才加载
-	private $_errCodeFactory = null;
+	// private $_errCodeFactory = null;
 	// 已构造的缓存
-	private $_errCodeCache = null;
+	// private $_errCodeCache = null;
 	
 	/**
 	 * 缓存返回值
@@ -33,6 +33,15 @@ trait ResultBase{
 	
 	// 返回列表
 	public $_results = [];
+	
+	/**
+	 * 重置返回值所有属性
+	 */
+	public function resetResult() {
+		$this->ok();
+		
+		$this->cleanResults();
+	}
 	
 	/**
 	 * 分配
@@ -267,39 +276,39 @@ trait ResultBase{
 		return $this;
 	}
 	
-	/**
-	 * @return null|\Closure
-	 */
-	public function getErrCodeFactory() {
-		return $this->_errCodeFactory;
-	}
-	
-	/**
-	 * @param null|\Closure $errCodeFactory
-	 * @return $this
-	 */
-	public function setErrCodeFactory($errCodeFactory) {
-		$this->_errCodeFactory = $errCodeFactory;
-		
-		return $this;
-	}
-	
-	/**
-	 * @return null|array
-	 */
-	public function getErrCodeCache() {
-		return $this->_errCodeCache;
-	}
-	
-	/**
-	 * @param null|array $errCodeCache
-	 * @return $this
-	 */
-	public function setErrCodeCache($errCodeCache) {
-		$this->_errCodeCache = $errCodeCache;
-		
-		return $this;
-	}
+	// /**
+	//  * @return null|\Closure
+	//  */
+	// public function getErrCodeFactory() {
+	// 	return $this->_errCodeFactory;
+	// }
+	//
+	// /**
+	//  * @param null|\Closure $errCodeFactory
+	//  * @return $this
+	//  */
+	// public function setErrCodeFactory($errCodeFactory) {
+	// 	$this->_errCodeFactory = $errCodeFactory;
+	//
+	// 	return $this;
+	// }
+	//
+	// /**
+	//  * @return null|array
+	//  */
+	// public function getErrCodeCache() {
+	// 	return $this->_errCodeCache;
+	// }
+	//
+	// /**
+	//  * @param null|array $errCodeCache
+	//  * @return $this
+	//  */
+	// public function setErrCodeCache($errCodeCache) {
+	// 	$this->_errCodeCache = $errCodeCache;
+	//
+	// 	return $this;
+	// }
 	
 	/**
 	 * @return array
