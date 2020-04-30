@@ -6,6 +6,7 @@ use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use uujia\framework\base\common\lib\Event\Name\EventNameInterface;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
@@ -35,13 +36,33 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	/**
 	 * 唯一标识
 	 *  此处的值是Demo 继承类需要重新生成
+	 * @var string
 	 */
 	protected $_uuid = '';
 	
 	/**
 	 * 触发的事件名称
+	 * @var string
 	 */
 	protected $_triggerName = '';
+	
+	/**
+	 * 事件名称
+	 * @var EventName
+	 */
+	protected $_eventNameObj = null;
+	
+	/**
+	 * 事件名称拆分后各个属性
+	 * @var array
+	 */
+	protected $_eventNameParse = [];
+	
+	/**
+	 * 附加参数
+	 * @var array
+	 */
+	protected $_param = [];
 	
 	/**
 	 * 是否终止事件队列
@@ -58,20 +79,20 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	// protected $_name = '';
 	
 	/** @var ServerRouteLocal */
-	protected $_localObj = null;
+	// protected $_localObj = null;
 	
 	// todo: POST
-	protected $_postObj = null;
+	// protected $_postObj = null;
 	
 	/**
 	 * EventHandle constructor.
 	 *
-	 * @param $uuid
+	 * @param EventName $eventNameObj
 	 */
-	public function __construct($uuid = 'cdd64cb6-29b8-4663-b1b5-f4f515ed28ca') {
-		$this->_uuid = $uuid;
-		
+	public function __construct(EventName $eventNameObj) {
 		parent::__construct();
+		
+		$this->_eventNameObj = $eventNameObj;
 	}
 	
 	/**
@@ -103,7 +124,14 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		return $this->_isStopped;
 	}
 	
-	public function _trigger($triggerName = '', $param = []) {
+	/**
+	 * 事件名称解析
+	 *
+	 * @param string $triggerName
+	 *
+	 * @return $this
+	 */
+	public function parse($triggerName = '') {
 		$this->resetResult();
 		
 		$tName = empty($triggerName) ? $this->getTriggerName() : $triggerName;
@@ -116,15 +144,31 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 			return $this;
 		}
 		
-		// todo: 拆分后的事件属性 $_eventNameObj
-		$_type = $_eventNameObj->getType();
-		$_com = $_eventNameObj->getCom();
-		$_event = $_eventNameObj->getEvent();
-		$_behavior = $_eventNameObj->getBehavior();
-		$_uuid = $_eventNameObj->getUuid();
+		$this->setEventNameParse($_eventNameObj->property2Arr());
+		
+		return $this;
+	}
+	
+	/**
+	 * 事件触发
+	 *
+	 * @param array $param
+	 *
+	 * @return $this
+	 */
+	public function _trigger() {
+		if ($this->isErr()) {
+			return $this;
+		}
+		
+		$this->resetResult();
+		
+		// 拆分后的事件属性
+		$evtNameParse = $this->getEventNameParse();
+		$_behavior = $evtNameParse[EventName::PCRE_NAME_BEHAVIOR_INDEX];
 		
 		if (is_callable([$this, 'on' . ucfirst($_behavior)])) {
-			$re = call_user_func_array([$this, 'on' . ucfirst($_behavior)], $param);
+			$re = call_user_func_array([$this, 'on' . ucfirst($_behavior)], $this->getParam());
 			$this->assignLastReturn($re);
 			return $this;
 		}
@@ -133,11 +177,11 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	}
 	
 	public function t($triggerName = '', $param = []) {
-		return $this->_trigger($triggerName, $param);
+		return $this->parse($triggerName)->setParam($param)->_trigger();
 	}
 	
 	public function handle($triggerName = '', $param = []) {
-		return $this->_trigger($triggerName, $param);
+		return $this->t();
 	}
 	
 	public function _listen($params) {
@@ -203,25 +247,25 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		return $this;
 	}
 	
-	/**
-	 * @return ServerRouteLocal
-	 */
-	public function getLocalObj(): ServerRouteLocal {
-		$this->_localObj === null && $this->_localObj = new ServerRouteLocal($this);
-		
-		return $this->_localObj;
-	}
-	
-	/**
-	 * @param ServerRouteLocal $localObj
-	 *
-	 * @return $this
-	 */
-	public function _setLocal(ServerRouteLocal $localObj) {
-		$this->_localObj = $localObj;
-		
-		return $this;
-	}
+	// /**
+	//  * @return ServerRouteLocal
+	//  */
+	// public function getLocalObj(): ServerRouteLocal {
+	// 	$this->_localObj === null && $this->_localObj = new ServerRouteLocal($this);
+	//
+	// 	return $this->_localObj;
+	// }
+	//
+	// /**
+	//  * @param ServerRouteLocal $localObj
+	//  *
+	//  * @return $this
+	//  */
+	// public function _setLocal(ServerRouteLocal $localObj) {
+	// 	$this->_localObj = $localObj;
+	//
+	// 	return $this;
+	// }
 	
 	/**
 	 * @return string
@@ -247,7 +291,59 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * @return EventName
 	 */
 	public function getEventNameObj() {
-		return EventName::getInstance();
+		if (empty($this->_eventNameObj)) {
+			// 应该容器来创造实例 如果没有 只能以静态化构造
+			$this->_eventNameObj = EventName::getInstance();
+		}
+		
+		return $this->_eventNameObj;
+	}
+	
+	/**
+	 * @param EventName $eventNameObj
+	 *
+	 * @return $this
+	 */
+	public function setEventNameObj(EventName $eventNameObj) {
+		$this->_eventNameObj = $eventNameObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getEventNameParse(): array {
+		return $this->_eventNameParse;
+	}
+	
+	/**
+	 * @param array $eventNameParse
+	 *
+	 * @return $this
+	 */
+	public function setEventNameParse(array $eventNameParse) {
+		$this->_eventNameParse = $eventNameParse;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getParam() {
+		return $this->_param;
+	}
+	
+	/**
+	 * @param array $param
+	 *
+	 * @return $this
+	 */
+	public function setParam(array $param) {
+		$this->_param = $param;
+		
+		return $this;
 	}
 	
 	

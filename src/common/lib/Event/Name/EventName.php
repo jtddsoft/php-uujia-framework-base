@@ -19,30 +19,9 @@ use uujia\framework\base\common\traits\ResultBase;
  *
  * @package uujia\framework\base\common\lib\Event\Name
  */
-class EventName extends BaseClass {
+class EventName extends BaseClass implements EventNameInterface {
 	use InstanceBase;
 	use ResultBase;
-	
-	// addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}:{uuid}
-	const PCRE_NAME = '/^(\w+)\.(\w+)\.(\w+)\.(\w+):{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?/';
-	
-	// 事件名称拆分后数量 4或5
-	const PCRE_NAME_SPLIT_COUNT = [4, 5];
-	
-	// 事件类型在事件名称拆分后的位置
-	const PCRE_NAME_TYPE_INDEX = 0;
-	
-	// 组件名在事件名称拆分后的位置
-	const PCRE_NAME_COM_INDEX = 1;
-	
-	// 事件名在事件名称拆分后的位置
-	const PCRE_NAME_EVENT_INDEX = 2;
-	
-	// 事件行为在事件名称拆分后的位置
-	const PCRE_NAME_BEHAVIOR_INDEX = 3;
-	
-	// 事件UUID在事件名称拆分后的位置
-	const PCRE_NAME_UUID_INDEX = 4;
 	
 	/**
 	 * 事件完整名称
@@ -175,17 +154,9 @@ class EventName extends BaseClass {
 		
 		$_arr = $arr;
 		if (empty($_arr)) {
-			$_arr[self::PCRE_NAME_TYPE_INDEX]     = $this->getType();
-			$_arr[self::PCRE_NAME_COM_INDEX]      = $this->getCom();
-			$_arr[self::PCRE_NAME_EVENT_INDEX]    = $this->getEvent();
-			$_arr[self::PCRE_NAME_BEHAVIOR_INDEX] = $this->getBehavior();
-			$_arr[self::PCRE_NAME_UUID_INDEX]     = $this->getUuid();
+			$_arr = $this->property2Arr();
 		} else {
-			!empty($_arr[self::PCRE_NAME_TYPE_INDEX]) && $this->setType($_arr[self::PCRE_NAME_TYPE_INDEX]);
-			!empty($_arr[self::PCRE_NAME_COM_INDEX]) && $this->setCom($_arr[self::PCRE_NAME_COM_INDEX]);
-			!empty($_arr[self::PCRE_NAME_EVENT_INDEX]) && $this->setEvent($_arr[self::PCRE_NAME_EVENT_INDEX]);
-			!empty($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]) && $this->setBehavior($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]);
-			!empty($_arr[self::PCRE_NAME_UUID_INDEX]) && $this->setUuid($_arr[self::PCRE_NAME_UUID_INDEX]);
+			$this->arr2Property($_arr);
 		}
 		
 		$this->validateProperty();
@@ -234,6 +205,42 @@ class EventName extends BaseClass {
 		}
 		
 		return $this->ok();
+	}
+	
+	/**
+	 * 数组转属性
+	 *
+	 * @param array $arr
+	 *
+	 * @return $this
+	 */
+	public function arr2Property($arr = []) {
+		$_arr = $arr;
+		
+		!empty($_arr[self::PCRE_NAME_TYPE_INDEX]) && $this->setType($_arr[self::PCRE_NAME_TYPE_INDEX]);
+		!empty($_arr[self::PCRE_NAME_COM_INDEX]) && $this->setCom($_arr[self::PCRE_NAME_COM_INDEX]);
+		!empty($_arr[self::PCRE_NAME_EVENT_INDEX]) && $this->setEvent($_arr[self::PCRE_NAME_EVENT_INDEX]);
+		!empty($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]) && $this->setBehavior($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]);
+		!empty($_arr[self::PCRE_NAME_UUID_INDEX]) && $this->setUuid($_arr[self::PCRE_NAME_UUID_INDEX]);
+		
+		return $this;
+	}
+	
+	/**
+	 * 属性转数组
+	 *
+	 * @return array
+	 */
+	public function property2Arr() {
+		$_arr = [];
+		
+		$_arr[self::PCRE_NAME_TYPE_INDEX]     = $this->getType();
+		$_arr[self::PCRE_NAME_COM_INDEX]      = $this->getCom();
+		$_arr[self::PCRE_NAME_EVENT_INDEX]    = $this->getEvent();
+		$_arr[self::PCRE_NAME_BEHAVIOR_INDEX] = $this->getBehavior();
+		$_arr[self::PCRE_NAME_UUID_INDEX]     = $this->getUuid();
+		
+		return $_arr;
 	}
 	
 	/**************************************************************

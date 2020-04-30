@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\MQ\MQCollection;
 use uujia\framework\base\common\lib\MQ\MQTT;
 use uujia\framework\base\common\lib\MQ\RabbitMQ;
 use uujia\framework\base\common\lib\Utils\Json;
@@ -73,7 +74,7 @@ class Logger extends BaseClass implements LoggerInterface {
 	// 	'logs' => [], // log_info的集合
 	// ];
 	
-	/** @var Config $_configObj */
+	/** @var ConfigManager $_configObj */
 	protected $_configObj;
 	
 	/** @var $mqObj MQCollection */
