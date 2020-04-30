@@ -104,6 +104,8 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	}
 	
 	public function _trigger($triggerName = '', $param = []) {
+		$this->resetResult();
+		
 		$tName = empty($triggerName) ? $this->getTriggerName() : $triggerName;
 		
 		$_eventNameObj = $this->getEventNameObj();
@@ -122,11 +124,12 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		$_uuid = $_eventNameObj->getUuid();
 		
 		if (is_callable([$this, 'on' . ucfirst($_behavior)])) {
-			return call_user_func_array([$this, 'on' . ucfirst($_behavior)], $param);
+			$re = call_user_func_array([$this, 'on' . ucfirst($_behavior)], $param);
+			$this->assignLastReturn($re);
+			return $this;
 		}
 		
-		
-		
+		return $this;
 	}
 	
 	public function t($triggerName = '', $param = []) {
