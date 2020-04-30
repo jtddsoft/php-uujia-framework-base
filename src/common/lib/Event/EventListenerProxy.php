@@ -62,7 +62,7 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 */
 	public function make() {
 		$this->setSPCallBack(
-			// 如果本地触发将执行的操作
+		// 如果本地触发将执行的操作
 			function (ServerRouteInterface $serverRoute,
 			          ServerParameterInterface $serverParameter,
 			          ServerRouteManager $serverRouteManager) {
@@ -85,9 +85,8 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	public function handle() {
 		$this->getServerRouteManagerObj()
 		     ->setServerParameter($this->getServerParameter())
-		     ->load(null, null, true);
-		
-		
+		     ->load(null, null, true)
+		     ->route();
 	}
 	
 	/**************************************************************
