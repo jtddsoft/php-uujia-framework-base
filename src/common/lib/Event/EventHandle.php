@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Event;
 use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
@@ -102,18 +103,38 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		return $this->_isStopped;
 	}
 	
-	public function _trigger($triggerName = '') {
+	public function _trigger($triggerName = '', $param = []) {
 		$tName = empty($triggerName) ? $this->getTriggerName() : $triggerName;
 		
+		$_eventNameObj = $this->getEventNameObj();
+		$_eventNameObj->parse($tName);
+		
+		if ($_eventNameObj->isErr()) {
+			$this->assignLastReturn($_eventNameObj->getLastReturn());
+			return $this;
+		}
+		
+		// todo: 拆分后的事件属性 $_eventNameObj
+		$_type = $_eventNameObj->getType();
+		$_com = $_eventNameObj->getCom();
+		$_event = $_eventNameObj->getEvent();
+		$_behavior = $_eventNameObj->getBehavior();
+		$_uuid = $_eventNameObj->getUuid();
+		
+		if (is_callable([$this, 'on' . ucfirst($_behavior)])) {
+			return call_user_func_array([$this, 'on' . ucfirst($_behavior)], $param);
+		}
+		
+		
 		
 	}
 	
-	public function t($triggerName = '') {
-		return $this->_trigger($triggerName);
+	public function t($triggerName = '', $param = []) {
+		return $this->_trigger($triggerName, $param);
 	}
 	
-	public function handle($triggerName = '') {
-		return $this->_trigger($triggerName);
+	public function handle($triggerName = '', $param = []) {
+		return $this->_trigger($triggerName, $param);
 	}
 	
 	public function _listen($params) {
@@ -215,6 +236,15 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		$this->_triggerName = $triggerName;
 		
 		return $this;
+	}
+	
+	/**
+	 * 获取事件名称对象实例
+	 *
+	 * @return EventName
+	 */
+	public function getEventNameObj() {
+		return EventName::getInstance();
 	}
 	
 	

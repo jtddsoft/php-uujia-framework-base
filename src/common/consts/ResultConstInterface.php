@@ -9,6 +9,11 @@ namespace uujia\framework\base\common\consts;
  */
 interface ResultConstInterface {
 	
+	const RESULT_CODE = 'code';
+	const RESULT_STATUS = 'status';
+	const RESULT_MSG = 'msg';
+	const RESULT_DATA = 'data';
+	
 	// 返回ok模板
 	const RESULT_OK
 		= [
