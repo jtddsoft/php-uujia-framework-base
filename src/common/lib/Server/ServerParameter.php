@@ -57,6 +57,13 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	protected $_requestType = ServerConst::REQUEST_TYPE_LOCAL_NORMAL;
 	
 	/**
+	 * 本地执行的完整类名
+	 *
+	 * @var string
+	 */
+	protected $_classNameSpace = '';
+	
+	/**
 	 * 是否异步
 	 *
 	 * @var bool
@@ -311,6 +318,23 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 		if (!$notEmptyIgnore || empty($this->_requestType)) {
 			$this->_requestType = $requestType;
 		}
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getClassNameSpace(): string {
+		return $this->_classNameSpace;
+	}
+	
+	/**
+	 * @param string $classNameSpace
+	 * @return $this
+	 */
+	public function setClassNameSpace(string $classNameSpace) {
+		$this->_classNameSpace = $classNameSpace;
 		
 		return $this;
 	}

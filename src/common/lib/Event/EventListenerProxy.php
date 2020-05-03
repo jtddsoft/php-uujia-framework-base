@@ -8,6 +8,7 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
+use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Server\ServerParameter;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
@@ -23,6 +24,13 @@ use uujia\framework\base\common\lib\Server\ServerRouteManager;
  * @package uujia\framework\base\common\lib\Event
  */
 class EventListenerProxy extends BaseClass implements EventListenerProxyInterface {
+	
+	/**
+	 * 事件名称对象
+	 *
+	 * @var EventName
+	 */
+	protected $_eventNameObj;
 	
 	/**
 	 * 服务器路由管理
@@ -42,11 +50,14 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	/**
 	 * EventListenerProxy constructor.
 	 *
+	 * @param EventName                $eventNameObj
 	 * @param ServerRouteManager       $serverRouteManagerObj
 	 * @param ServerParameterInterface $serverParameterObj
 	 */
-	public function __construct(ServerRouteManager $serverRouteManagerObj,
+	public function __construct(EventName $eventNameObj,
+	                            ServerRouteManager $serverRouteManagerObj,
 	                            ServerParameterInterface $serverParameterObj = null) {
+		$this->_eventNameObj          = $eventNameObj;
 		$this->_serverRouteManagerObj = $serverRouteManagerObj;
 		$this->_serverParameter       = $serverParameterObj ?? new ServerParameter();
 		
@@ -61,11 +72,13 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 * 构建
 	 */
 	public function make() {
+		$_eventNameObj = $this->getEventNameObj();
+		
 		$this->setSPCallBack(
 		// 如果本地触发将执行的操作
 			function (ServerRouteInterface $serverRoute,
 			          ServerParameterInterface $serverParameter,
-			          ServerRouteManager $serverRouteManager) {
+			          ServerRouteManager $serverRouteManager) use ($_eventNameObj) {
 				/**
 				 * 调用容器执行对应事件对象中的触发方法
 				 */
@@ -75,7 +88,17 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 					return;
 				}
 				
+				$classNS = $serverParameter->getClassNameSpace();
+				if (empty($classNS)) {
+					return;
+				}
 				
+				/** @var EventHandle $eventHandle */
+				$eventHandle = $this->getContainer()
+				                    ->get($classNS);
+				
+				$_params = $serverParameter->getParams();
+				$eventHandle->handle($_eventNameObj->makeEventName([]), $_params); // todo: 返回值
 			});
 	}
 	
@@ -104,6 +127,7 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 		$this->resetSP()
 		     ->setSPServerName($cacheData[EventConst::CACHE_SP_SERVERNAME] ?? '')
 		     ->setSPServerType($cacheData[EventConst::CACHE_SP_SERVERTYPE] ?? '')
+		     ->setSPClassNameSpace($cacheData[EventConst::CACHE_SP_CLASSNAMESPACE] ?? '')
 		     ->setSPParam($cacheData[EventConst::CACHE_SP__PARAM] ?? [])
 		     ->make();
 		
@@ -163,6 +187,20 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	}
 	
 	/**
+	 * 设置本地执行的类名
+	 *
+	 * @param string $classNameSpace
+	 *
+	 * @return $this
+	 */
+	public function setSPClassNameSpace($classNameSpace = '') {
+		$this->getServerParameter()
+		     ->setClassNameSpace($classNameSpace);
+		
+		return $this;
+	}
+	
+	/**
 	 * 设置服务回调
 	 *
 	 * @param \Closure $callback
@@ -193,6 +231,24 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	/**************************************************************
 	 * get set
 	 **************************************************************/
+	
+	/**
+	 * @return EventName
+	 */
+	public function getEventNameObj() {
+		return $this->_eventNameObj;
+	}
+	
+	/**
+	 * @param EventName $eventNameObj
+	 *
+	 * @return $this
+	 */
+	public function setEventNameObj($eventNameObj) {
+		$this->_eventNameObj = $eventNameObj;
+		
+		return $this;
+	}
 	
 	/**
 	 * @return ServerParameterInterface

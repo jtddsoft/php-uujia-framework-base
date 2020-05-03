@@ -9,34 +9,44 @@ namespace uujia\framework\base\common\lib\Event\Name;
  * 事件名称分离器
  *
  * 事件定义（首字母小写驼峰）：
- *  addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}:{uuid}
+ *  addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}.[{trigger_timing}]:{uuid}
  * 示例：
- *  app.order.goods.addBefore:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
+ *  app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *
  * @package uujia\framework\base\common\lib\Event\Name
  */
 interface EventNameInterface {
 	
-	// addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}:{uuid}
-	const PCRE_NAME = '/^(\w+)\.(\w+)\.(\w+)\.(\w+):{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?/';
+	// addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}.[{trigger_timing}]:{uuid}
+	// const PCRE_NAME = '/^(\w+)\.(\w+)\.(\w+)\.(\w+):{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?/';
+	const PCRE_NAME = '/^(\w+)\.(\w+)\.(\w+)\.(\w+)\.{0,1}(\w+)?:{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?/';
 	
-	// 事件名称拆分后数量 4或5
-	const PCRE_NAME_SPLIT_COUNT = [4, 5];
+	/**
+	 * 事件名称拆分后可能的数量 4、5或6
+	 *  app.order.goods.addBefore                                       (4) 【暂不支持这样格式】
+	 *  app.order.goods.addBefore:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca  (5) 【暂不支持这样格式】
+	 *  app.order.goods.add.before                                      (5)
+	 *  app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca (6)
+	 */
+	const PCRE_NAME_SPLIT_COUNT = [4, 5, 6];
 	
 	// 事件类型在事件名称拆分后的位置
-	const PCRE_NAME_TYPE_INDEX = 0;
+	const PCRE_NAME_TYPE_INDEX = 1;
 	
 	// 组件名在事件名称拆分后的位置
-	const PCRE_NAME_COM_INDEX = 1;
+	const PCRE_NAME_COM_INDEX = 2;
 	
 	// 事件名在事件名称拆分后的位置
-	const PCRE_NAME_EVENT_INDEX = 2;
+	const PCRE_NAME_EVENT_INDEX = 3;
 	
 	// 事件行为在事件名称拆分后的位置
-	const PCRE_NAME_BEHAVIOR_INDEX = 3;
+	const PCRE_NAME_BEHAVIOR_INDEX = 4;
+	
+	// 事件时机在事件名称拆分后的位置
+	const PCRE_NAME_TIMING_INDEX = 5;
 	
 	// 事件UUID在事件名称拆分后的位置
-	const PCRE_NAME_UUID_INDEX = 4;
+	const PCRE_NAME_UUID_INDEX = 6;
 	
 	/**************************************************************
 	 * init
@@ -145,6 +155,18 @@ interface EventNameInterface {
 	 * @return $this
 	 */
 	public function setBehavior(string $behavior);
+	
+	/**
+	 * @return string
+	 */
+	public function getTiming(): string;
+	
+	/**
+	 * @param string $timing
+	 *
+	 * @return $this
+	 */
+	public function setTiming(string $timing);
 	
 	/**
 	 * @return string

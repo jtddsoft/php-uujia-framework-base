@@ -16,6 +16,7 @@ use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheData;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
+use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
@@ -52,14 +53,23 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	protected $_list;
 	
+	// /**
+	//  * 要触发的事件对象
+	//  *  事件调度会传来EventHandle对象的触发形态
+	//  * （EventHandle 主要取事件标识 addons.rubbish2.user.LoginBefore）
+	//  *
+	//  * @var EventHandle;
+	//  */
+	// protected $_eventHandle;
+	
 	/**
 	 * 要触发的事件对象
-	 *  事件调度会传来EventHandle对象的触发形态
-	 * （EventHandle 主要取事件标识 addons.rubbish2.user.LoginBefore）
+	 *  事件调度会传来EventName对象
+	 * （EventName 取事件标识 addons.rubbish2.user.login.before）
 	 *
-	 * @var EventHandleInterface;
+	 * @var EventName;
 	 */
-	protected $_eventHandle;
+	protected $_eventNameObj;
 	
 	/**
 	 * 配置项
@@ -105,7 +115,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 			return [];
 		}
 		
-		$this->setEventHandle($event);
+		$this->_setEventNameObj($event);
 		
 		yield from $this->_make();
 	}
@@ -133,9 +143,17 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function fromCache() {
 		// todo: 从触发的EventHandle中解出当前触发事件名
-		$this->getEventHandle();
+		$_evtNameObj = $this->getEventNameObj();
 		
-		$k = $this->getCacheKey('*');
+		$_isParsed = $_evtNameObj->isParsed();
+		if (!$_isParsed) {
+			// todo: 异常
+			yield [];
+		}
+		
+		$k = $_evtNameObj->makeEventName([], false);
+		
+		// $k = $this->getCacheKey('*');
 		
 		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		$redis = $this->getRedisObj();
@@ -150,7 +168,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		
 		// $reData = $redis->zrange($k, 0, -1);
 		
-		foreach ($this->scanCacheKey('*') as $_key) {
+		foreach ($this->scanCacheKey($k) as $_key) {
 			$i = 0;
 			while (!empty($cacheData = $redis->zrange($_key, $i, 10))) {
 				$i++;
@@ -197,7 +215,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		
 		return EventFilter::factory()
 		                  ->setRedisObj($this->getRedisObj())
-		                  ->setProfix($this->getCacheKeyPrefix())
+		                  ->setPrefix($this->getCacheKeyPrefix())
 		                  ->keyExist();
 	}
 	
@@ -221,7 +239,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// return $this;
 		
 		foreach (EventFilter::factory()
-		                    ->setProfix($this->getCacheKeyPrefix())
+		                    ->setPrefix($this->getCacheKeyPrefix())
 		                    ->keyScan('*', 0) as $item) {
 			$this->getRedisObj()->del($item);
 		}
@@ -256,6 +274,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 				
 				/**
 				 * 加载缓存数据解析
+				 *
 				 * @var EventCacheDataInterface $cacheDataObj
 				 */
 				$cacheDataObj = EventCacheData::getInstance();
@@ -275,14 +294,14 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 				$evtItem->_setLastNewItem($evtLPItem);
 				
 				$evtLPItem->getData()
-				        ->set(function ($data, $it, $params) use ($cacheDataObj, $_serverRouteManagerObj) {
-					        $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
-					        $_eventListenerProxyObj
-						        ->_setContainer($this->getContainer())
-						        ->loadCache($cacheDataObj);
+				          ->set(function ($data, $it, $params) use ($cacheDataObj, $_serverRouteManagerObj) {
+					          $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
+					          $_eventListenerProxyObj
+						          ->_setContainer($this->getContainer())
+						          ->loadCache($cacheDataObj);
 					
-					        return $_eventListenerProxyObj;
-				        });
+					          return $_eventListenerProxyObj;
+				          });
 				
 				$evtItem->add($evtLPItem);
 				
@@ -397,7 +416,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// return implode(':', $k);
 		
 		return EventFilter::factory()
-		                  ->setProfix($this->getCacheKeyPrefix())
+		                  ->setPrefix($this->getCacheKeyPrefix())
 		                  ->getJointKey($currKey);
 	}
 	
@@ -410,7 +429,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function scanCacheKey($currKey = '*') {
 		foreach (EventFilter::factory()
-		                    ->setProfix($this->getCacheKeyPrefix())
+		                    ->setPrefix($this->getCacheKeyPrefix())
 		                    ->keyScan($currKey, 0) as $_key) {
 			yield $_key;
 		}
@@ -506,20 +525,38 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		return $this;
 	}
 	
+	// /**
+	//  * @return EventHandle
+	//  */
+	// public function getEventHandle(): EventHandle {
+	// 	return $this->_eventHandle;
+	// }
+	//
+	// /**
+	//  * @param EventHandleInterface $eventHandle
+	//  *
+	//  * @return $this
+	//  */
+	// public function setEventHandle(EventHandle $eventHandle) {
+	// 	$this->_eventHandle = $eventHandle;
+	//
+	// 	return $this;
+	// }
+	
 	/**
-	 * @return EventHandleInterface
+	 * @return EventName
 	 */
-	public function getEventHandle(): EventHandleInterface {
-		return $this->_eventHandle;
+	public function getEventNameObj(): EventName {
+		return $this->_eventNameObj;
 	}
 	
 	/**
-	 * @param EventHandleInterface $eventHandle
+	 * @param EventName $eventNameObj
 	 *
 	 * @return $this
 	 */
-	public function setEventHandle(EventHandleInterface $eventHandle) {
-		$this->_eventHandle = $eventHandle;
+	public function _setEventNameObj(EventName $eventNameObj) {
+		$this->_eventNameObj = $eventNameObj;
 		
 		return $this;
 	}

@@ -21,6 +21,9 @@ interface EventConstInterface {
 	// 服务类型
 	const CACHE_SP_SERVERTYPE = 'serverType';
 	
+	// 本地执行的类名
+	const CACHE_SP_CLASSNAMESPACE = 'classNameSpace';
+	
 	// 附加参数
 	const CACHE_SP__PARAM = '_param';
 	

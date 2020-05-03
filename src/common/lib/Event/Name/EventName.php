@@ -13,14 +13,14 @@ use uujia\framework\base\common\traits\ResultBase;
  * 事件名称分离器
  *
  * 事件定义（首字母小写驼峰）：
- *  addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}:{uuid}
+ *  addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}.[{trigger_timing}]:{uuid}
  * 示例：
- *  app.order.goods.addBefore:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
+ *  app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *
  * @package uujia\framework\base\common\lib\Event\Name
  */
 class EventName extends BaseClass implements EventNameInterface {
-	use InstanceBase;
+	// use InstanceBase;
 	use ResultBase;
 	
 	/**
@@ -63,11 +63,26 @@ class EventName extends BaseClass implements EventNameInterface {
 	protected $_behavior = '';
 	
 	/**
+	 * 事件触发时机
+	 *  {trigger_timing}
+	 *
+	 * @var string
+	 */
+	protected $_timing = '';
+	
+	/**
 	 * UUID
 	 *
 	 * @var string
 	 */
 	protected $_uuid = '';
+	
+	/**
+	 * 是否解析
+	 *
+	 * @var bool
+	 */
+	protected $_isParsed = false;
 	
 	/**************************************************************
 	 * init
@@ -81,10 +96,13 @@ class EventName extends BaseClass implements EventNameInterface {
 	 * @return $this
 	 */
 	public function reset($exclude = []) {
+		(!in_array('isParsed', $exclude)) && $this->_isParsed = false;
+		
 		(!in_array('type', $exclude)) && $this->_type = '';
 		(!in_array('com', $exclude)) && $this->_com = '';
 		(!in_array('event', $exclude)) && $this->_event = '';
 		(!in_array('behavior', $exclude)) && $this->_behavior = '';
+		(!in_array('timing', $exclude)) && $this->_timing = '';
 		(!in_array('uuid', $exclude)) && $this->_uuid = '';
 		
 		$this->resetResult();
@@ -113,18 +131,22 @@ class EventName extends BaseClass implements EventNameInterface {
 		if ($re === false) {
 			// todo: 异常
 			$this->error('事件名称解析失败');
+			
 			return $this;
 		}
 		
 		if (empty($m)) {
 			// todo: 异常
 			$this->error('事件名称格式不正确解析失败');
+			
 			return $this;
 		}
 		
-		if (!in_array(count($m), self::PCRE_NAME_SPLIT_COUNT)) {
+		// 校验匹配后所得数组元素个数 由于0的位置是匹配的全字符 要先减去1 所剩为真正匹配的各个属性
+		if (!in_array(count($m) - 1, self::PCRE_NAME_SPLIT_COUNT)) {
 			// todo: 异常
 			$this->error('事件名称解析格式不正确');
+			
 			return $this;
 		}
 		
@@ -132,6 +154,7 @@ class EventName extends BaseClass implements EventNameInterface {
 		(count($m) > self::PCRE_NAME_COM_INDEX) && $this->setCom($m[self::PCRE_NAME_COM_INDEX]);
 		(count($m) > self::PCRE_NAME_EVENT_INDEX) && $this->setEvent($m[self::PCRE_NAME_EVENT_INDEX]);
 		(count($m) > self::PCRE_NAME_BEHAVIOR_INDEX) && $this->setBehavior($m[self::PCRE_NAME_BEHAVIOR_INDEX]);
+		(count($m) > self::PCRE_NAME_TIMING_INDEX) && $this->setTiming($m[self::PCRE_NAME_TIMING_INDEX]);
 		(count($m) > self::PCRE_NAME_UUID_INDEX) && $this->setUuid($m[self::PCRE_NAME_UUID_INDEX]);
 		
 		$this->validateProperty();
@@ -139,6 +162,7 @@ class EventName extends BaseClass implements EventNameInterface {
 			return $this;
 		}
 		
+		$this->setIsParsed(true);
 		$this->ok();
 		
 		return $this;
@@ -148,8 +172,11 @@ class EventName extends BaseClass implements EventNameInterface {
 	 * 重组事件名称
 	 *
 	 * @param array $arr
+	 * @param bool  $isIgnoreUUID
+	 *
+	 * @return $this
 	 */
-	public function makeEventName($arr = []) {
+	public function makeEventName($arr = [], $isIgnoreUUID = false) {
 		$this->resetResult();
 		
 		$_arr = $arr;
@@ -164,13 +191,23 @@ class EventName extends BaseClass implements EventNameInterface {
 			return $this;
 		}
 		
-		$_type = $this->getType();
-		$_com = $this->getCom();
-		$_event = $this->getEvent();
+		$_type     = $this->getType();
+		$_com      = $this->getCom();
+		$_event    = $this->getEvent();
 		$_behavior = $this->getBehavior();
-		$_uuid = $this->getUuid();
+		$_timing   = $this->getTiming();
+		$_uuid     = $this->getUuid();
 		
-		$_eventName = !empty($_uuid) ? "{$_type}.{$_com}.{$_event}.{$_behavior}:$_uuid" : "{$_type}.{$_com}.{$_event}.{$_behavior}";
+		if (empty($_timing)) {
+			$_eventName = (!$isIgnoreUUID && !empty($_uuid)) ?
+				"{$_type}.{$_com}.{$_event}.{$_behavior}:$_uuid" :
+				"{$_type}.{$_com}.{$_event}.{$_behavior}";
+		} else {
+			$_eventName = (!$isIgnoreUUID && !empty($_uuid)) ?
+				"{$_type}.{$_com}.{$_event}.{$_behavior}.{$_timing}:$_uuid" :
+				"{$_type}.{$_com}.{$_event}.{$_behavior}.{$_timing}";
+		}
+		
 		$this->setEventName($_eventName);
 		
 		$this->ok();
@@ -201,14 +238,19 @@ class EventName extends BaseClass implements EventNameInterface {
 		}
 		
 		if (empty($this->getBehavior())) {
-			return $this->error('事件行为验不正确');
+			return $this->error('事件行为校验不正确');
 		}
+		
+		// if (empty($this->getTiming())) {
+		// 	return $this->error('事件触发时机校验不正确');
+		// }
 		
 		return $this->ok();
 	}
 	
 	/**
 	 * 数组转属性
+	 *  必须为全称 事件名称部分只能为全称5项 不得使用4项 不足可以随便补x
 	 *
 	 * @param array $arr
 	 *
@@ -221,6 +263,7 @@ class EventName extends BaseClass implements EventNameInterface {
 		!empty($_arr[self::PCRE_NAME_COM_INDEX]) && $this->setCom($_arr[self::PCRE_NAME_COM_INDEX]);
 		!empty($_arr[self::PCRE_NAME_EVENT_INDEX]) && $this->setEvent($_arr[self::PCRE_NAME_EVENT_INDEX]);
 		!empty($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]) && $this->setBehavior($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]);
+		!empty($_arr[self::PCRE_NAME_TIMING_INDEX]) && $this->setTiming($_arr[self::PCRE_NAME_TIMING_INDEX]);
 		!empty($_arr[self::PCRE_NAME_UUID_INDEX]) && $this->setUuid($_arr[self::PCRE_NAME_UUID_INDEX]);
 		
 		return $this;
@@ -228,6 +271,7 @@ class EventName extends BaseClass implements EventNameInterface {
 	
 	/**
 	 * 属性转数组
+	 *  事件名称部分为全称5项 不足就是空
 	 *
 	 * @return array
 	 */
@@ -238,6 +282,7 @@ class EventName extends BaseClass implements EventNameInterface {
 		$_arr[self::PCRE_NAME_COM_INDEX]      = $this->getCom();
 		$_arr[self::PCRE_NAME_EVENT_INDEX]    = $this->getEvent();
 		$_arr[self::PCRE_NAME_BEHAVIOR_INDEX] = $this->getBehavior();
+		$_arr[self::PCRE_NAME_TIMING_INDEX]   = $this->getTiming();
 		$_arr[self::PCRE_NAME_UUID_INDEX]     = $this->getUuid();
 		
 		return $_arr;
@@ -340,6 +385,24 @@ class EventName extends BaseClass implements EventNameInterface {
 	/**
 	 * @return string
 	 */
+	public function getTiming(): string {
+		return $this->_timing;
+	}
+	
+	/**
+	 * @param string $timing
+	 *
+	 * @return $this
+	 */
+	public function setTiming(string $timing) {
+		$this->_timing = $timing;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
 	public function getUuid(): string {
 		return $this->_uuid;
 	}
@@ -351,6 +414,31 @@ class EventName extends BaseClass implements EventNameInterface {
 	 */
 	public function setUuid(string $uuid) {
 		$this->_uuid = $uuid;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isIsParsed(): bool {
+		return $this->_isParsed;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isParsed(): bool {
+		return $this->_isParsed;
+	}
+	
+	/**
+	 * @param bool $isParsed
+	 *
+	 * @return $this
+	 */
+	public function setIsParsed(bool $isParsed) {
+		$this->_isParsed = $isParsed;
 		
 		return $this;
 	}

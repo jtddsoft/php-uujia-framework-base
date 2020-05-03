@@ -2,6 +2,7 @@
 
 
 use uujia\framework\base\common\Base;
+use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\UU;
 
@@ -103,6 +104,12 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 		case 'evt':
 			echo \uujia\framework\base\common\consts\CacheConstInterface::DATA_PROVIDER_KEY_EVENT;
+			break;
+			
+		case 'pcre':
+			$ee = 'app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca';
+			preg_match_all(EventName::PCRE_NAME, $ee, $m, PREG_SET_ORDER);
+			var_dump($m);
 			break;
 	}
 	

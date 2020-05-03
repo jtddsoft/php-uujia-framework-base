@@ -20,7 +20,7 @@ class EventFilter extends BaseClass {
 	 * 前缀
 	 * @var array
 	 */
-	public $profix = [];
+	public $prefix = [];
 	
 	/**
 	 * Redis对象
@@ -39,14 +39,19 @@ class EventFilter extends BaseClass {
 		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		$redis = $this->getRedisObj();
 		$iterator = null;
-		$reKeys = $redis->scan($iterator, $k, 1);
+		// $reKeys = $redis->scan($iterator, $k, 1);
 		
-		// while(false !== ($keys = $redis->scan($iterator))) {
-		// 	foreach($keys as $key) {
-		// 		echo $key . PHP_EOL;
-		// 	}
-		// }
-		return !empty($reKeys);
+		while(false !== ($keys = $redis->scan($iterator, $k, 1))) {
+			if (!empty($keys)) {
+				return true;
+			}
+			
+			// foreach($keys as $key) {
+			// 	echo $key . PHP_EOL;
+			// }
+		}
+		// return !empty($reKeys);
+		return false;
 	}
 	
 	/**
@@ -64,6 +69,10 @@ class EventFilter extends BaseClass {
 		
 		$iterator = null;
 		while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
+			if (empty($keys)) {
+				continue;
+			}
+			
 			// foreach($keys as $key) {
 			// 	echo $key . PHP_EOL;
 			// }
@@ -75,14 +84,14 @@ class EventFilter extends BaseClass {
 	 * 获取拼接后的缓存key
 	 *
 	 * @param string     $currKey 当前key
-	 * @param array|null $profix  前缀
+	 * @param array|null $prefix  前缀
 	 * @return string
 	 */
-	public function getJointKey($currKey = '', $profix = null) {
-		is_null($profix) && $profix = $this->profix;
+	public function getJointKey($currKey = '', $prefix = null) {
+		is_null($prefix) && $prefix = $this->prefix;
 		
 		// 前缀 + 起始key + 当前key = 最终使用key
-		$k = !empty($currKey) ? array_merge($profix, [$currKey]) : $profix;
+		$k = !empty($currKey) ? array_merge($prefix, [$currKey]) : $prefix;
 		
 		return implode(':', $k);
 	}
@@ -90,16 +99,16 @@ class EventFilter extends BaseClass {
 	/**
 	 * @return array
 	 */
-	public function getProfix() {
-		return $this->profix;
+	public function getPrefix() {
+		return $this->prefix;
 	}
 	
 	/**
-	 * @param array $profix
+	 * @param array $prefix
 	 * @return EventFilter
 	 */
-	public function setProfix($profix) {
-		$this->profix = $profix;
+	public function setPrefix($prefix) {
+		$this->prefix = $prefix;
 		
 		return $this;
 	}
