@@ -63,5 +63,17 @@ interface EventCacheDataInterface {
 	 */
 	public function setParam(array $param);
 	
+	/**
+	 * @return string
+	 */
+	public function getClassNameSpace(): string;
+	
+	/**
+	 * @param string $classNameSpace
+	 *
+	 * @return $this
+	 */
+	public function setClassNameSpace(string $classNameSpace);
+	
 	
 }

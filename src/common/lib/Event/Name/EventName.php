@@ -5,7 +5,8 @@ namespace uujia\framework\base\common\lib\Event\Name;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\traits\InstanceBase;
+use uujia\framework\base\common\lib\Runner\RunnerManager;
+use uujia\framework\base\common\lib\Utils\Arr;
 use uujia\framework\base\common\traits\ResultBase;
 
 /**
@@ -17,11 +18,23 @@ use uujia\framework\base\common\traits\ResultBase;
  * 示例：
  *  app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *
+ * 事件完整定义（缓存中的完整定义 evtl=event_listen  evtt=event_trigger evttl=event_trigger_listen）：
+ *  {app_name}:{mode_name[evtl|evtt|evttl]}:
+ *      addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}[.{trigger_timing}]:{uuid}[:{tmp}]
+ *      示例： shopMall:evtl:app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
+ *
  * @package uujia\framework\base\common\lib\Event\Name
  */
 class EventName extends BaseClass implements EventNameInterface {
-	// use InstanceBase;
 	use ResultBase;
+	
+	/**
+	 * 运行时管理对象
+	 *  要取app_name
+	 *
+	 * @var RunnerManager
+	 */
+	protected $_runnerManagerObj;
 	
 	/**
 	 * 事件完整名称
@@ -29,6 +42,31 @@ class EventName extends BaseClass implements EventNameInterface {
 	 * @var string
 	 */
 	protected $_eventName = '';
+	
+	/**
+	 * 应用名称
+	 *
+	 * @var string
+	 */
+	protected $_appName = '';
+	
+	/**
+	 * 事件模式角色
+	 *  监听者: evtl
+	 *  触发者: evtt
+	 *  监听者和触发者: evttl
+	 *
+	 * @var string
+	 */
+	protected $_modeName = '';
+	
+	/**
+	 * 临时标识
+	 *  tmp（在新添加触发者时 需要重建匹配的监听者 由于只需要重建他自己 为区分已有触发者 添加tmp标识）
+	 *
+	 * @var string
+	 */
+	protected $_tmp = '';
 	
 	/**
 	 * 事件类型
@@ -82,7 +120,18 @@ class EventName extends BaseClass implements EventNameInterface {
 	 *
 	 * @var bool
 	 */
-	protected $_isParsed = false;
+	protected $_parsed = false;
+	
+	/**
+	 * EventName constructor.
+	 *
+	 * @param RunnerManager $runnerManagerObj
+	 */
+	public function __construct(RunnerManager $runnerManagerObj) {
+		$this->_runnerManagerObj = $runnerManagerObj;
+		
+		parent::__construct();
+	}
 	
 	/**************************************************************
 	 * init
@@ -96,7 +145,10 @@ class EventName extends BaseClass implements EventNameInterface {
 	 * @return $this
 	 */
 	public function reset($exclude = []) {
-		(!in_array('isParsed', $exclude)) && $this->_isParsed = false;
+		(!in_array('parsed', $exclude)) && $this->_parsed = false;
+		
+		(!in_array('appName', $exclude)) && $this->_appName = '';
+		(!in_array('modeName', $exclude)) && $this->_modeName = '';
 		
 		(!in_array('type', $exclude)) && $this->_type = '';
 		(!in_array('com', $exclude)) && $this->_com = '';
@@ -104,6 +156,8 @@ class EventName extends BaseClass implements EventNameInterface {
 		(!in_array('behavior', $exclude)) && $this->_behavior = '';
 		(!in_array('timing', $exclude)) && $this->_timing = '';
 		(!in_array('uuid', $exclude)) && $this->_uuid = '';
+		
+		(!in_array('tmp', $exclude)) && $this->_tmp = 'tmp';
 		
 		$this->resetResult();
 		
@@ -150,6 +204,9 @@ class EventName extends BaseClass implements EventNameInterface {
 			return $this;
 		}
 		
+		(count($m) > self::PCRE_NAME_APPNAME_INDEX) && $this->setAppName($m[self::PCRE_NAME_APPNAME_INDEX]);
+		(count($m) > self::PCRE_NAME_MODENAME_INDEX) && $this->setModeName($m[self::PCRE_NAME_MODENAME_INDEX]);
+		
 		(count($m) > self::PCRE_NAME_TYPE_INDEX) && $this->setType($m[self::PCRE_NAME_TYPE_INDEX]);
 		(count($m) > self::PCRE_NAME_COM_INDEX) && $this->setCom($m[self::PCRE_NAME_COM_INDEX]);
 		(count($m) > self::PCRE_NAME_EVENT_INDEX) && $this->setEvent($m[self::PCRE_NAME_EVENT_INDEX]);
@@ -157,12 +214,14 @@ class EventName extends BaseClass implements EventNameInterface {
 		(count($m) > self::PCRE_NAME_TIMING_INDEX) && $this->setTiming($m[self::PCRE_NAME_TIMING_INDEX]);
 		(count($m) > self::PCRE_NAME_UUID_INDEX) && $this->setUuid($m[self::PCRE_NAME_UUID_INDEX]);
 		
+		(count($m) > self::PCRE_NAME_TMP_INDEX) && $this->setTmp($m[self::PCRE_NAME_TMP_INDEX]);
+		
 		$this->validateProperty();
 		if ($this->isErr()) {
 			return $this;
 		}
 		
-		$this->setIsParsed(true);
+		$this->setParsed(true);
 		$this->ok();
 		
 		return $this;
@@ -171,25 +230,34 @@ class EventName extends BaseClass implements EventNameInterface {
 	/**
 	 * 重组事件名称
 	 *
-	 * @param array $arr
-	 * @param bool  $isIgnoreUUID
+	 * @param bool $isIgnoreTmp       忽略临时标识（在缓存新添加触发者时 要重新构建只针对他自己的监听者
+	 *                                区别其他触发者使用 构建好要重命名）
+	 * @param bool $isIgnoreAppName   忽略应用名称
+	 * @param bool $isIgnoreModeName  忽略模式名称(evtl evtt)
+	 * @param bool $isIgnoreUUID      忽略UUID
 	 *
 	 * @return $this
 	 */
-	public function makeEventName($arr = [], $isIgnoreUUID = false) {
+	public function makeEventName($isIgnoreTmp = true,
+	                              $isIgnoreAppName = false,
+	                              $isIgnoreModeName = false,
+	                              $isIgnoreUUID = false) {
 		$this->resetResult();
 		
-		$_arr = $arr;
-		if (empty($_arr)) {
-			$_arr = $this->property2Arr();
-		} else {
-			$this->arr2Property($_arr);
-		}
+		// $_arr = $arr;
+		// if (empty($_arr)) {
+		// 	$_arr = $this->property2Arr();
+		// } else {
+		// 	$this->arr2Property($_arr);
+		// }
 		
 		$this->validateProperty();
 		if ($this->isErr()) {
 			return $this;
 		}
+		
+		$_appName  = $this->getAppName();
+		$_modeName = $this->getModeName();
 		
 		$_type     = $this->getType();
 		$_com      = $this->getCom();
@@ -198,15 +266,35 @@ class EventName extends BaseClass implements EventNameInterface {
 		$_timing   = $this->getTiming();
 		$_uuid     = $this->getUuid();
 		
-		if (empty($_timing)) {
-			$_eventName = (!$isIgnoreUUID && !empty($_uuid)) ?
-				"{$_type}.{$_com}.{$_event}.{$_behavior}:$_uuid" :
-				"{$_type}.{$_com}.{$_event}.{$_behavior}";
-		} else {
-			$_eventName = (!$isIgnoreUUID && !empty($_uuid)) ?
-				"{$_type}.{$_com}.{$_event}.{$_behavior}.{$_timing}:$_uuid" :
-				"{$_type}.{$_com}.{$_event}.{$_behavior}.{$_timing}";
+		$_eventNameArr = [];
+		
+		if ($isIgnoreAppName) {
+			$_eventNameArr[] = $_appName;
 		}
+		
+		if ($isIgnoreModeName) {
+			$_eventNameArr[] = $_modeName;
+		}
+		
+		// 事件名主体
+		$_evNameArr   = [];
+		$_evNameArr[] = $_type;
+		$_evNameArr[] = $_com;
+		$_evNameArr[] = $_event;
+		$_evNameArr[] = $_behavior;
+		!empty($_timing) && $_evNameArr[] = $_timing;
+		
+		$_eventNameArr[] = Arr::arrToStr($_evNameArr, '.');
+		
+		if ($isIgnoreUUID) {
+			$_eventNameArr[] = $_uuid;
+		}
+		
+		if ($isIgnoreTmp) {
+			$_eventNameArr[] = 'tmp';
+		}
+		
+		$_eventName = Arr::arrToStr($_eventNameArr, ':');
 		
 		$this->setEventName($_eventName);
 		
@@ -248,49 +336,66 @@ class EventName extends BaseClass implements EventNameInterface {
 		return $this->ok();
 	}
 	
-	/**
-	 * 数组转属性
-	 *  必须为全称 事件名称部分只能为全称5项 不得使用4项 不足可以随便补x
-	 *
-	 * @param array $arr
-	 *
-	 * @return $this
-	 */
-	public function arr2Property($arr = []) {
-		$_arr = $arr;
-		
-		!empty($_arr[self::PCRE_NAME_TYPE_INDEX]) && $this->setType($_arr[self::PCRE_NAME_TYPE_INDEX]);
-		!empty($_arr[self::PCRE_NAME_COM_INDEX]) && $this->setCom($_arr[self::PCRE_NAME_COM_INDEX]);
-		!empty($_arr[self::PCRE_NAME_EVENT_INDEX]) && $this->setEvent($_arr[self::PCRE_NAME_EVENT_INDEX]);
-		!empty($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]) && $this->setBehavior($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]);
-		!empty($_arr[self::PCRE_NAME_TIMING_INDEX]) && $this->setTiming($_arr[self::PCRE_NAME_TIMING_INDEX]);
-		!empty($_arr[self::PCRE_NAME_UUID_INDEX]) && $this->setUuid($_arr[self::PCRE_NAME_UUID_INDEX]);
-		
-		return $this;
-	}
-	
-	/**
-	 * 属性转数组
-	 *  事件名称部分为全称5项 不足就是空
-	 *
-	 * @return array
-	 */
-	public function property2Arr() {
-		$_arr = [];
-		
-		$_arr[self::PCRE_NAME_TYPE_INDEX]     = $this->getType();
-		$_arr[self::PCRE_NAME_COM_INDEX]      = $this->getCom();
-		$_arr[self::PCRE_NAME_EVENT_INDEX]    = $this->getEvent();
-		$_arr[self::PCRE_NAME_BEHAVIOR_INDEX] = $this->getBehavior();
-		$_arr[self::PCRE_NAME_TIMING_INDEX]   = $this->getTiming();
-		$_arr[self::PCRE_NAME_UUID_INDEX]     = $this->getUuid();
-		
-		return $_arr;
-	}
+	// /**
+	//  * 数组转属性
+	//  *  必须为全称 事件名称部分只能为全称5项 不得使用4项 不足可以随便补x
+	//  *
+	//  * @param array $arr
+	//  *
+	//  * @return $this
+	//  */
+	// public function arr2Property($arr = []) {
+	// 	$_arr = $arr;
+	//
+	// 	!empty($_arr[self::PCRE_NAME_TYPE_INDEX]) && $this->setType($_arr[self::PCRE_NAME_TYPE_INDEX]);
+	// 	!empty($_arr[self::PCRE_NAME_COM_INDEX]) && $this->setCom($_arr[self::PCRE_NAME_COM_INDEX]);
+	// 	!empty($_arr[self::PCRE_NAME_EVENT_INDEX]) && $this->setEvent($_arr[self::PCRE_NAME_EVENT_INDEX]);
+	// 	!empty($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]) && $this->setBehavior($_arr[self::PCRE_NAME_BEHAVIOR_INDEX]);
+	// 	!empty($_arr[self::PCRE_NAME_TIMING_INDEX]) && $this->setTiming($_arr[self::PCRE_NAME_TIMING_INDEX]);
+	// 	!empty($_arr[self::PCRE_NAME_UUID_INDEX]) && $this->setUuid($_arr[self::PCRE_NAME_UUID_INDEX]);
+	//
+	// 	return $this;
+	// }
+	//
+	// /**
+	//  * 属性转数组
+	//  *  事件名称部分为全称5项 不足就是空
+	//  *
+	//  * @return array
+	//  */
+	// public function property2Arr() {
+	// 	$_arr = [];
+	//
+	// 	$_arr[self::PCRE_NAME_TYPE_INDEX]     = $this->getType();
+	// 	$_arr[self::PCRE_NAME_COM_INDEX]      = $this->getCom();
+	// 	$_arr[self::PCRE_NAME_EVENT_INDEX]    = $this->getEvent();
+	// 	$_arr[self::PCRE_NAME_BEHAVIOR_INDEX] = $this->getBehavior();
+	// 	$_arr[self::PCRE_NAME_TIMING_INDEX]   = $this->getTiming();
+	// 	$_arr[self::PCRE_NAME_UUID_INDEX]     = $this->getUuid();
+	//
+	// 	return $_arr;
+	// }
 	
 	/**************************************************************
 	 * get set
 	 **************************************************************/
+	
+	/**
+	 * @return RunnerManager
+	 */
+	public function getRunnerManagerObj(): RunnerManager {
+		return $this->_runnerManagerObj;
+	}
+	
+	/**
+	 * @param RunnerManager $runnerManagerObj
+	 * @return $this
+	 */
+	public function setRunnerManagerObj(RunnerManager $runnerManagerObj) {
+		$this->_runnerManagerObj = $runnerManagerObj;
+		
+		return $this;
+	}
 	
 	/**
 	 * @return string
@@ -306,6 +411,40 @@ class EventName extends BaseClass implements EventNameInterface {
 	 */
 	public function setEventName(string $eventName) {
 		$this->_eventName = $eventName;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getAppName(): string {
+		return $this->_appName;
+	}
+	
+	/**
+	 * @param string $appName
+	 * @return $this
+	 */
+	public function setAppName(string $appName) {
+		$this->_appName = $appName;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getModeName(): string {
+		return $this->_modeName;
+	}
+	
+	/**
+	 * @param string $modeName
+	 * @return $this
+	 */
+	public function setModeName(string $modeName) {
+		$this->_modeName = $modeName;
 		
 		return $this;
 	}
@@ -421,24 +560,33 @@ class EventName extends BaseClass implements EventNameInterface {
 	/**
 	 * @return bool
 	 */
-	public function isIsParsed(): bool {
-		return $this->_isParsed;
-	}
-	
-	/**
-	 * @return bool
-	 */
 	public function isParsed(): bool {
-		return $this->_isParsed;
+		return $this->_parsed;
 	}
 	
 	/**
-	 * @param bool $isParsed
-	 *
+	 * @param bool $parsed
 	 * @return $this
 	 */
-	public function setIsParsed(bool $isParsed) {
-		$this->_isParsed = $isParsed;
+	public function setParsed(bool $parsed) {
+		$this->_parsed = $parsed;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getTmp(): string {
+		return $this->_tmp;
+	}
+	
+	/**
+	 * @param string $tmp
+	 * @return $this
+	 */
+	public function setTmp(string $tmp) {
+		$this->_tmp = $tmp;
 		
 		return $this;
 	}

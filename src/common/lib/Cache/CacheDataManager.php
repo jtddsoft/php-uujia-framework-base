@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common\lib\Cache;
 
 
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
@@ -132,7 +133,7 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 			// 获取最后一次配置数据
 			->getLastSetItemData()
 			// 配置禁用自动缓存（每次调用都要执行 因此不能缓存）
-			->setIsLoadCache(false)
+			->setLoadCache(false)
 		
 			// add subitem
 			// 从Data返回Item
@@ -140,7 +141,7 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 			// 获取最后一次新增的子项
 			->getLastNewItemData()
 			// 配置禁用自动缓存（每次调用都要执行 因此不能缓存）
-			->setIsLoadCache(false);
+			->setLoadCache(false);
 	}
 	
 	

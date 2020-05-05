@@ -6,9 +6,6 @@ use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Name\EventName;
-use uujia\framework\base\common\lib\Event\Name\EventNameInterface;
-use uujia\framework\base\common\traits\InstanceBase;
-use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
 /**
@@ -21,16 +18,15 @@ use uujia\framework\base\common\traits\ResultBase;
  * 示例：
  *  app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *
- * 事件完整定义（缓存中的完整定义）：
- *  {app_name}:event:
- *      addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}.[{trigger_timing}]:{uuid}
- *      示例： shopMall:event:app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
+ * 事件完整定义（缓存中的完整定义 evtl=event_listen  evtt=event_trigger evttl=event_trigger_listen）：
+ *  {app_name}:{mode_name[evtl|evtt|evttl]}:
+ *      addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}[.{trigger_timing}]:{uuid}[:{tmp}]
+ *      示例： shopMall:evtl:app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *
  * @package uujia\framework\base\common\lib\Event
  */
 abstract class EventHandle extends BaseClass implements EventHandleInterface, StoppableEventInterface {
 	use ResultBase;
-	use InstanceBase;
 	
 	/**
 	 * 唯一标识
@@ -73,7 +69,7 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 *
 	 * @var bool
 	 */
-	protected $_isStopped = false;
+	protected $_stopped = false;
 	
 	// /**
 	//  * 事件名称
@@ -124,7 +120,7 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * @inheritDoc
 	 */
 	public function isPropagationStopped(): bool {
-		return $this->_isStopped;
+		return $this->_stopped;
 	}
 	
 	/**

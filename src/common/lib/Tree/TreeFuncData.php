@@ -43,18 +43,18 @@ class TreeFuncData extends BaseClass {
 	/**
 	 * 自动缓存
 	 *
-	 * @var bool $_isAutoCache
+	 * @var bool $_autoCache
 	 */
-	protected $_isAutoCache = true;
+	protected $_autoCache = true;
 	
 	/**
 	 * 自动加载缓存
 	 *  true - get获取时会自动查找是否存在缓存
 	 *  false - get将不再加载缓存
 	 *
-	 * @var bool $_isLoadCache
+	 * @var bool $_loadCache
 	 */
-	protected $_isLoadCache = true;
+	protected $_loadCache = true;
 	
 	/**
 	 * 其他附加属性或返回值等等 自由使用
@@ -219,7 +219,7 @@ class TreeFuncData extends BaseClass {
 	 * @return $this|bool
 	 */
 	public function isAutoCache(): bool {
-		return $this->_isAutoCache;
+		return $this->_autoCache;
 	}
 	
 	/**
@@ -227,8 +227,8 @@ class TreeFuncData extends BaseClass {
 	 *
 	 * @return $this
 	 */
-	public function setIsAutoCache(bool $isAutoCache) {
-		$this->_isAutoCache = $isAutoCache;
+	public function setAutoCache(bool $isAutoCache) {
+		$this->_autoCache = $isAutoCache;
 		
 		return $this;
 	}
@@ -241,7 +241,7 @@ class TreeFuncData extends BaseClass {
 	 * @return bool
 	 */
 	public function isLoadCache(): bool {
-		return $this->_isLoadCache;
+		return $this->_loadCache;
 	}
 	
 	/**
@@ -249,8 +249,8 @@ class TreeFuncData extends BaseClass {
 	 *
 	 * @return $this
 	 */
-	public function setIsLoadCache(bool $isLoadCache) {
-		$this->_isLoadCache = $isLoadCache;
+	public function setLoadCache(bool $isLoadCache) {
+		$this->_loadCache = $isLoadCache;
 		
 		return $this;
 	}

@@ -107,8 +107,8 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			break;
 			
 		case 'pcre':
-			$ee = 'app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca';
-			preg_match_all(EventName::PCRE_NAME, $ee, $m, PREG_SET_ORDER);
+			$ee = 'app:evtl:app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca:tmp';
+			preg_match_all(EventName::PCRE_NAME_FULL, $ee, $m, PREG_SET_ORDER);
 			var_dump($m);
 			break;
 	}

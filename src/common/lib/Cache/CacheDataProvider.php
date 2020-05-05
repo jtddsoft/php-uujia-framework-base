@@ -8,7 +8,7 @@ use uujia\framework\base\common\consts\CacheConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 
-class CacheDataProvider extends BaseClass implements CacheDataProviderInterface {
+abstract class CacheDataProvider extends BaseClass implements CacheDataProviderInterface {
 	
 	/**
 	 * @var CacheDataManagerInterface $_parent

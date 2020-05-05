@@ -5,7 +5,9 @@ namespace uujia\framework\base\common\lib\Event;
 
 
 use Psr\EventDispatcher\EventDispatcherInterface;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Cache\CacheDataManager;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
@@ -21,7 +23,7 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	/**
 	 * CacheDataManager对象
 	 *
-	 * @var CacheDataManagerInterface
+	 * @var CacheDataManager
 	 */
 	protected $_cacheDataManagerObj;
 	
@@ -42,12 +44,13 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	/**
 	 * EventDispatcher constructor.
 	 *
-	 * @param CacheDataManagerInterface|null $cacheDataManagerObj
-	 * @param RedisProviderInterface|null    $redisProviderObj
+	 * @param CacheDataManager            $cacheDataManagerObj
+	 * @param RedisProviderInterface|null $redisProviderObj
+	 * @param ServerRouteManager|null     $serverRouteManagerObj
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null,
+	public function __construct(CacheDataManager $cacheDataManagerObj = null,
 	                            RedisProviderInterface $redisProviderObj = null,
 	                            ServerRouteManager $serverRouteManagerObj = null) {
 		$this->_cacheDataManagerObj   = $cacheDataManagerObj;
@@ -92,14 +95,14 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	}
 	
 	/**
-	 * @return CacheDataManagerInterface
+	 * @return CacheDataManager
 	 */
 	public function getCacheDataManagerObj() {
 		return $this->_cacheDataManagerObj;
 	}
 	
 	/**
-	 * @param CacheDataManagerInterface $cacheDataManagerObj
+	 * @param CacheDataManager $cacheDataManagerObj
 	 *
 	 * @return $this
 	 */

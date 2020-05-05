@@ -21,6 +21,8 @@ interface EventNameInterface {
 	// const PCRE_NAME = '/^(\w+)\.(\w+)\.(\w+)\.(\w+):{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?/';
 	const PCRE_NAME = '/^(\w+)\.(\w+)\.(\w+)\.(\w+)\.{0,1}(\w+)?:{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?/';
 	
+	const PCRE_NAME_FULL = '/^(\w+):(evtl|evtt|evttl):(\w+)\.(\w+)\.(\w+)\.(\w+)\.{0,1}(\w+)?:{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?:{0,1}(tmp)?/';
+	
 	/**
 	 * 事件名称拆分后可能的数量 4、5或6
 	 *  app.order.goods.addBefore                                       (4) 【暂不支持这样格式】
@@ -28,25 +30,34 @@ interface EventNameInterface {
 	 *  app.order.goods.add.before                                      (5)
 	 *  app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca (6)
 	 */
-	const PCRE_NAME_SPLIT_COUNT = [4, 5, 6];
+	const PCRE_NAME_SPLIT_COUNT = [8, 9]; // [4, 5, 6];
+	
+	// 应用名称在事件名称拆分后的位置
+	const PCRE_NAME_APPNAME_INDEX = 1;
+	
+	// 事件模式角色在事件名称拆分后的位置
+	const PCRE_NAME_MODENAME_INDEX = 2;
 	
 	// 事件类型在事件名称拆分后的位置
-	const PCRE_NAME_TYPE_INDEX = 1;
+	const PCRE_NAME_TYPE_INDEX = 3;
 	
 	// 组件名在事件名称拆分后的位置
-	const PCRE_NAME_COM_INDEX = 2;
+	const PCRE_NAME_COM_INDEX = 4;
 	
 	// 事件名在事件名称拆分后的位置
-	const PCRE_NAME_EVENT_INDEX = 3;
+	const PCRE_NAME_EVENT_INDEX = 5;
 	
 	// 事件行为在事件名称拆分后的位置
-	const PCRE_NAME_BEHAVIOR_INDEX = 4;
+	const PCRE_NAME_BEHAVIOR_INDEX = 6;
 	
 	// 事件时机在事件名称拆分后的位置
-	const PCRE_NAME_TIMING_INDEX = 5;
+	const PCRE_NAME_TIMING_INDEX = 7;
 	
 	// 事件UUID在事件名称拆分后的位置
-	const PCRE_NAME_UUID_INDEX = 6;
+	const PCRE_NAME_UUID_INDEX = 8;
+	
+	// 临时标识在事件名称拆分后的位置
+	const PCRE_NAME_TMP_INDEX = 9;
 	
 	/**************************************************************
 	 * init

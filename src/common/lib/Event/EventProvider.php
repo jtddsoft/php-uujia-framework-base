@@ -14,9 +14,11 @@ use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
+use uujia\framework\base\common\lib\Cache\CacheDataManager;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheData;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use uujia\framework\base\common\lib\Event\Name\EventNameInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
@@ -35,15 +37,33 @@ use uujia\framework\base\common\lib\Utils\Json;
 class EventProvider extends BaseClass implements ListenerProviderInterface, CacheClassInterface {
 	use CacheClassTrait;
 	
-	// 缓存key前缀
-	const CACHE_KEY_PREFIX = 'event';
+	/**
+	 * CacheDataManager对象
+	 *
+	 * @var CacheDataManager
+	 */
+	protected $_cacheDataManagerObj;
 	
 	/**
-	 * @var EventDispatcher
+	 * Redis对象
+	 *
+	 * @var RedisProviderInterface
 	 */
-	protected $_parent;
+	protected $_redisProviderObj;
 	
-	protected $_cacheKeyPrefix = [];
+	/**
+	 * ServerRouteManager对象
+	 *
+	 * @var ServerRouteManager
+	 */
+	protected $_serverRouteManagerObj;
+	
+	/**
+	 * 监听key前缀集合
+	 *
+	 * @var array
+	 */
+	protected $_cacheKeyListenPrefix = [];
 	
 	/**
 	 * 事件列表
@@ -72,33 +92,60 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	protected $_eventNameObj;
 	
 	/**
+	 * 事件缓存数据对象
+	 *
+	 * @var EventCacheData;
+	 */
+	protected $_eventCacheDataObj;
+	
+	/**
+	 * 事件筛选器对象
+	 *  用于查找匹配的监听对象
+	 *
+	 * @var EventFilter;
+	 */
+	protected $_eventFilterObj;
+	
+	/**
 	 * 配置项
 	 *
 	 * @var array
 	 */
 	protected $_config = [];
 	
-	/**
-	 * 最后一次key的搜索
-	 *
-	 * @var array
-	 */
-	protected $_lastKeys = [];
+	// /**
+	//  * 最后一次key的搜索
+	//  *
+	//  * @var array
+	//  */
+	// protected $_lastKeys = [];
 	
 	
 	/**
 	 * EventProvider constructor.
 	 *
-	 * @param null  $parent
-	 * @param array $config 暂用做保留*
-	 * @param array $cacheKeyPrefix
+	 * @param CacheDataManager|null       $cacheDataManagerObj
+	 * @param RedisProviderInterface|null $redisProviderObj
+	 * @param ServerRouteManager|null     $serverRouteManagerObj
+	 * @param EventCacheData|null         $eventCacheDataObj
+	 * @param EventFilter|null            $eventFilterObj
+	 * @param array                       $cacheKeyListenPrefix
 	 */
-	public function __construct($parent = null, $config = [], $cacheKeyPrefix = []) {
-		$this->_parent = $parent;
-		$this->_config = $config;
+	public function __construct(CacheDataManager $cacheDataManagerObj = null,
+	                            RedisProviderInterface $redisProviderObj = null,
+	                            ServerRouteManager $serverRouteManagerObj = null,
+	                            EventCacheData $eventCacheDataObj = null,
+	                            EventFilter $eventFilterObj = null,
+	                            $cacheKeyListenPrefix = []) {
+		$this->_cacheDataManagerObj   = $cacheDataManagerObj;
+		$this->_redisProviderObj      = $redisProviderObj;
+		$this->_serverRouteManagerObj = $serverRouteManagerObj;
 		
-		$this->_cacheKeyPrefix   = $cacheKeyPrefix;
-		$this->_cacheKeyPrefix[] = self::CACHE_KEY_PREFIX;
+		$this->_eventCacheDataObj = $eventCacheDataObj;
+		$this->_eventFilterObj    = $eventFilterObj;
+		
+		$this->_cacheKeyListenPrefix   = $cacheKeyListenPrefix;
+		$this->_cacheKeyListenPrefix[] = EventConst::CACHE_KEY_PREFIX_LISTEN;
 		
 		parent::__construct();
 	}
@@ -111,7 +158,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @inheritDoc
 	 */
 	public function getListenersForEvent(object $event): iterable {
-		if (!($event instanceof EventHandleInterface)) {
+		if (!($event instanceof EventNameInterface)) {
 			return [];
 		}
 		
@@ -151,7 +198,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 			yield [];
 		}
 		
-		$k = $_evtNameObj->makeEventName([], false);
+		$k = $_evtNameObj->makeEventName();
 		
 		// $k = $this->getCacheKey('*');
 		
@@ -185,10 +232,11 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function toCache() {
 		// 调用缓存数据供应商
-		$this->getParent()
-		     ->getCacheDataManagerObj()
-		     ->getProviderList()
-		     ->getKeyDataValue(CacheConst::DATA_PROVIDER_KEY_EVENT);
+		// $this->getParent()
+		//      ->getCacheDataManagerObj()
+		//      ->getProviderList()
+		//      ->getKeyDataValue(CacheConst::DATA_PROVIDER_KEY_EVENT);
+		$this->getCacheDataProvider();
 		
 		return $this;
 	}
@@ -213,10 +261,10 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// // }
 		// return !empty($reKeys);
 		
-		return EventFilter::factory()
-		                  ->setRedisObj($this->getRedisObj())
-		                  ->setPrefix($this->getCacheKeyPrefix())
-		                  ->keyExist();
+		return $this->getEventFilterObj()
+		            ->setRedisObj($this->getRedisObj())
+		            ->setPrefix($this->getCacheKeyListenPrefix())
+		            ->keyExist();
 	}
 	
 	/**
@@ -238,9 +286,9 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		//
 		// return $this;
 		
-		foreach (EventFilter::factory()
-		                    ->setPrefix($this->getCacheKeyPrefix())
-		                    ->keyScan('*', 0) as $item) {
+		foreach ($this->getEventFilterObj()
+		              ->setPrefix($this->getCacheKeyListenPrefix())
+		              ->keyScan('*', 0) as $item) {
 			$this->getRedisObj()->del($item);
 		}
 		
@@ -256,7 +304,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @return \Generator 事件监听代理EventListenerProxy
 	 */
 	private function makeCacheToServerParameter($key, $cacheData = []) {
-		$_serverRouteManagerObj = $this->getServerRouteManager();
+		$_serverRouteManagerObj = $this->getServerRouteManagerObj();
 		
 		// 如果列表不存在对应的key 说明从未构建过
 		if (!($this->getList()->has($key))) {
@@ -277,7 +325,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 				 *
 				 * @var EventCacheDataInterface $cacheDataObj
 				 */
-				$cacheDataObj = EventCacheData::getInstance();
+				$cacheDataObj = $this->getEventCacheDataObj();
 				$cacheDataObj->parse($item);
 				
 				/**
@@ -295,7 +343,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 				
 				$evtLPItem->getData()
 				          ->set(function ($data, $it, $params) use ($cacheDataObj, $_serverRouteManagerObj) {
-					          $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
+					          $_eventListenerProxyObj = new EventListenerProxy(clone $this->_eventNameObj,
+					                                                           $_serverRouteManagerObj);
 					          $_eventListenerProxyObj
 						          ->_setContainer($this->getContainer())
 						          ->loadCache($cacheDataObj);
@@ -415,9 +464,9 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		//
 		// return implode(':', $k);
 		
-		return EventFilter::factory()
-		                  ->setPrefix($this->getCacheKeyPrefix())
-		                  ->getJointKey($currKey);
+		return $this->getEventFilterObj()
+		            ->setPrefix($this->getCacheKeyListenPrefix())
+		            ->getJointKey($currKey);
 	}
 	
 	/**
@@ -428,9 +477,9 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @return \Generator
 	 */
 	public function scanCacheKey($currKey = '*') {
-		foreach (EventFilter::factory()
-		                    ->setPrefix($this->getCacheKeyPrefix())
-		                    ->keyScan($currKey, 0) as $_key) {
+		foreach ($this->getEventFilterObj()
+		              ->setPrefix($this->getCacheKeyListenPrefix())
+		              ->keyScan($currKey, 0) as $_key) {
 			yield $_key;
 		}
 	}
@@ -510,17 +559,19 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	/**
 	 * @return array
 	 */
-	public function getCacheKeyPrefix() {
-		return $this->_cacheKeyPrefix;
+	public function getCacheKeyListenPrefix() {
+		return $this->_cacheKeyListenPrefix;
 	}
 	
 	/**
 	 * @param array $cacheKeyPrefix
+	 * @param bool  $isAddListenPrefix
 	 *
 	 * @return $this
 	 */
-	public function setCacheKeyPrefix(array $cacheKeyPrefix) {
-		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+	public function setCacheKeyListenPrefix(array $cacheKeyPrefix, $isAddListenPrefix = true) {
+		$this->_cacheKeyListenPrefix = $cacheKeyPrefix;
+		$isAddListenPrefix && $this->_cacheKeyListenPrefix[] = EventConst::CACHE_KEY_PREFIX_LISTEN;
 		
 		return $this;
 	}
@@ -562,37 +613,55 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	/**
-	 * @return array
+	 * @return EventCacheData
 	 */
-	public function getLastKeys(): array {
-		return $this->_lastKeys;
+	public function getEventCacheDataObj(): EventCacheData {
+		return $this->_eventCacheDataObj;
 	}
 	
 	/**
-	 * @param array $lastKeys
+	 * @param EventCacheData $eventCacheDataObj
 	 *
 	 * @return $this
 	 */
-	public function setLastKeys(array $lastKeys) {
-		$this->_lastKeys = $lastKeys;
+	public function setEventCacheDataObj(EventCacheData $eventCacheDataObj) {
+		$this->_eventCacheDataObj = $eventCacheDataObj;
 		
 		return $this;
 	}
 	
+	// /**
+	//  * @return array
+	//  */
+	// public function getLastKeys(): array {
+	// 	return $this->_lastKeys;
+	// }
+	//
+	// /**
+	//  * @param array $lastKeys
+	//  *
+	//  * @return $this
+	//  */
+	// public function setLastKeys(array $lastKeys) {
+	// 	$this->_lastKeys = $lastKeys;
+	//
+	// 	return $this;
+	// }
+	
 	/**
-	 * @return EventDispatcher
+	 * @return RedisProviderInterface
 	 */
-	public function getParent(): EventDispatcher {
-		return $this->_parent;
+	public function getRedisProviderObj() {
+		return $this->_redisProviderObj;
 	}
 	
 	/**
-	 * @param EventDispatcher $parent
+	 * @param RedisProviderInterface $redisProviderObj
 	 *
-	 * @return EventProvider
+	 * @return $this
 	 */
-	public function setParent(EventDispatcher $parent) {
-		$this->_parent = $parent;
+	public function setRedisProviderObj($redisProviderObj) {
+		$this->_redisProviderObj = $redisProviderObj;
 		
 		return $this;
 	}
@@ -601,25 +670,71 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
-		return $this->getParent()->getRedisObj();
+		return $this->getRedisProviderObj()->getRedisObj();
 	}
 	
-	public function getCacheDataManager() {
-		return $this->getParent()->getCacheDataManagerObj();
+	/**
+	 * @return CacheDataManager
+	 */
+	public function getCacheDataManagerObj() {
+		return $this->_cacheDataManagerObj;
 	}
 	
+	/**
+	 * @param CacheDataManager $cacheDataManagerObj
+	 *
+	 * @return $this
+	 */
+	public function setCacheDataManagerObj($cacheDataManagerObj) {
+		$this->_cacheDataManagerObj = $cacheDataManagerObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return ServerRouteManager
+	 */
+	public function getServerRouteManagerObj(): ServerRouteManager {
+		return $this->_serverRouteManagerObj;
+	}
+	
+	/**
+	 * @param ServerRouteManager $serverRouteManagerObj
+	 *
+	 * @return $this
+	 */
+	public function setServerRouteManagerObj(ServerRouteManager $serverRouteManagerObj) {
+		$this->_serverRouteManagerObj = $serverRouteManagerObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return TreeFunc|null
+	 */
 	public function getCacheDataProvider() {
-		$cdMgr      = $this->getCacheDataManager();
+		$cdMgr      = $this->getCacheDataManagerObj();
 		$cdProvider = $cdMgr->getProviderList()->get(CacheConst::DATA_PROVIDER_KEY_EVENT);
 		
 		return $cdProvider;
 	}
 	
 	/**
-	 * @return ServerRouteManager
+	 * @return EventFilter
 	 */
-	public function getServerRouteManager(): ServerRouteManager {
-		return $this->getParent()->getServerRouteManagerObj();
+	public function getEventFilterObj(): EventFilter {
+		return $this->_eventFilterObj;
+	}
+	
+	/**
+	 * @param EventFilter $eventFilterObj
+	 *
+	 * @return $this
+	 */
+	public function setEventFilterObj(EventFilter $eventFilterObj) {
+		$this->_eventFilterObj = $eventFilterObj;
+		
+		return $this;
 	}
 	
 }

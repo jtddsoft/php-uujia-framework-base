@@ -9,12 +9,11 @@ use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\traits\InstanceBase;
 
 /**
- * Class EventListenerProxy
+ * Class EventCacheData
  *
  * @package uujia\framework\base\common\lib\Event\Cache
  */
 class EventCacheData extends BaseClass implements EventCacheDataInterface {
-	use InstanceBase;
 	
 	/**
 	 * 服务器名称
@@ -31,6 +30,13 @@ class EventCacheData extends BaseClass implements EventCacheDataInterface {
 	 * @var string
 	 */
 	protected $_serverType = '';
+	
+	/**
+	 * 本地执行的完整类名
+	 *
+	 * @var string
+	 */
+	protected $_classNameSpace = '';
 	
 	/**
 	 * 触发时的附加参数
@@ -59,6 +65,7 @@ class EventCacheData extends BaseClass implements EventCacheDataInterface {
 	public function reset($exclude = []) {
 		(!in_array('serverName', $exclude)) && $this->_serverName = '';
 		(!in_array('serverType', $exclude)) && $this->_serverType = '';
+		(!in_array('classNameSpace', $exclude)) && $this->_classNameSpace = '';
 		(!in_array('param', $exclude)) && $this->_param = [];
 		
 		return parent::reset($exclude);
@@ -82,6 +89,7 @@ class EventCacheData extends BaseClass implements EventCacheDataInterface {
 		
 		$this->setServerName($cacheData[EventConst::CACHE_SP_SERVERNAME] ?? '')
 		     ->setServerType($cacheData[EventConst::CACHE_SP_SERVERTYPE] ?? '')
+		     ->setClassNameSpace($cacheData[EventConst::CACHE_SP_CLASSNAMESPACE] ?? '')
 		     ->setParam($cacheData[EventConst::CACHE_SP__PARAM] ?? []);
 		
 		return $this;
@@ -149,6 +157,24 @@ class EventCacheData extends BaseClass implements EventCacheDataInterface {
 	 */
 	public function setServerType(string $serverType) {
 		$this->_serverType = $serverType;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getClassNameSpace(): string {
+		return $this->_classNameSpace;
+	}
+	
+	/**
+	 * @param string $classNameSpace
+	 *
+	 * @return $this
+	 */
+	public function setClassNameSpace(string $classNameSpace) {
+		$this->_classNameSpace = $classNameSpace;
 		
 		return $this;
 	}

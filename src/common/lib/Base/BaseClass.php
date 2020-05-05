@@ -44,13 +44,13 @@ class BaseClass implements BaseClassInterface {
 	
 	/**
 	 * 分配
-	 *  对象数据克隆
+	 *  对象数据克隆（推荐使用clone关键字 此处只提供另一种可继承的显式克隆途径）
 	 *
-	 * @param $data
+	 * @param $obj
 	 *
 	 * @return $this
 	 */
-	public function assign($data) {
+	public function assign($obj) {
 		return $this;
 	}
 	

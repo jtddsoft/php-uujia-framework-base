@@ -14,7 +14,6 @@ use uujia\framework\base\common\traits\InstanceBase;
  * @package uujia\framework\base\common\lib\Event
  */
 class EventFilter extends BaseClass {
-	use InstanceBase;
 	
 	/**
 	 * 前缀

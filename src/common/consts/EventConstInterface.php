@@ -10,6 +10,19 @@ namespace uujia\framework\base\common\consts;
 interface EventConstInterface {
 	
 	/***********************************
+	 * 缓存key名定义
+	 ***********************************/
+	
+	// 监听key前缀
+	const CACHE_KEY_PREFIX_LISTEN = 'evtl';
+	
+	// 触发key前缀
+	const CACHE_KEY_PREFIX_TRIGGER = 'evtt';
+	
+	// 监听和触发key前缀
+	const CACHE_KEY_PREFIX_TRIGGER_LISTEN = 'evttl';
+	
+	/***********************************
 	 * 缓存有序集合json数据中字段名定义
 	 *  例如：服务器名 serverName
 	 * SP = ServerParameter
