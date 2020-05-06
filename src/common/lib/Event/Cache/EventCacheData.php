@@ -6,7 +6,6 @@ namespace uujia\framework\base\common\lib\Event\Cache;
 use uujia\framework\base\common\consts\EventConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Utils\Json;
-use uujia\framework\base\common\traits\InstanceBase;
 
 /**
  * Class EventCacheData
@@ -50,8 +49,6 @@ class EventCacheData extends BaseClass implements EventCacheDataInterface {
 	 * EventCacheData constructor.
 	 */
 	public function __construct() {
-		
-		
 		parent::__construct();
 	}
 	
@@ -79,7 +76,6 @@ class EventCacheData extends BaseClass implements EventCacheDataInterface {
 	 * 加载缓存数据
 	 *
 	 * @param array $cacheData
-	 *
 	 * @param bool  $isReset
 	 *
 	 * @return $this

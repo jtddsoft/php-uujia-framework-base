@@ -20,6 +20,12 @@ class RunnerManager extends BaseClass {
 	protected $_app_name = '';
 	
 	/**
+	 * 其他自定义参数
+	 * @var array $param
+	 */
+	public $param = [];
+	
+	/**
 	 * RunnerManager constructor.
 	 *
 	 * @param string $app_name
@@ -62,6 +68,24 @@ class RunnerManager extends BaseClass {
 	 */
 	public function _setAppName($app_name) {
 		$this->_app_name = $app_name;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getParam(): array {
+		return $this->param;
+	}
+	
+	/**
+	 * @param array $param
+	 *
+	 * @return $this
+	 */
+	public function setParam(array $param) {
+		$this->param = $param;
 		
 		return $this;
 	}

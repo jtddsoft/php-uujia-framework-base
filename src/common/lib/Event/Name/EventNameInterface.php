@@ -59,6 +59,11 @@ interface EventNameInterface {
 	// 临时标识在事件名称拆分后的位置
 	const PCRE_NAME_TMP_INDEX = 9;
 	
+	
+	// 临时标识定义
+	const EVENT_NAME_TMP_TEXT = 'tmp';
+	
+	
 	/**************************************************************
 	 * init
 	 **************************************************************/
@@ -88,9 +93,9 @@ interface EventNameInterface {
 	/**
 	 * 重组事件名称
 	 *
-	 * @param array $arr
+	 * @return $this
 	 */
-	public function makeEventName($arr = []);
+	public function makeEventName();
 	
 	/**************************************************************
 	 * validate

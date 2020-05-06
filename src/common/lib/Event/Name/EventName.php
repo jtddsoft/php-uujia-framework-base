@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common\lib\Event\Name;
 
 
+use uujia\framework\base\common\consts\EventConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Utils\Arr;
@@ -123,6 +124,36 @@ class EventName extends BaseClass implements EventNameInterface {
 	protected $_parsed = false;
 	
 	/**
+	 * 忽略临时标识tmp
+	 *  （在缓存新添加触发者时 要重新构建只针对他自己的监听者
+	 *    区别其他触发者使用 构建好要重命名）
+	 *
+	 * @var bool
+	 */
+	protected $_ignoreTmp = true;
+	
+	/**
+	 * 忽略应用名称
+	 *
+	 * @var bool
+	 */
+	protected $_ignoreAppName = false;
+	
+	/**
+	 * 忽略模式名称(evtl evtt evttl)
+	 *
+	 * @var bool
+	 */
+	protected $_ignoreModeName = false;
+	
+	/**
+	 * 忽略UUID
+	 *
+	 * @var bool
+	 */
+	protected $_ignoreUUID = false;
+	
+	/**
 	 * EventName constructor.
 	 *
 	 * @param RunnerManager $runnerManagerObj
@@ -157,7 +188,7 @@ class EventName extends BaseClass implements EventNameInterface {
 		(!in_array('timing', $exclude)) && $this->_timing = '';
 		(!in_array('uuid', $exclude)) && $this->_uuid = '';
 		
-		(!in_array('tmp', $exclude)) && $this->_tmp = 'tmp';
+		(!in_array('tmp', $exclude)) && $this->_tmp = self::EVENT_NAME_TMP_TEXT;
 		
 		$this->resetResult();
 		
@@ -179,6 +210,15 @@ class EventName extends BaseClass implements EventNameInterface {
 		$this->resetResult();
 		
 		$_eventName = !empty($eventName) ? $eventName : $this->getEventName();
+		
+		// 如果为精简模式 则默认填写app_name和mode_name （isIgnoreAppName和isIgnoreModeName必须配合成对使用）
+		if ($this->isIgnoreAppName() && $this->isIgnoreModeName()) {
+			$_appName = $this->getAppName() ?: ($this->getRunnerManagerObj()->getAppName() ?: 'app');
+			$_modeName = $this->getModeName() ?: EventConst::CACHE_KEY_PREFIX_LISTEN;
+			
+			$_eventName = "{$_appName}:{$_modeName}:{$_eventName}";
+		}
+		
 		$this->setEventName($eventName);
 		
 		$re = preg_match_all(self::PCRE_NAME, $_eventName, $m, PREG_SET_ORDER);
@@ -230,18 +270,9 @@ class EventName extends BaseClass implements EventNameInterface {
 	/**
 	 * 重组事件名称
 	 *
-	 * @param bool $isIgnoreTmp       忽略临时标识（在缓存新添加触发者时 要重新构建只针对他自己的监听者
-	 *                                区别其他触发者使用 构建好要重命名）
-	 * @param bool $isIgnoreAppName   忽略应用名称
-	 * @param bool $isIgnoreModeName  忽略模式名称(evtl evtt)
-	 * @param bool $isIgnoreUUID      忽略UUID
-	 *
 	 * @return $this
 	 */
-	public function makeEventName($isIgnoreTmp = true,
-	                              $isIgnoreAppName = false,
-	                              $isIgnoreModeName = false,
-	                              $isIgnoreUUID = false) {
+	public function makeEventName() {
 		$this->resetResult();
 		
 		// $_arr = $arr;
@@ -268,11 +299,11 @@ class EventName extends BaseClass implements EventNameInterface {
 		
 		$_eventNameArr = [];
 		
-		if ($isIgnoreAppName) {
+		if ($this->isIgnoreAppName()) {
 			$_eventNameArr[] = $_appName;
 		}
 		
-		if ($isIgnoreModeName) {
+		if ($this->isIgnoreModeName()) {
 			$_eventNameArr[] = $_modeName;
 		}
 		
@@ -286,12 +317,12 @@ class EventName extends BaseClass implements EventNameInterface {
 		
 		$_eventNameArr[] = Arr::arrToStr($_evNameArr, '.');
 		
-		if ($isIgnoreUUID) {
+		if ($this->isIgnoreUUID()) {
 			$_eventNameArr[] = $_uuid;
 		}
 		
-		if ($isIgnoreTmp) {
-			$_eventNameArr[] = 'tmp';
+		if ($this->isIgnoreTmp()) {
+			$_eventNameArr[] = self::EVENT_NAME_TMP_TEXT;
 		}
 		
 		$_eventName = Arr::arrToStr($_eventNameArr, ':');
@@ -299,6 +330,39 @@ class EventName extends BaseClass implements EventNameInterface {
 		$this->setEventName($_eventName);
 		
 		$this->ok();
+		
+		return $this;
+	}
+	
+	/**************************************************************
+	 * switch
+	 **************************************************************/
+	
+	/**
+	 * 切换为事件主体精简模式
+	 *  只包含事件主体 忽略应用名称、事件模式角色evtt|evtl|evttl
+	 *
+	 * @return $this
+	 */
+	public function switchLite() {
+		$this->setIgnoreAppName(true);
+		$this->setIgnoreModeName(true);
+		// $this->setIgnoreTmp(true);
+		$this->setIgnoreUUID(false);
+		
+		return $this;
+	}
+	
+	/**
+	 * 切换为完整事件形式
+	 *
+	 * @return $this
+	 */
+	public function switchFull() {
+		$this->setIgnoreAppName(false);
+		$this->setIgnoreModeName(false);
+		// $this->setIgnoreTmp(true);
+		$this->setIgnoreUUID(false);
 		
 		return $this;
 	}
@@ -334,6 +398,35 @@ class EventName extends BaseClass implements EventNameInterface {
 		// }
 		
 		return $this->ok();
+	}
+	
+	/**
+	 * 转成前缀数组
+	 *  用于缓存数据供应商的缓存key前缀
+	 *
+	 * @return array
+	 */
+	public function toPrefixArr() {
+		$_arr = [];
+		$_arr[] = $this->getAppName();
+		$_arr[] = $this->getModeName();
+		
+		return $_arr;
+	}
+	
+	/**
+	 * 前缀数组还原属性
+	 *  用于从缓存数据供应商的缓存key前缀还原
+	 *
+	 * @param array $arr
+	 *
+	 * @return EventName
+	 */
+	public function fromPrefixArr(array $arr = []) {
+		$this->setAppName($arr[self::PCRE_NAME_APPNAME_INDEX] ?? $this->getAppName());
+		$this->setModeName($arr[self::PCRE_NAME_MODENAME_INDEX] ?? $this->getModeName());
+		
+		return $this;
 	}
 	
 	// /**
@@ -587,6 +680,78 @@ class EventName extends BaseClass implements EventNameInterface {
 	 */
 	public function setTmp(string $tmp) {
 		$this->_tmp = $tmp;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isIgnoreTmp(): bool {
+		return $this->_ignoreTmp;
+	}
+	
+	/**
+	 * @param bool $ignoreTmp
+	 *
+	 * @return $this
+	 */
+	public function setIgnoreTmp(bool $ignoreTmp) {
+		$this->_ignoreTmp = $ignoreTmp;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isIgnoreAppName(): bool {
+		return $this->_ignoreAppName;
+	}
+	
+	/**
+	 * @param bool $ignoreAppName
+	 *
+	 * @return $this
+	 */
+	public function setIgnoreAppName(bool $ignoreAppName) {
+		$this->_ignoreAppName = $ignoreAppName;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isIgnoreModeName(): bool {
+		return $this->_ignoreModeName;
+	}
+	
+	/**
+	 * @param bool $ignoreModeName
+	 *
+	 * @return $this
+	 */
+	public function setIgnoreModeName(bool $ignoreModeName) {
+		$this->_ignoreModeName = $ignoreModeName;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isIgnoreUUID(): bool {
+		return $this->_ignoreUUID;
+	}
+	
+	/**
+	 * @param bool $ignoreUUID
+	 *
+	 * @return $this
+	 */
+	public function setIgnoreUUID(bool $ignoreUUID) {
+		$this->_ignoreUUID = $ignoreUUID;
 		
 		return $this;
 	}
