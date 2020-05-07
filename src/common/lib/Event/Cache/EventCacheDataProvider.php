@@ -4,9 +4,12 @@
 namespace uujia\framework\base\common\lib\Event\Cache;
 
 use uujia\framework\base\common\consts\EventConst;
+use uujia\framework\base\common\lib\Annotation\EventListener;
+use uujia\framework\base\common\lib\Annotation\EventTrigger;
 use uujia\framework\base\common\lib\Cache\CacheDataProvider;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Utils\Json;
+use uujia\framework\base\common\lib\Utils\Reflection as UUReflection;
 
 /**
  * Class EventCacheDataProvider
@@ -42,10 +45,6 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * @return $this
 	 */
 	public function reset($exclude = []) {
-		// (!in_array('serverName', $exclude)) && $this->_serverName = '';
-		// (!in_array('serverType', $exclude)) && $this->_serverType = '';
-		// (!in_array('classNameSpace', $exclude)) && $this->_classNameSpace = '';
-		// (!in_array('param', $exclude)) && $this->_param = [];
 		(!in_array('eventNameObj', $exclude)) && $this->getEventNameObj()->reset($exclude['eventNameObjExclude'] ?? []);
 		
 		return parent::reset($exclude);
@@ -54,6 +53,44 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**************************************************************
 	 * data
 	 **************************************************************/
+	
+	/**
+	 * 获取收集事件类名集合
+	 *
+	 * @return \Generator
+	 */
+	public function getEventClassNames() {
+		yield [];
+	}
+	
+	/**
+	 * 加载事件类
+	 *
+	 */
+	public function loadEventHandle() {
+		$refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
+		
+		foreach ($this->getEventClassNames() as $itemClassName) {
+			$refObj
+				->setClassName($itemClassName)
+				->load();
+			
+			$_evtListener = $refObj
+				->annotation(EventListener::class)
+				->getAnnotationObjs();
+			
+			$_evtTrigger = $refObj
+				->annotation(EventTrigger::class)
+				->getAnnotationObjs();
+			
+			$result = [
+				'listener' => $_evtListener,
+				'trigger' => $_evtTrigger,
+			];
+			
+			yield $result;
+		}
+	}
 	
 	/**
 	 * 构建缓存Key

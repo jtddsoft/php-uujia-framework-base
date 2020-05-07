@@ -15,6 +15,7 @@ class AutoInjection extends Annotation {
 	
 	/**
 	 * 参数名
+	 * @Required()
 	 * @var string
 	 */
 	public $arg = '';
@@ -27,6 +28,7 @@ class AutoInjection extends Annotation {
 	
 	/**
 	 * 类型（c-容器名称 v-赋值）
+	 * @Enum({"c", "v"})
 	 * @var string
 	 */
 	public $type = 'c';

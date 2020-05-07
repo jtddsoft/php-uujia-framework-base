@@ -27,7 +27,7 @@ use uujia\framework\base\common\traits\ResultBase;
 class Container extends BaseClass implements ContainerInterface, \Iterator, \ArrayAccess {
 	use NameBase;
 	use ResultBase;
-	use InstanceBase;
+	// use InstanceBase;
 	
 	// private $c = [];
 	// // 每次实例化都会存入对象实例 如果已存在就覆盖

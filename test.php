@@ -4,7 +4,9 @@
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Utils\Json;
+use uujia\framework\base\common\lib\Utils\Reflection as UUReflection;
 use uujia\framework\base\UU;
+
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	include __DIR__ . '/vendor/autoload.php';
@@ -16,7 +18,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 		case 'demo':
 			$demo = new \uujia\framework\base\test\Demo();
 			
-			for($i = 0; $i < 1; $i++) {
+			for ($i = 0; $i < 1; $i++) {
 				var_dump($demo->test());
 			}
 			
@@ -25,7 +27,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			
 			break;
-			
+		
 		case 'mqs':
 			$demo = new \uujia\framework\base\test\Demo();
 			
@@ -43,7 +45,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			$demo->publishMQTT();
 			break;
-			
+		
 		case 'config':
 			$config = new \uujia\framework\base\test\ConfigTest();
 			$config->toString();
@@ -53,7 +55,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			$err = new \uujia\framework\base\test\ErrorCodeListTest();
 			$err->toString();
 			break;
-			
+		
 		case 'di':
 			// // 反射获取类的构造函数
 			// $refMethod = new ReflectionMethod(\uujia\framework\base\common\Log::class, '__construct');
@@ -81,7 +83,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			}
 			
 			break;
-			
+		
 		case 'p':
 			$total = 100;
 			for ($i = 1; $i <= $total; $i++) {
@@ -91,25 +93,48 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			echo "\n";
 			echo "Done!\n";
 			break;
-			
+		
 		case 'calls':
 			\uujia\framework\base\test\Demo::test();
 			break;
-			
+		
 		case 'event':
 			$demo = new \uujia\framework\base\test\Demo();
 			
 			echo Json::je($demo->event());
 			break;
-			
+		
 		case 'evt':
 			echo \uujia\framework\base\common\consts\CacheConstInterface::DATA_PROVIDER_KEY_EVENT;
 			break;
-			
+		
 		case 'pcre':
 			$ee = 'app:evtl:app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca:tmp';
 			preg_match_all(EventName::PCRE_NAME_FULL, $ee, $m, PREG_SET_ORDER);
 			var_dump($m);
+			break;
+		
+		case 'pcre2':
+			$ee = 'onAdd1XX';
+			preg_match_all(\uujia\framework\base\common\lib\Event\EventHandle::PCRE_FUNC_LISTENER_NAME, $ee, $m, PREG_SET_ORDER);
+			var_dump($m);
+			break;
+		
+		case 'anno':
+			$refObj = new UUReflection(\uujia\framework\base\test\EventTest::class, '', UUReflection::ANNOTATION_OF_CLASS);
+			$refObj->load();
+			
+			$_evtListener = $refObj
+				->annotation(\uujia\framework\base\common\lib\Annotation\EventListener::class)
+				->getAnnotationObjs();
+			
+			$_evtTrigger = $refObj
+				->annotation(\uujia\framework\base\common\lib\Annotation\EventTrigger::class)
+				->getAnnotationObjs();
+			
+			var_dump($_evtListener);
+			var_dump($_evtTrigger);
+			
 			break;
 	}
 	

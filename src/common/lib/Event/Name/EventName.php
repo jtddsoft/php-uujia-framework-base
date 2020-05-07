@@ -222,7 +222,7 @@ class EventName extends BaseClass implements EventNameInterface {
 		$this->setEventName($eventName);
 		
 		$re = preg_match_all(self::PCRE_NAME, $_eventName, $m, PREG_SET_ORDER);
-		if ($re === false) {
+		if (!empty($re)) {
 			// todo: 异常
 			$this->error('事件名称解析失败');
 			

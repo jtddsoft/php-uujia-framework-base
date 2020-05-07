@@ -8,6 +8,11 @@ use uujia\framework\base\common\lib\Event\Name\EventName;
 
 interface EventHandleInterface {
 	
+	// const PCRE_FUNC_NAME = '/^([a-z0-9]+)([A-Z][a-z0-9]*)+?(Before|After|X)?/';
+	const PCRE_FUNC_TRIGGER_NAME = '/^([a-zA-Z0-9]+)(Before|After|X|Event)$/';
+	
+	const PCRE_FUNC_LISTENER_NAME = '/^on([a-zA-Z0-9]+)(Before|After|X|Event)$/';
+	
 	/**
 	 * 事件名称解析
 	 *
