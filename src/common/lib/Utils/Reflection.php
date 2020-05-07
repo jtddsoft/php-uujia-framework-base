@@ -20,6 +20,10 @@ class Reflection {
 	const ANNOTATION_OF_METHOD    = 2;
 	const ANNOTATION_OF_PROPERTY  = 4;
 	
+	const METHOD_OF_PUBLIC    = 1;
+	const METHOD_OF_PROTECTED = 2;
+	const METHOD_OF_PRIVATE   = 4;
+	
 	/**
 	 * @var AnnotationReader $_reader
 	 */
@@ -56,6 +60,12 @@ class Reflection {
 	protected $_refProperty = null;
 	
 	/**
+	 * 方法集合
+	 * @var \ReflectionMethod[] $_refMethods
+	 */
+	protected $_refMethods = [];
+	
+	/**
 	 * 方法参数
 	 * @var \ReflectionParameter[] $_refParameters
 	 */
@@ -78,6 +88,12 @@ class Reflection {
 	
 	
 	/**
+	 * 筛选后的方法对象集合
+	 * @var \ReflectionMethod[]
+	 */
+	protected $_methodObjs = [];
+	
+	/**
 	 * 获取注解所属类型
 	 *  分为Class、Method、Property
 	 * @var int $_annotationOf
@@ -86,7 +102,7 @@ class Reflection {
 	
 	/**
 	 * 解析后的注解Map
-	 * @var array $_annotationMap
+	 * @var array
 	 */
 	protected $_annotationObjs = [];
 	
@@ -153,6 +169,7 @@ class Reflection {
 				case self::ANNOTATION_OF_CLASS:
 					// 获取类Class
 					$this->_setRefClass(new \ReflectionClass($this->getClassName()));
+					$this->_setRefMethods($this->getRefClass()->getMethods());
 					
 					$this->_setClassAnnotations($this->getReader()->getClassAnnotations($this->getRefClass()));
 					break;
@@ -178,6 +195,31 @@ class Reflection {
 			// todo: error
 			return null;
 		}
+	}
+	
+	/**
+	 * 筛选方法
+	 *  filter：
+	 *  METHOD_OF_PUBLIC
+	 *	METHOD_OF_PROTECTED
+	 *  METHOD_OF_PRIVATE
+	 *
+	 * @param int $filter
+	 */
+	public function methods($filter = self::METHOD_OF_PUBLIC) {
+		$this->_methodObjs = [];
+		
+		foreach ($this->getRefMethods() as $item) {
+			if (($filter & self::METHOD_OF_PUBLIC) == self::METHOD_OF_PUBLIC && $item->isPublic()) {
+				$this->_methodObjs[] = $item;
+			} elseif (($filter & self::METHOD_OF_PROTECTED) == self::METHOD_OF_PROTECTED && $item->isProtected()) {
+				$this->_methodObjs[] = $item;
+			} elseif (($filter & self::METHOD_OF_PRIVATE) == self::METHOD_OF_PRIVATE && $item->isPrivate()) {
+				$this->_methodObjs[] = $item;
+			}
+		}
+		
+		return $this;
 	}
 	
 	/**
@@ -428,6 +470,24 @@ class Reflection {
 	}
 	
 	/**
+	 * @return \ReflectionMethod[]
+	 */
+	public function getRefMethods(): array {
+		return $this->_refMethods;
+	}
+	
+	/**
+	 * @param \ReflectionMethod[] $refMethods
+	 *
+	 * @return Reflection
+	 */
+	public function _setRefMethods(array $refMethods) {
+		$this->_refMethods = $refMethods;
+		
+		return $this;
+	}
+	
+	/**
 	 * @return \ReflectionParameter[]
 	 */
 	public function getRefParameters(): array {
@@ -529,6 +589,24 @@ class Reflection {
 	 */
 	public function _setPropertyAnnotations($propertyAnnotations) {
 		$this->_propertyAnnotations = $propertyAnnotations;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return \ReflectionMethod[]
+	 */
+	public function getMethodObjs(): array {
+		return $this->_methodObjs;
+	}
+	
+	/**
+	 * @param \ReflectionMethod[] $methodObjs
+	 *
+	 * @return Reflection
+	 */
+	public function _setMethodObjs(array $methodObjs) {
+		$this->_methodObjs = $methodObjs;
 		
 		return $this;
 	}

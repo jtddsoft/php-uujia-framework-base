@@ -75,6 +75,9 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 				->setClassName($itemClassName)
 				->load();
 			
+			$_refMethods = $refObj
+				->methods(UUReflection::METHOD_OF_PUBLIC);
+			
 			$_evtListener = $refObj
 				->annotation(EventListener::class)
 				->getAnnotationObjs();
@@ -84,6 +87,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 				->getAnnotationObjs();
 			
 			$result = [
+				'publicMethods' => $_refMethods,
 				'listener' => $_evtListener,
 				'trigger' => $_evtTrigger,
 			];
