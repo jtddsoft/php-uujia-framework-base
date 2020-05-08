@@ -15,6 +15,7 @@ class EventTrigger extends Annotation {
 	
 	/**
 	 * 命名空间
+	 * @Required()
 	 * @var string
 	 */
 	public $nameSpace = '';

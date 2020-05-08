@@ -89,8 +89,16 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			// 根据EventHandle确定下EventName的初始信息 例如：evtt、evtl还是evttl
 			$_evtNameObj = $this->getEventNameObj()->reset();
 			
+			$_evtExistL = false;
+			$_evtExistT = false;
+			
+			$_evtNameSpaceL = '';
+			$_evtNameSpaceT = '';
+			
 			if (!empty($_evtListener) && !empty($_evtTrigger)) {
 				$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER_LISTENER);
+				
+				
 			} elseif (!empty($_evtListener)) {
 				$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER);
 			} elseif (!empty($_evtTrigger)) {
