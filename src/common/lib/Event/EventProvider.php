@@ -145,7 +145,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		$this->_eventFilterObj    = $eventFilterObj;
 		
 		$this->_cacheKeyListenPrefix   = $cacheKeyListenPrefix;
-		$this->_cacheKeyListenPrefix[] = EventConst::CACHE_KEY_PREFIX_LISTEN;
+		$this->_cacheKeyListenPrefix[] = EventConst::CACHE_KEY_PREFIX_LISTENER;
 		
 		parent::__construct();
 	}
@@ -571,7 +571,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function setCacheKeyListenPrefix(array $cacheKeyPrefix, $isAddListenPrefix = true) {
 		$this->_cacheKeyListenPrefix = $cacheKeyPrefix;
-		$isAddListenPrefix && $this->_cacheKeyListenPrefix[] = EventConst::CACHE_KEY_PREFIX_LISTEN;
+		$isAddListenPrefix && $this->_cacheKeyListenPrefix[] = EventConst::CACHE_KEY_PREFIX_LISTENER;
 		
 		return $this;
 	}

@@ -14,6 +14,12 @@ use Doctrine\Common\Annotations\Annotation;
 class EventTrigger extends Annotation {
 	
 	/**
+	 * 命名空间
+	 * @var string
+	 */
+	public $nameSpace = '';
+	
+	/**
 	 * 事件名
 	 * @var array
 	 */

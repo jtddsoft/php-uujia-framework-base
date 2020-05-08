@@ -14,13 +14,13 @@ interface EventConstInterface {
 	 ***********************************/
 	
 	// 监听key前缀
-	const CACHE_KEY_PREFIX_LISTEN = 'evtl';
+	const CACHE_KEY_PREFIX_LISTENER = 'evtl';
 	
 	// 触发key前缀
 	const CACHE_KEY_PREFIX_TRIGGER = 'evtt';
 	
 	// 监听和触发key前缀
-	const CACHE_KEY_PREFIX_TRIGGER_LISTEN = 'evttl';
+	const CACHE_KEY_PREFIX_TRIGGER_LISTENER = 'evttl';
 	
 	/***********************************
 	 * 缓存有序集合json数据中字段名定义

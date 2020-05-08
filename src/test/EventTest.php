@@ -12,7 +12,7 @@ use uujia\framework\base\common\lib\Annotation\EventListener;
  *
  * @package uujia\framework\base\test
  *
- * @EventTrigger
+ * EventTrigger
  * @EventListener(evt = {
  *     "app.test.eventTest.*.*:*"
  * })

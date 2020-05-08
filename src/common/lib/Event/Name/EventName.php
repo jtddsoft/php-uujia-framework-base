@@ -178,8 +178,8 @@ class EventName extends BaseClass implements EventNameInterface {
 	public function reset($exclude = []) {
 		(!in_array('parsed', $exclude)) && $this->_parsed = false;
 		
-		(!in_array('appName', $exclude)) && $this->_appName = '';
-		(!in_array('modeName', $exclude)) && $this->_modeName = '';
+		(!in_array('appName', $exclude)) && $this->_appName = $this->getRunnerManagerObj()->getAppName() ?? 'app';
+		(!in_array('modeName', $exclude)) && $this->_modeName = EventConst::CACHE_KEY_PREFIX_LISTENER;
 		
 		(!in_array('type', $exclude)) && $this->_type = '';
 		(!in_array('com', $exclude)) && $this->_com = '';
@@ -214,7 +214,7 @@ class EventName extends BaseClass implements EventNameInterface {
 		// 如果为精简模式 则默认填写app_name和mode_name （isIgnoreAppName和isIgnoreModeName必须配合成对使用）
 		if ($this->isIgnoreAppName() && $this->isIgnoreModeName()) {
 			$_appName = $this->getAppName() ?: ($this->getRunnerManagerObj()->getAppName() ?: 'app');
-			$_modeName = $this->getModeName() ?: EventConst::CACHE_KEY_PREFIX_LISTEN;
+			$_modeName = $this->getModeName() ?: EventConst::CACHE_KEY_PREFIX_LISTENER;
 			
 			$_eventName = "{$_appName}:{$_modeName}:{$_eventName}";
 		}
