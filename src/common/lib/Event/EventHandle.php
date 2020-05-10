@@ -6,6 +6,7 @@ use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\traits\ResultBase;
 
 /**
@@ -18,8 +19,8 @@ use uujia\framework\base\common\traits\ResultBase;
  * 示例：
  *  app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *
- * 事件完整定义（缓存中的完整定义 evtl=event_listen  evtt=event_trigger evttl=event_trigger_listen）：
- *  {app_name}:{mode_name[evtl|evtt|evttl]}:
+ * 事件完整定义（缓存中的完整定义 evtl=event_listen  evtt=event_trigger）：
+ *  {app_name}:{mode_name[evtl|evtt]}:
  *      addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}[.{trigger_timing}]:{uuid}[:{tmp}]
  *      示例： shopMall:evtl:app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *
@@ -28,13 +29,13 @@ use uujia\framework\base\common\traits\ResultBase;
 abstract class EventHandle extends BaseClass implements EventHandleInterface, StoppableEventInterface {
 	use ResultBase;
 	
-	/**
-	 * 唯一标识
-	 *  此处的值是Demo 继承类需要重新生成
-	 *
-	 * @var string
-	 */
-	protected $_uuid = '';
+	// /**
+	//  * 唯一标识
+	//  *  此处的值是Demo 继承类需要重新生成
+	//  *
+	//  * @var string
+	//  */
+	// protected $_uuid = '';
 	
 	/**
 	 * 触发的事件名称
@@ -42,6 +43,13 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * @var string
 	 */
 	protected $_triggerName = '';
+	
+	/**
+	 * 运行时管理对象
+	 *
+	 * @var RunnerManager
+	 */
+	protected $_runnerManagerObj = null;
 	
 	/**
 	 * 事件名称
@@ -86,11 +94,14 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	
 	/**
 	 * EventHandle constructor.
+	 *
+	 * @param RunnerManager $runnerManagerObj
 	 */
-	public function __construct() {
+	public function __construct(RunnerManager $runnerManagerObj) {
 		parent::__construct();
 		
-		$this->_eventNameObj = new EventName();
+		$this->_runnerManagerObj = $runnerManagerObj;
+		$this->_eventNameObj = new EventName($runnerManagerObj);
 	}
 	
 	/**
@@ -255,23 +266,23 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * getter setter
 	 **************************************************/
 	
-	/**
-	 * @return string
-	 */
-	public function getUuid(): string {
-		return $this->_uuid;
-	}
-	
-	/**
-	 * @param string $uuid
-	 *
-	 * @return $this
-	 */
-	public function setUuid(string $uuid) {
-		$this->_uuid = $uuid;
-		
-		return $this;
-	}
+	// /**
+	//  * @return string
+	//  */
+	// public function getUuid(): string {
+	// 	return $this->_uuid;
+	// }
+	//
+	// /**
+	//  * @param string $uuid
+	//  *
+	//  * @return $this
+	//  */
+	// public function setUuid(string $uuid) {
+	// 	$this->_uuid = $uuid;
+	//
+	// 	return $this;
+	// }
 	
 	// /**
 	//  * @return ServerRouteLocal

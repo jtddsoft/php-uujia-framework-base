@@ -162,16 +162,12 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	// }
 	
 	/**
-	 * 获取
+	 * 获取并自动注入
 	 *
-	 * @param $id
-	 * @return mixed
-	 * @inheritDoc
+	 * @param      $id
+	 * @param bool $isNew   是否重新实例化一个新的对象 个别依赖对象不能单例 必须重新new
 	 */
-	public function get($id) {
-		// return $this->$id;
-		// return $this->list()->get($id, [$this]);
-		
+	public function _get($id, $isNew = false) {
 		$_list = $this->list();
 		if (!$_list->has($id)) {
 			if ($this->isKeyNotExistAutoCreate()) {
@@ -181,7 +177,12 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			}
 		}
 		
-		$item = $_list->get($id);
+		if ($isNew) {
+			$item = new TreeFunc();
+		} else {
+			$item = $_list->get($id);
+		}
+		
 		$data = $item->getData();
 		
 		if ($data === null) {
@@ -250,7 +251,11 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 										case 'c':
 											$_arg = $c->get($autoInjectionItem->name);
 											break;
-											
+										
+										case 'cc':
+											$_arg = $c->_get($autoInjectionItem->name, true);
+											break;
+										
 										case 'v':
 											$_arg = $autoInjectionItem->value;
 											break;
@@ -309,6 +314,20 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		}
 		
 		return $item->getDataValue();
+	}
+	
+	/**
+	 * 获取
+	 *
+	 * @param $id
+	 * @return mixed
+	 * @inheritDoc
+	 */
+	public function get($id) {
+		// return $this->$id;
+		// return $this->list()->get($id, [$this]);
+		
+		return $this->_get($id);
 	}
 	
 	/**
