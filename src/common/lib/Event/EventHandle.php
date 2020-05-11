@@ -4,6 +4,7 @@ namespace uujia\framework\base\common\lib\Event;
 
 use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
@@ -96,12 +97,15 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * EventHandle constructor.
 	 *
 	 * @param RunnerManager $runnerManagerObj
+	 * @param EventName     $eventNameObj
+	 *
+	 * @AutoInjection(arg = "eventNameObj", type = "cc")
 	 */
-	public function __construct(RunnerManager $runnerManagerObj) {
+	public function __construct(RunnerManager $runnerManagerObj, EventName $eventNameObj) {
 		parent::__construct();
 		
 		$this->_runnerManagerObj = $runnerManagerObj;
-		$this->_eventNameObj = new EventName($runnerManagerObj);
+		$this->_eventNameObj = $eventNameObj; //new EventName($runnerManagerObj);
 	}
 	
 	/**
@@ -328,10 +332,10 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * @return EventName
 	 */
 	public function getEventNameObj() {
-		if (empty($this->_eventNameObj)) {
-			// 应该容器来创造实例 如果没有 只能以静态化构造
-			$this->_eventNameObj = new EventName(); // EventName::getInstance();
-		}
+		// if (empty($this->_eventNameObj)) {
+		// 	// 应该容器来创造实例 如果没有 只能构造
+		// 	$this->_eventNameObj = new EventName(); // EventName::getInstance();
+		// }
 		
 		return $this->_eventNameObj;
 	}

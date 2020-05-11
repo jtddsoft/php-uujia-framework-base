@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common\lib\Event\Cache;
 
 use uujia\framework\base\common\consts\EventConst;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Annotation\EventListener;
 use uujia\framework\base\common\lib\Annotation\EventTrigger;
 use uujia\framework\base\common\lib\Cache\CacheDataProvider;
@@ -30,8 +31,10 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * EventCacheDataProvider constructor.
 	 *
 	 * @param EventName $eventNameObj
+	 *
+	 * @AutoInjection(arg = "eventNameObj", type = "cc")
 	 */
-	public function __construct(EventName $eventNameObj = null) {
+	public function __construct(EventName $eventNameObj) {
 		$this->_eventNameObj = $eventNameObj;
 		
 		parent::__construct();
