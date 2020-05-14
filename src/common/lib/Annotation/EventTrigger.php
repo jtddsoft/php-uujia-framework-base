@@ -21,6 +21,12 @@ class EventTrigger extends Annotation {
 	public $nameSpace = '';
 	
 	/**
+	 * UUID
+	 * @var string
+	 */
+	public $uuid = '';
+	
+	/**
 	 * 事件名
 	 * @var array
 	 */

@@ -21,6 +21,12 @@ class EventListener extends Annotation {
 	public $nameSpace = '';
 	
 	/**
+	 * UUID
+	 * @var string
+	 */
+	public $uuid = '';
+	
+	/**
 	 * 事件名
 	 * @var string[]
 	 */

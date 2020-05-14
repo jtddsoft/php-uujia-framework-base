@@ -98,7 +98,8 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 				                    ->get($classNS);
 				
 				$_params = $serverParameter->getParams();
-				$eventHandle->t($_eventNameObj->makeEventName(), $_params); // todo: 返回值
+				//$eventHandle->t($_eventNameObj->makeEventName(), $_params); // todo: 返回值
+				// todo: 把eventName赋值eventH里 再出发Handle
 			});
 	}
 	
