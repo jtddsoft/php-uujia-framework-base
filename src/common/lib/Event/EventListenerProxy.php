@@ -88,6 +88,8 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 					return;
 				}
 				
+				// todo: 导入最后一次返回值
+				
 				$classNS = $serverParameter->getClassNameSpace();
 				if (empty($classNS)) {
 					return;
@@ -99,7 +101,17 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 				
 				$_params = $serverParameter->getParams();
 				//$eventHandle->t($_eventNameObj->makeEventName(), $_params); // todo: 返回值
-				// todo: 把eventName赋值eventH里 再出发Handle
+				// todo: 把eventName赋值eventH里 再触发Handle
+				
+				// 将eventName克隆值到EventHandle
+				$eventHandle->getEventNameObj()
+				            ->assign($_eventNameObj);
+				
+				// 触发 内部会根据eventName 查找对应的on监听方法 并执行
+				$eventHandle->setParam($_params)
+				            ->handle();
+				
+				// $serverParameter->_setRet($ret)
 			});
 	}
 	

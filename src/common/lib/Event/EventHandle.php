@@ -175,7 +175,7 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 			return $this;
 		}
 		
-		$this->resetResult();
+		// $this->resetResult();
 		
 		// 拆分后的事件属性
 		// $evtNameParse = $this->getEventNameParse();

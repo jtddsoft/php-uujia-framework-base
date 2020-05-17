@@ -169,6 +169,35 @@ class EventName extends BaseClass implements EventNameInterface {
 	 **************************************************************/
 	
 	/**
+	 * 分配
+	 *  对象数据克隆（推荐使用clone关键字 此处只提供另一种可继承的显式克隆途径）
+	 *
+	 * @param $obj
+	 *
+	 * @return $this
+	 */
+	public function assign($obj) {
+		/** @var EventName $obj */
+		$this->_parsed = $obj->isParsed();
+		
+		$this->_eventName = $obj->getEventName();
+		
+		$this->_appName = $obj->getAppName();
+		$this->_modeName = $obj->getModeName();
+		
+		$this->_type = $obj->getType();
+		$this->_com = $obj->getCom();
+		$this->_event = $obj->getEvent();
+		$this->_behavior = $obj->getBehavior();
+		$this->_timing = $obj->getTiming();
+		$this->_uuid = $obj->getUuid();
+		
+		$this->_tmp = $obj->getTmp();
+		
+		return $this;
+	}
+	
+	/**
 	 * 复位 属性归零
 	 *
 	 * @param array $exclude
@@ -177,6 +206,8 @@ class EventName extends BaseClass implements EventNameInterface {
 	 */
 	public function reset($exclude = []) {
 		(!in_array('parsed', $exclude)) && $this->_parsed = false;
+		
+		(!in_array('eventName', $exclude)) && $this->_eventName = '';
 		
 		(!in_array('appName', $exclude)) && $this->_appName = $this->getRunnerManagerObj()->getAppName() ?? 'app';
 		(!in_array('modeName', $exclude)) && $this->_modeName = EventConst::CACHE_KEY_PREFIX_LISTENER;
