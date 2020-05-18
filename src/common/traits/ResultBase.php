@@ -68,13 +68,15 @@ trait ResultBase {
 	/**
 	 * 返回错误
 	 *
-	 * @param int $code
+	 * @param int   $code
+	 * @param array $data
 	 *
 	 * @return array|\think\response\Json
 	 */
-	public function code($code = 1000) {
+	public function code($code = 1000, $data = []) {
 		$_ret                           = ResultConst::RESULT_ERROR;
 		$_ret[ResultConst::RESULT_CODE] = $code;
+		$_ret[ResultConst::RESULT_DATA] = $data;
 		
 		if (empty($this->_errCodeCache)) {
 			if (!empty($this->_errCodeFactory) && $this->_errCodeFactory instanceof \Closure) {
@@ -96,13 +98,15 @@ trait ResultBase {
 	 *
 	 * @param string $msg
 	 * @param int    $code
+	 * @param array  $data
 	 *
 	 * @return array|\think\response\Json
 	 */
-	public function error($msg = 'error', $code = 1000) {
+	public function error($msg = 'error', $code = 1000, $data = []) {
 		$_ret                           = ResultConst::RESULT_ERROR;
 		$_ret[ResultConst::RESULT_CODE] = $code;
 		$_ret[ResultConst::RESULT_MSG]  = $msg;
+		$_ret[ResultConst::RESULT_DATA] = $data;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);

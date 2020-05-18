@@ -66,6 +66,28 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	 */
 	public function dispatch(object $event) {
 		// TODO: Implement dispatch() method.
+		$retQueue = new \SplPriorityQueue();
+		
+		// todo：调用事件供应商
+		/** @var EventProvider $eventProviderObj */
+		$eventProviderObj = $this->getContainer()
+		                         ->get(EventProvider::class);
+		
+		// 遍历获取符合条件的事件进行触发
+		foreach ($eventProviderObj->getListenersForEvent($event) as $i => $item) {
+			/** @var EventListenerProxy $item */
+			$item->handle();
+			
+			// todo：排序返回值优先级
+			
+			
+			
+			
+		}
+		
+		
+		
+		
 	}
 	
 	

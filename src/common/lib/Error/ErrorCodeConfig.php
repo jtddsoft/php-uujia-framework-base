@@ -8,6 +8,11 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 
+/**
+ * Class ErrorCodeConfig
+ *
+ * @package uujia\framework\base\common\lib\Error
+ */
 class ErrorCodeConfig extends BaseClass {
 	
 	const ERROR_CODE_NAME = 'error_code';

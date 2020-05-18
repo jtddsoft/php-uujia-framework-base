@@ -136,6 +136,12 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			var_dump($_evtTrigger);
 			
 			break;
+			
+		case 'xxx':
+			$demo = new \uujia\framework\base\test\Demo();
+			$demo->xxx();
+			var_dump($demo);
+			break;
 	}
 	
 }

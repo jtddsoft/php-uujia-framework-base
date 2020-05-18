@@ -13,6 +13,7 @@ use uujia\framework\base\common\lib\Server\ServerParameter;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
+use uujia\framework\base\common\traits\ResultBase;
 
 /**
  * Class EventListenerProxy
@@ -24,6 +25,7 @@ use uujia\framework\base\common\lib\Server\ServerRouteManager;
  * @package uujia\framework\base\common\lib\Event
  */
 class EventListenerProxy extends BaseClass implements EventListenerProxyInterface {
+	use ResultBase;
 	
 	/**
 	 * 事件名称对象
@@ -85,14 +87,14 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 				
 				// 判断容器对象是否存在
 				if (!$this->getContainer()) {
-					return;
+					return $this->code(10019); // 未找到容器对象
 				}
 				
 				// todo: 导入最后一次返回值
 				
 				$classNS = $serverParameter->getClassNameSpace();
 				if (empty($classNS)) {
-					return;
+					return $this->code(10102); // 未知的事件监听者
 				}
 				
 				/** @var EventHandle $eventHandle */
@@ -111,7 +113,10 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 				$eventHandle->setParam($_params)
 				            ->handle();
 				
+				$ret = $eventHandle->getLastReturn();
+				
 				// $serverParameter->_setRet($ret)
+				return $ret;
 			});
 	}
 	
@@ -119,10 +124,10 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 * 执行触发
 	 */
 	public function handle() {
-		$this->getServerRouteManagerObj()
-		     ->setServerParameter($this->getServerParameter())
-		     ->load(null, null, true)
-		     ->route();
+		return $this->getServerRouteManagerObj()
+		            ->setServerParameter($this->getServerParameter())
+		            ->load(null, null, true)
+		            ->route();
 	}
 	
 	/**************************************************************

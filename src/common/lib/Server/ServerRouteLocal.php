@@ -56,7 +56,8 @@ class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 	 * @AutoInjection(arg = "parent", type = "v" value = null)
 	 * @AutoInjection(arg = "serverParameter", type = "v" value = null)
 	 */
-	public function __construct(ServerRouteManager $parent = null, ServerParameterInterface $serverParameter = null) {
+	public function __construct(ServerRouteManager $parent = null,
+	                            ServerParameterInterface $serverParameter = null) {
 		$this->_parent = $parent;
 		$this->_serverParameter = $serverParameter;
 		
@@ -113,7 +114,7 @@ class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 		$callback = $this->getCallback();
 		
 		if ($callback && is_callable($callback)) {
-			call_user_func_array($callback, [$this, $this->getServerParameter(), $this->getParent()]);
+			return call_user_func_array($callback, [$this, $this->getServerParameter(), $this->getParent()]);
 			// todo: 返回值
 		}
 		

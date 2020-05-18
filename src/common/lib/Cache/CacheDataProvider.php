@@ -8,6 +8,11 @@ use uujia\framework\base\common\consts\CacheConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 
+/**
+ * Class CacheDataProvider
+ *
+ * @package uujia\framework\base\common\lib\Cache
+ */
 abstract class CacheDataProvider extends BaseClass implements CacheDataProviderInterface {
 	
 	/**

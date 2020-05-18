@@ -19,7 +19,7 @@ use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
 
 /**
- * Class ContainerProvider
+ * Class Container
  * 基础容器
  *
  * @package uujia\framework\base\common\lib\Container

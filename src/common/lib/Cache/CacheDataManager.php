@@ -9,6 +9,11 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 
+/**
+ * Class CacheDataManager
+ *
+ * @package uujia\framework\base\common\lib\Cache
+ */
 class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 	
 	/**

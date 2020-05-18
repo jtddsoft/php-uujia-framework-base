@@ -18,6 +18,44 @@ use uujia\framework\base\UU;
 class Demo extends BaseService {
 	use InstanceBase;
 	
+	protected $_x = 2;
+	protected $_y = 4;
+	
+	public function xxx() {
+		// list($this->_x, $this->_y) = [$this->_y, $this->_x];
+		$this->setX($this->getX() ^ $this->getY());
+		$this->setY($this->getY() ^ $this->getX());
+		$this->setX($this->getX() ^ $this->getY());
+	}
+	
+	/**
+	 * @return int
+	 */
+	public function getX(): int {
+		return $this->_x;
+	}
+	
+	/**
+	 * @param int $x
+	 */
+	public function setX(int $x): void {
+		$this->_x = $x;
+	}
+	
+	/**
+	 * @return int
+	 */
+	public function getY(): int {
+		return $this->_y;
+	}
+	
+	/**
+	 * @param int $y
+	 */
+	public function setY(int $y): void {
+		$this->_y = $y;
+	}
+	
 	public function __construct() {
 		parent::__construct();
 	}
@@ -142,4 +180,5 @@ class Demo extends BaseService {
 		
 		return $event->trigger('a', [1]);
 	}
+	
 }

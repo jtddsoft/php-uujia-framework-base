@@ -356,6 +356,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 				
 				/** @var EventListenerProxy $evtLPObj */
 				$evtLPObj = $evtLPItem->getData()->get();
+				
 				yield $evtLPObj;
 			}
 		} else {

@@ -19,8 +19,8 @@ use uujia\framework\base\common\traits\ResultBase;
  * 示例：
  *  app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *
- * 事件完整定义（缓存中的完整定义 evtl=event_listen  evtt=event_trigger evttl=event_trigger_listen）：
- *  {app_name}:{mode_name[evtl|evtt|evttl]}:
+ * 事件完整定义（缓存中的完整定义 evtl=event_listen  evtt=event_trigger）：
+ *  {app_name}:{mode_name[evtl|evtt]}:
  *      addon|plugin|app|sys.{component_name|addon_name|plugin_name}.{event_name}.{behavior_name}[.{trigger_timing}]:{uuid}[:{tmp}]
  *      示例： shopMall:evtl:app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca
  *

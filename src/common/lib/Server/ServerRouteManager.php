@@ -176,7 +176,7 @@ class ServerRouteManager extends BaseClass {
 	 */
 	public function route() {
 		if ($this->isLocal()) {
-			$this->getServerRouteLocal()->route();
+			return $this->getServerRouteLocal()->route();
 		} else {
 			// todo: 远程或有协议（post之类）
 		}

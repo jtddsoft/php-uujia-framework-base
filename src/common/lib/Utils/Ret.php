@@ -7,6 +7,7 @@ use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\ResultBase;
 
 class Ret {
+	use InstanceBase;
 	use ResultBase;
 	
 	
