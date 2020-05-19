@@ -173,10 +173,17 @@ class ServerRouteManager extends BaseClass {
 	
 	/**
 	 * 路由
+	 *
+	 * @return $this
 	 */
 	public function route() {
+		$this->resetResult();
+		
 		if ($this->isLocal()) {
-			return $this->getServerRouteLocal()->route();
+			$re = $this->getServerRouteLocal()->route();
+			$this->assignLastReturn($re);
+			
+			return $this;
 		} else {
 			// todo: 远程或有协议（post之类）
 		}

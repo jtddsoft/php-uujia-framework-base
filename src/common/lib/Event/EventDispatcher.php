@@ -5,12 +5,15 @@ namespace uujia\framework\base\common\lib\Event;
 
 
 use Psr\EventDispatcher\EventDispatcherInterface;
+use uujia\framework\base\common\consts\ResultConst;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
+use uujia\framework\base\common\lib\Utils\Ret;
+use uujia\framework\base\common\traits\ResultBase;
 
 /**
  * Class EventDispatcher
@@ -19,6 +22,7 @@ use uujia\framework\base\common\lib\Server\ServerRouteManager;
  * @package uujia\framework\base\common\lib\Event
  */
 class EventDispatcher extends BaseClass implements EventDispatcherInterface {
+	use ResultBase;
 	
 	/**
 	 * CacheDataManager对象
@@ -65,8 +69,10 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	 * @inheritDoc
 	 */
 	public function dispatch(object $event) {
-		// TODO: Implement dispatch() method.
-		$retQueue = new \SplPriorityQueue();
+		$this->resetResult();
+		
+		// 创建优先级队列
+		$objPQ = new \SplPriorityQueue();
 		
 		// todo：调用事件供应商
 		/** @var EventProvider $eventProviderObj */
@@ -78,16 +84,31 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 			/** @var EventListenerProxy $item */
 			$item->handle();
 			
-			// todo：排序返回值优先级
+			if ($item->isErr()) {
+				$this->assignLastReturn($item->getLastReturn());
+				
+				return $this;
+			}
 			
+			$reData = $item->getData();
 			
-			
-			
+			$objPQ->insert($item->getLastReturn(),
+			                  $reData['weight'] ?? ResultConst::RESULT_WEIGHT_DEFAULT);
 		}
 		
+		// todo：排序返回值优先级
 		
+		//mode of extraction
+		$objPQ->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 		
+		//Go to TOP
+		$objPQ->top();
 		
+		if ($objPQ->valid()) {
+			$this->assignLastReturn($objPQ->current());
+		}
+		
+		return $this;
 	}
 	
 	

@@ -89,7 +89,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 				->annotation(EventTrigger::class)
 				->getAnnotationObjs();
 			
-			// 根据EventHandle确定下EventName的初始信息 例如：evtt、evtl还是evttl
+			// 根据EventHandle确定下EventName的初始信息 例如：evtt、evtl
 			$_evtNameObj = $this->getEventNameObj()->reset();
 			
 			$_evtExistL = false;

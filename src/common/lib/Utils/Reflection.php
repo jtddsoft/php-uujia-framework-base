@@ -25,51 +25,57 @@ class Reflection {
 	const METHOD_OF_PRIVATE   = 4;
 	
 	/**
-	 * @var AnnotationReader $_reader
+	 * @var AnnotationReader
 	 */
 	protected $_reader = null;
 	
 	/**
-	 * @var string $_className
+	 * @var string
 	 */
 	protected $_className;
 	
 	/**
-	 * @var string $_methodName
+	 * @var string
 	 */
 	protected $_methodName;
 	
 	/**
-	 * @var string $_propertyName
+	 * @var string
 	 */
 	protected $_propertyName;
 	
 	/**
-	 * @var \ReflectionClass $_refClass
+	 * @var \ReflectionClass
 	 */
 	protected $_refClass = null;
 	
 	/**
-	 * @var \ReflectionMethod $_refMethod
+	 * @var \ReflectionMethod
 	 */
 	protected $_refMethod = null;
 	
 	/**
-	 * @var \ReflectionProperty $_refProperty
+	 * @var \ReflectionProperty
 	 */
 	protected $_refProperty = null;
 	
 	/**
 	 * 方法集合
-	 * @var \ReflectionMethod[] $_refMethods
+	 * @var \ReflectionMethod[]
 	 */
 	protected $_refMethods = [];
 	
 	/**
 	 * 方法参数
-	 * @var \ReflectionParameter[] $_refParameters
+	 * @var \ReflectionParameter[]
 	 */
 	protected $_refParameters = [];
+	
+	/**
+	 * 方法集合
+	 * @var \ReflectionProperty[]
+	 */
+	protected $_refPropertys = [];
 	
 	/**
 	 * @var array $_classAnnotations
@@ -170,6 +176,7 @@ class Reflection {
 					// 获取类Class
 					$this->_setRefClass(new \ReflectionClass($this->getClassName()));
 					$this->_setRefMethods($this->getRefClass()->getMethods());
+					$this->_setRefPropertys($this->getRefClass()->getProperties());
 					
 					$this->_setClassAnnotations($this->getReader()->getClassAnnotations($this->getRefClass()));
 					break;
@@ -260,6 +267,26 @@ class Reflection {
 					}
 				}
 				break;
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 获取属性注解
+	 *  遍历获取 回调每一项
+	 *
+	 * @param \Closure $callback
+	 * @param array    $filter
+	 */
+	public function annotationPropertys(\Closure $callback, $filter = []) {
+		if (!is_callable($callback)) {
+			return $this;
+		}
+		
+		foreach ($this->getRefPropertys() as $property) {
+			/** @var \ReflectionProperty $property */
+			
 		}
 		
 		return $this;
@@ -509,6 +536,24 @@ class Reflection {
 	 */
 	public function _setRefParameters(array $refParameters) {
 		$this->_refParameters = $refParameters;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return \ReflectionProperty[]
+	 */
+	public function getRefPropertys(): array {
+		return $this->_refPropertys;
+	}
+	
+	/**
+	 * @param \ReflectionProperty[] $refPropertys
+	 *
+	 * @return Reflection
+	 */
+	public function _setRefPropertys(array $refPropertys) {
+		$this->_refPropertys = $refPropertys;
 		
 		return $this;
 	}

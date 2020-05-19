@@ -35,4 +35,7 @@ interface ResultConstInterface {
 	// 验证正确的依据code = 200
 	const OK_CODE = 200;
 	
+	// 默认权重（返回值队列取优先级）
+	const RESULT_WEIGHT_DEFAULT = 100;
+	
 }

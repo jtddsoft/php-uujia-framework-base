@@ -111,14 +111,18 @@ class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 	 * @inheritDoc
 	 */
 	public function route() {
+		$this->resetResult();
+		
 		$callback = $this->getCallback();
 		
 		if ($callback && is_callable($callback)) {
-			return call_user_func_array($callback, [$this, $this->getServerParameter(), $this->getParent()]);
+			$re = call_user_func_array($callback, [$this, $this->getServerParameter(), $this->getParent()]);
 			// todo: 返回值
+			$this->assignLastReturn($re);
+			return $this;
 		}
 		
-		return $this->ok();
+		return $this;
 	}
 	
 	// /**
