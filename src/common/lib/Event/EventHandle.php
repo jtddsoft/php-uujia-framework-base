@@ -30,13 +30,13 @@ use uujia\framework\base\common\traits\ResultBase;
 abstract class EventHandle extends BaseClass implements EventHandleInterface, StoppableEventInterface {
 	use ResultBase;
 	
-	// /**
-	//  * 唯一标识
-	//  *  此处的值是Demo 继承类需要重新生成
-	//  *
-	//  * @var string
-	//  */
-	// protected $_uuid = '';
+	/**
+	 * 唯一标识
+	 *  此处的值是Demo 继承类需要重新生成
+	 *
+	 * @var string
+	 */
+	protected $_uuid = '';
 	
 	/**
 	 * 触发的事件名称
@@ -270,23 +270,23 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * getter setter
 	 **************************************************/
 	
-	// /**
-	//  * @return string
-	//  */
-	// public function getUuid(): string {
-	// 	return $this->_uuid;
-	// }
-	//
-	// /**
-	//  * @param string $uuid
-	//  *
-	//  * @return $this
-	//  */
-	// public function setUuid(string $uuid) {
-	// 	$this->_uuid = $uuid;
-	//
-	// 	return $this;
-	// }
+	/**
+	 * @return string
+	 */
+	public function getUuid(): string {
+		return $this->_uuid;
+	}
+	
+	/**
+	 * @param string $uuid
+	 *
+	 * @return $this
+	 */
+	public function setUuid(string $uuid) {
+		$this->_uuid = $uuid;
+	
+		return $this;
+	}
 	
 	// /**
 	//  * @return ServerRouteLocal

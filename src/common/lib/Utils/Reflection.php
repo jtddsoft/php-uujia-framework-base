@@ -16,18 +16,23 @@ use uujia\framework\base\common\traits\InstanceBase;
 class Reflection {
 	use InstanceBase;
 	
-	const ANNOTATION_OF_CLASS     = 1;
-	const ANNOTATION_OF_METHOD    = 2;
-	const ANNOTATION_OF_PROPERTY  = 4;
+	const ANNOTATION_OF_CLASS = 1;
+	const ANNOTATION_OF_METHOD = 2;
+	const ANNOTATION_OF_PROPERTY = 4;
 	
-	const METHOD_OF_PUBLIC    = 1;
+	const METHOD_OF_PUBLIC = 1;
 	const METHOD_OF_PROTECTED = 2;
-	const METHOD_OF_PRIVATE   = 4;
+	const METHOD_OF_PRIVATE = 4;
 	
 	/**
 	 * @var AnnotationReader
 	 */
 	protected $_reader = null;
+	
+	/**
+	 * @var \ReflectionClass
+	 */
+	protected $_refReaderClass = null;
 	
 	/**
 	 * @var string
@@ -61,18 +66,21 @@ class Reflection {
 	
 	/**
 	 * 方法集合
+	 *
 	 * @var \ReflectionMethod[]
 	 */
 	protected $_refMethods = [];
 	
 	/**
 	 * 方法参数
+	 *
 	 * @var \ReflectionParameter[]
 	 */
 	protected $_refParameters = [];
 	
 	/**
 	 * 方法集合
+	 *
 	 * @var \ReflectionProperty[]
 	 */
 	protected $_refPropertys = [];
@@ -95,6 +103,7 @@ class Reflection {
 	
 	/**
 	 * 筛选后的方法对象集合
+	 *
 	 * @var \ReflectionMethod[]
 	 */
 	protected $_methodObjs = [];
@@ -102,18 +111,21 @@ class Reflection {
 	/**
 	 * 获取注解所属类型
 	 *  分为Class、Method、Property
+	 *
 	 * @var int $_annotationOf
 	 */
 	protected $_annotationOf = 1;
 	
 	/**
 	 * 解析后的注解Map
+	 *
 	 * @var array
 	 */
 	protected $_annotationObjs = [];
 	
 	/**
 	 * 反射注入后的对象实例
+	 *
 	 * @var Object $_injectionInstance
 	 */
 	protected $_injectionInstance = null;
@@ -179,8 +191,9 @@ class Reflection {
 					$this->_setRefPropertys($this->getRefClass()->getProperties());
 					
 					$this->_setClassAnnotations($this->getReader()->getClassAnnotations($this->getRefClass()));
+					$this->getPrivateProperty($this->getRefReaderClass(), '');
 					break;
-					
+				
 				case self::ANNOTATION_OF_METHOD:
 					// 获取方法Method
 					$this->_setRefMethod(new \ReflectionMethod($this->getClassName(), $this->getMethodName()));
@@ -188,7 +201,7 @@ class Reflection {
 					
 					$this->_setMethodAnnotations($this->getReader()->getMethodAnnotations($this->getRefMethod()));
 					break;
-					
+				
 				case self::ANNOTATION_OF_PROPERTY:
 					// 获取属性Property
 					$this->_setRefProperty(new \ReflectionProperty($this->getClassName(), $this->getPropertyName()));
@@ -208,7 +221,7 @@ class Reflection {
 	 * 筛选方法
 	 *  filter：
 	 *  METHOD_OF_PUBLIC
-	 *	METHOD_OF_PROTECTED
+	 *    METHOD_OF_PROTECTED
 	 *  METHOD_OF_PRIVATE
 	 *
 	 * @param int $filter
@@ -272,12 +285,18 @@ class Reflection {
 		return $this;
 	}
 	
+	/**************************************************
+	 * 类反射后 循环获取属性
+	 **************************************************/
+	
 	/**
 	 * 获取属性注解
 	 *  遍历获取 回调每一项
 	 *
 	 * @param \Closure $callback
 	 * @param array    $filter
+	 *
+	 * @return Reflection
 	 */
 	public function annotationPropertys(\Closure $callback, $filter = []) {
 		if (!is_callable($callback)) {
@@ -292,10 +311,15 @@ class Reflection {
 		return $this;
 	}
 	
+	/**************************************************
+	 * 依赖注入会用到的相关通用方法
+	 **************************************************/
+	
 	/**
 	 * 实例化注入
 	 *
 	 * @param \Closure $callback
+	 *
 	 * @return Reflection|null
 	 */
 	public function injection(\Closure $callback) {
@@ -310,7 +334,7 @@ class Reflection {
 				$_args[$key] = $_arg;
 			}
 			
-			$reflection = $this->getRefClass();
+			$reflection               = $this->getRefClass();
 			$this->_injectionInstance = $reflection->newInstanceArgs($_args); // 传入的是关联数组
 			
 			return $this;
@@ -371,6 +395,89 @@ class Reflection {
 			return null;
 		}
 	}
+	
+	/**************************************************
+	 * 访问类的私有属性或方法
+	 **************************************************/
+	
+	/**
+	 * 执行类的私有方法
+	 *
+	 * @param \ReflectionClass|string $class         类名或类的反射实例
+	 * @param string                  $method        方法名
+	 * @param array                   $params        参数
+	 * @param null|object             $classInstance 类的实例（如果之前已经实例化）
+	 *
+	 * @return mixed
+	 * @throws \ReflectionException
+	 */
+	public function callPrivateMethod($class, $method, $params = [], $classInstance = null) {
+		if (is_string($class)) {
+			//通过类名MyClass进行反射
+			$ref_class = new \ReflectionClass($class);
+		} else {
+			$ref_class = $class;
+		}
+		
+		//通过反射类进行实例化
+		if (is_null($classInstance)) {
+			$instance = $ref_class->newInstance();
+		}
+		
+		//通过方法名myFun获取指定方法
+		$ref_method = $ref_class->getmethod($method);
+		
+		//设置可访问性
+		$ref_method->setAccessible(true);
+		
+		//执行方法
+		return $ref_method->invoke($instance);
+	}
+	
+	/**
+	 * 执行类的私有属性
+	 *
+	 * @param \ReflectionClass|string $class         类名或类的反射实例
+	 * @param string                  $property      属性名
+	 * @param null|mixed              $value         如果null为获取 不为null则设置
+	 * @param null|object             $classInstance 类的实例（如果之前已经实例化）
+	 *
+	 * @return mixed|$this
+	 * @throws \ReflectionException
+	 */
+	public function getPrivateProperty($class, $property, $value = null, $classInstance = null) {
+		if (is_string($class)) {
+			//通过类名MyClass进行反射
+			$ref_class = new \ReflectionClass($class);
+		} else {
+			$ref_class = $class;
+		}
+		
+		//通过反射类进行实例化
+		if (is_null($classInstance)) {
+			$instance = $ref_class->newInstance();
+		}
+		
+		//通过属性
+		$ref_property = $ref_class->getProperty($property);
+		
+		//设置可访问性
+		$ref_property->setAccessible(true);
+		
+		if (is_null($value)) {
+			//读取属性值
+			return $ref_property->getValue($instance);
+		}
+		
+		// 设置属性值
+		$ref_property->setValue($instance, $value);
+		
+		return $this;
+	}
+	
+	/**************************************************
+	 * get set
+	 **************************************************/
 	
 	/**
 	 * @return string
@@ -564,7 +671,8 @@ class Reflection {
 	public function getReader() {
 		try {
 			if (is_null($this->_reader)) {
-				$this->_reader = new AnnotationReader();
+				// $this->_reader = new AnnotationReader();
+				$this->_reader = $this->getRefReaderClass()->newInstance();
 			}
 			
 			return $this->_reader;
@@ -580,6 +688,26 @@ class Reflection {
 	 */
 	public function _setReader($reader) {
 		$this->_reader = $reader;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return \ReflectionClass
+	 */
+	public function getRefReaderClass(): \ReflectionClass {
+		if (is_null($this->_refReaderClass)) {
+			$this->_refReaderClass = new \ReflectionClass(AnnotationReader::class);
+		}
+		
+		return $this->_refReaderClass;
+	}
+	
+	/**
+	 * @param \ReflectionClass $refReaderClass
+	 */
+	public function setRefReaderClass(\ReflectionClass $refReaderClass) {
+		$this->_refReaderClass = $refReaderClass;
 		
 		return $this;
 	}
@@ -665,6 +793,7 @@ class Reflection {
 	
 	/**
 	 * @param int $annotationOf
+	 *
 	 * @return Reflection
 	 */
 	public function setAnnotationOf(int $annotationOf) {
@@ -682,6 +811,7 @@ class Reflection {
 	
 	/**
 	 * @param array $annotationObjs
+	 *
 	 * @return Reflection
 	 */
 	public function _setAnnotationObjs(array $annotationObjs) {
@@ -699,6 +829,7 @@ class Reflection {
 	
 	/**
 	 * @param Object $injectionInstance
+	 *
 	 * @return Reflection
 	 */
 	public function _setInjectionInstance($injectionInstance) {
