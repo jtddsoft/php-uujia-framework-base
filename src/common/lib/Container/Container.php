@@ -165,12 +165,44 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	// }
 	
 	/**
+	 * new class
+	 *
+	 * @param      $className
+	 * @param      $injectionType
+	 * @param null $value
+	 *
+	 * @return mixed|object|null
+	 */
+	public function _newClassAnnotation($className, $injectionType, $value = null) {
+		$_arg = null;
+		
+		switch ($injectionType) {
+			case 'c':
+			case 'container':
+				$_arg = $this->get($className);
+				break;
+			
+			case 'cc':
+			case 'new':
+				$_arg = $this->_get($className, true);
+				break;
+			
+			case 'v':
+			case 'value':
+				$_arg = $value;
+				break;
+		}
+		
+		return $_arg;
+	}
+	
+	/**
 	 * 创建类实例
 	 *
 	 * @param $className
-	 * @return
+	 * @return null|object
 	 */
-	public function _newClass($className) {
+	public function _makeClass($className) {
 		if (is_string($className) && class_exists($className)) {
 			try {
 				if (method_exists($className, '__construct') === false) {
@@ -210,37 +242,50 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 						}
 						
 						if ($found) {
-							// $_arg = $c->get($containerKey);
-							switch ($autoInjectionItem->type) {
-								case 'c':
-								case 'container':
-									$_class = $autoInjectionItem->name;
-									
-									if (empty($_class) && $param->hasType() && $param->getClass() !== null) {
-										// 如果有类型约束 并且是个类 就构建这个依赖
-										$_class = $param->getClass()->getName();
-									}
-									
-									$_arg = $this->get($_class);
-									break;
-								
-								case 'cc':
-								case 'new':
-									$_class = $autoInjectionItem->name;
-									
-									if (empty($_class) && $param->hasType() && $param->getClass() !== null) {
-										// 如果有类型约束 并且是个类 就构建这个依赖
-										$_class = $param->getClass()->getName();
-									}
-									
-									$_arg = $this->_get($_class, true);
-									break;
-								
-								case 'v':
-								case 'value':
-									$_arg = $autoInjectionItem->value;
-									break;
+							$_arg = null;
+							
+							$_class = $autoInjectionItem->name;
+							if (empty($_class) && $param->hasType() && $param->getClass() !== null) {
+								// 如果有类型约束 并且是个类 就构建这个依赖
+								$_class = $param->getClass()->getName();
 							}
+							
+							if (!empty($_class)) {
+								$_arg = $this->_newClassAnnotation($_class, $autoInjectionItem->type, $autoInjectionItem->value);
+							}
+							
+							
+							// $_arg = $c->get($containerKey);
+							// switch ($autoInjectionItem->type) {
+							// 	case 'c':
+							// 	case 'container':
+							// 		$_class = $autoInjectionItem->name;
+							//
+							// 		if (empty($_class)) {
+							// 			// 如果有类型约束 并且是个类 就构建这个依赖
+							// 			$_class = $param->getClass()->getName();
+							// 		}
+							//
+							// 		$_arg = $this->get($_class);
+							// 		break;
+							//
+							// 	case 'cc':
+							// 	case 'new':
+							// 		$_class = $autoInjectionItem->name;
+							//
+							// 		if (empty($_class)) {
+							// 			// 如果有类型约束 并且是个类 就构建这个依赖
+							// 			$_class = $param->getClass()->getName();
+							// 		}
+							//
+							// 		$_arg = $this->_get($_class, true);
+							// 		break;
+							//
+							// 	case 'v':
+							// 	case 'value':
+							// 		$_arg = $autoInjectionItem->value;
+							// 		break;
+							// }
 						} elseif ($param->hasType() && $param->getClass() !== null) {
 							// 如果有类型约束 并且是个类 就构建这个依赖
 							$newClass = $this->get($param->getClass()->getName());
@@ -288,7 +333,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		if ($isNew) {
 			$className = $id;
 			
-			return $this->_newClass($className);
+			return $this->_makeClass($className);
 		} else {
 			$item = $_list->get($id);
 		}
@@ -318,7 +363,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 				
 				$className = $id;
 				
-				return $this->_newClass($className);
+				return $this->_makeClass($className);
 			};
 			
 			// 将工厂加入到Data

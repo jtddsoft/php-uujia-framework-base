@@ -191,7 +191,7 @@ class Reflection {
 					$this->_setRefPropertys($this->getRefClass()->getProperties());
 					
 					$this->_setClassAnnotations($this->getReader()->getClassAnnotations($this->getRefClass()));
-					$this->getPrivateProperty($this->getRefReaderClass(), '');
+					// var_dump($this->gsPrivateProperty($this->getRefReaderClass(), 'imports', null, $this->getReader()));
 					break;
 				
 				case self::ANNOTATION_OF_METHOD:
@@ -297,15 +297,27 @@ class Reflection {
 	 * @param array    $filter
 	 *
 	 * @return Reflection
+	 * @throws \ReflectionException
 	 */
 	public function annotationPropertys(\Closure $callback, $filter = []) {
 		if (!is_callable($callback)) {
 			return $this;
 		}
 		
+		$useImports = $this->gsPrivateProperty($this->getRefReaderClass(), 'imports', null, $this->getReader());
+		
 		foreach ($this->getRefPropertys() as $property) {
-			/** @var \ReflectionProperty $property */
+			if (!empty($filter) && !in_array($property->getName(), $filter)) {
+				continue;
+			}
 			
+			/** @var \ReflectionProperty $property */
+			$propertyAnno = $this->getReader()->getPropertyAnnotations($property);
+			
+			$ret = call_user_func_array($callback, [$this, $property, $propertyAnno, $useImports]);
+			if ($ret === false) {
+				break;
+			}
 		}
 		
 		return $this;
@@ -422,6 +434,8 @@ class Reflection {
 		//通过反射类进行实例化
 		if (is_null($classInstance)) {
 			$instance = $ref_class->newInstance();
+		} else {
+			$instance = $classInstance;
 		}
 		
 		//通过方法名myFun获取指定方法
@@ -431,11 +445,11 @@ class Reflection {
 		$ref_method->setAccessible(true);
 		
 		//执行方法
-		return $ref_method->invoke($instance);
+		return $ref_method->invoke($instance, $params);
 	}
 	
 	/**
-	 * 执行类的私有属性
+	 * get set执行类的私有属性
 	 *
 	 * @param \ReflectionClass|string $class         类名或类的反射实例
 	 * @param string                  $property      属性名
@@ -445,7 +459,7 @@ class Reflection {
 	 * @return mixed|$this
 	 * @throws \ReflectionException
 	 */
-	public function getPrivateProperty($class, $property, $value = null, $classInstance = null) {
+	public function gsPrivateProperty($class, $property, $value = null, $classInstance = null) {
 		if (is_string($class)) {
 			//通过类名MyClass进行反射
 			$ref_class = new \ReflectionClass($class);
@@ -456,6 +470,8 @@ class Reflection {
 		//通过反射类进行实例化
 		if (is_null($classInstance)) {
 			$instance = $ref_class->newInstance();
+		} else {
+			$instance = $classInstance;
 		}
 		
 		//通过属性

@@ -5,7 +5,7 @@ namespace uujia\framework\base\test;
 
 use uujia\framework\base\common\lib\Event\EventHandle;
 use uujia\framework\base\common\lib\Annotation\EventTrigger;
-// use uujia\framework\base\common\lib\Annotation\EventListener;
+use uujia\framework\base\common\lib\Annotation\EventListener;
 use uujia\framework\base\common\lib\Event\EventHandleInterface;
 
 /**
