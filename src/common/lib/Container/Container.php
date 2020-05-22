@@ -165,26 +165,79 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	// }
 	
 	/**
+	 * 查找class的命名空间
+	 *  如果class只有一个短名 就去尝试找命名空间
+	 *  需要提前use引用 不引用那是谁也猜不出你这个类名是谁
+	 *
+	 *  例如：
+	 *      use uu\Apple;
+	 *
+	 *      $className = 'Apple';
+	 *      直接找Apple这个类是不存在的 但你use了他 我就知道你这个Apple的全名是uu\Apple
+	 *
+	 * @param string $className
+	 * @param array  $useImports
+	 *
+	 * @return string|false
+	 */
+	public function findClassNameSpace($className, $useImports = []) {
+		if (class_exists($className)) {
+			return $className;
+		}
+		
+		$loweredClassName = strtolower($className);
+		
+		if (isset($useImports[$loweredClassName])) {
+			$namespace = $useImports[$loweredClassName];
+			
+			if (class_exists($namespace)) {
+				return $className;
+			}
+		}
+		
+		if (isset($useImports['__NAMESPACE__'])) {
+			$namespace = $useImports['__NAMESPACE__'] . '\\' . $className;
+			
+			if (class_exists($namespace)) {
+				return $className;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * new class
 	 *
-	 * @param      $className
-	 * @param      $injectionType
-	 * @param null $value
+	 * @param string $className     类名（容器名 容器id）
+	 * @param string $injectionType 注入类型
+	 * @param array  $useImports    类的use引用列表
+	 * @param null   $value         默认赋值
 	 *
 	 * @return mixed|object|null
 	 */
-	public function _newClassAnnotation($className, $injectionType, $value = null) {
+	public function _newClassAnnotation($className, $injectionType, $useImports = [], $value = null) {
 		$_arg = null;
 		
 		switch ($injectionType) {
 			case 'c':
 			case 'container':
-				$_arg = $this->get($className);
+				$classFullName = $this->findClassNameSpace($className, $useImports);
+				if ($classFullName === false) {
+					return null;
+				}
+				
+				$_arg = $this->get($classFullName);
 				break;
 			
 			case 'cc':
 			case 'new':
-				$_arg = $this->_get($className, true);
+				$classFullName = $this->findClassNameSpace($className, $useImports);
+				if ($classFullName === false) {
+					return null;
+				}
+				
+				$_arg = $this->_get($classFullName, true);
 				break;
 			
 			case 'v':
@@ -200,118 +253,133 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * 创建类实例
 	 *
 	 * @param $className
+	 *
 	 * @return null|object
 	 */
 	public function _makeClass($className) {
-		if (is_string($className) && class_exists($className)) {
-			try {
-				if (method_exists($className, '__construct') === false) {
-					// todo: 报错类构造函数未找到
-					return null;
-				}
-				
-				// 自动依赖注入
-				// todo: 不能用单例
-				// $ins = Reflection::from($className, '__construct', Reflection::ANNOTATION_OF_METHOD)
-				$refObj = new Reflection($className, '__construct', Reflection::ANNOTATION_OF_METHOD);
-				$ins    = $refObj
-					->load()
-					->annotation(AutoInjection::class)
-					->injection(function (Reflection $me, ReflectionParameter $param) {
-						$_arg = null;
-						
-						/**
-						 * 检查是否有注解 AutoInjection
-						 *
-						 * @var AutoInjection[] $anObjs
-						 */
-						$anObjs            = $me->getAnnotationObjs();
-						$found             = false;
-						$autoInjectionItem = '';
-						
-						if (!empty($anObjs)) {
-							foreach ($anObjs as $item) {
-								/** @var AutoInjection $item */
-								if ($item->arg == $param->getName()) {
-									$found = true;
-									// $containerKey = $item->name;
-									$autoInjectionItem = $item;
-									break;
-								}
-							}
-						}
-						
-						if ($found) {
-							$_arg = null;
-							
-							$_class = $autoInjectionItem->name;
-							if (empty($_class) && $param->hasType() && $param->getClass() !== null) {
-								// 如果有类型约束 并且是个类 就构建这个依赖
-								$_class = $param->getClass()->getName();
-							}
-							
-							if (!empty($_class)) {
-								$_arg = $this->_newClassAnnotation($_class, $autoInjectionItem->type, $autoInjectionItem->value);
-							}
-							
-							
-							// $_arg = $c->get($containerKey);
-							// switch ($autoInjectionItem->type) {
-							// 	case 'c':
-							// 	case 'container':
-							// 		$_class = $autoInjectionItem->name;
-							//
-							// 		if (empty($_class)) {
-							// 			// 如果有类型约束 并且是个类 就构建这个依赖
-							// 			$_class = $param->getClass()->getName();
-							// 		}
-							//
-							// 		$_arg = $this->get($_class);
-							// 		break;
-							//
-							// 	case 'cc':
-							// 	case 'new':
-							// 		$_class = $autoInjectionItem->name;
-							//
-							// 		if (empty($_class)) {
-							// 			// 如果有类型约束 并且是个类 就构建这个依赖
-							// 			$_class = $param->getClass()->getName();
-							// 		}
-							//
-							// 		$_arg = $this->_get($_class, true);
-							// 		break;
-							//
-							// 	case 'v':
-							// 	case 'value':
-							// 		$_arg = $autoInjectionItem->value;
-							// 		break;
-							// }
-						} elseif ($param->hasType() && $param->getClass() !== null) {
-							// 如果有类型约束 并且是个类 就构建这个依赖
-							$newClass = $this->get($param->getClass()->getName());
-							$_arg     = $newClass;
-						} elseif ($param->isDefaultValueAvailable()) {
-							$_arg = $param->getDefaultValue();
-						}
-						
-						return $_arg;
-					})
-					->getInjectionInstance();
-				
-				// 如果存在容器接纳 将自身实例传入
-				if (is_callable([$ins, '_setContainer'])) {
-					call_user_func_array([$ins, '_setContainer'], [$this]);
-				}
-				
-				return $ins;
-			} catch (\ReflectionException $e) {
-				// todo: 报错反射异常
-				return null;
-			}
-		} else {
+		if (!is_string($className)) {
 			// todo: 报错类未找到
 			return null;
 		}
+		
+		if (!class_exists($className)) {
+			// todo: 报错类未找到
+			return null;
+		}
+		
+		if (method_exists($className, '__construct') === false) {
+			// todo: 报错类构造函数未找到
+			return null;
+		}
+		
+		// 自动依赖注入
+		// todo: 不能用单例
+		// $ins = Reflection::from($className, '__construct', Reflection::ANNOTATION_OF_METHOD)
+		$refObj = new Reflection($className, '__construct', Reflection::ANNOTATION_OF_METHOD);
+		$ins    = $refObj
+			// 载入
+			->load()
+			
+			// 过滤注解
+			->annotation(AutoInjection::class)
+			
+			// 注入
+			->injection(
+				function (Reflection $me, ReflectionParameter $param) {
+					$_arg = null;
+					
+					/**
+					 * 检查是否有注解 AutoInjection
+					 *
+					 * @var AutoInjection[] $anObjs
+					 */
+					$anObjs            = $me->getAnnotationObjs();
+					$found             = false;
+					$autoInjectionItem = null;
+					
+					if (!empty($anObjs)) {
+						foreach ($anObjs as $item) {
+							if ($item->arg == $param->getName()) {
+								$found = true;
+								// $containerKey = $item->name;
+								$autoInjectionItem = $item;
+								break;
+							}
+						}
+					}
+					
+					if ($found) {
+						$_arg = null;
+						
+						$_class = $autoInjectionItem->name ?? '';
+						if (empty($_class) && $param->hasType() && $param->getClass() !== null) {
+							// 如果有类型约束 并且是个类 就构建这个依赖
+							$_class = $param->getClass()->getName();
+						}
+						
+						if (!empty($_class)) {
+							$_arg = $this->_newClassAnnotation($_class,
+							                                   $autoInjectionItem->type,
+							                                   $me->getClassUseImports(),
+							                                   $autoInjectionItem->value);
+						}
+					} elseif ($param->hasType() && $param->getClass() !== null) {
+						// 如果有类型约束 并且是个类 就构建这个依赖
+						$newClass = $this->get($param->getClass()->getName());
+						$_arg     = $newClass;
+					} elseif ($param->isDefaultValueAvailable()) {
+						$_arg = $param->getDefaultValue();
+					}
+					
+					return $_arg;
+				}
+			)
+			
+			// 处理类属性的注解注入
+			->classPropertys(
+				function (Reflection $me, \ReflectionProperty $property, $propertyAnno, $useImports) {
+					/** @var AutoInjection[] $propertyAnno */
+					
+					if (empty($propertyAnno)) {
+						return true;
+					}
+					
+					// 遍历注解 取出AutoInjection注入部分 进行注入
+					foreach ($propertyAnno as $anno) {
+						$_class = $anno->name;
+						$_type = $anno->type;
+						$_value = $anno->value;
+						
+						if (empty($_class)) {
+							continue;
+						}
+						
+						// new class 会处理依赖
+						$_arg = $this->_newClassAnnotation($_class,
+						                                   $_type,
+						                                   $useImports,
+						                                   $_value);
+						
+						// 注入
+						$me->gsPrivateProperty($me->getRefReaderClass(),
+						                       $property->getName(),
+						                       $_arg,
+						                       $me->getReader());
+					}
+					
+					return true;
+				}, [AutoInjection::class]
+			)
+			
+			// 获取实例
+			->getInjectionInstance();
+		
+		// 如果存在容器接纳 将自身实例传入
+		if (is_callable([$ins, '_setContainer'])) {
+			call_user_func_array([$ins, '_setContainer'], [$this]);
+		}
+		
+		return $ins;
 	}
 	
 	/**
@@ -319,6 +387,8 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 *
 	 * @param      $id
 	 * @param bool $isNew 是否重新实例化一个新的对象 个别依赖对象不能单例 必须重新new
+	 *
+	 * @return mixed|object|null
 	 */
 	public function _get($id, $isNew = false) {
 		$_list = $this->list();
@@ -383,6 +453,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * 获取
 	 *
 	 * @param $id
+	 *
 	 * @return mixed
 	 * @inheritDoc
 	 */
@@ -432,6 +503,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * 获取or设置 list
 	 *
 	 * @param null $list
+	 *
 	 * @return $this|TreeFunc
 	 */
 	public function list($list = null): TreeFunc {
@@ -453,6 +525,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	
 	/**
 	 * @param bool $keyNotExistAutoCreate
+	 *
 	 * @return $this
 	 */
 	public function setKeyNotExistAutoCreate(bool $keyNotExistAutoCreate) {

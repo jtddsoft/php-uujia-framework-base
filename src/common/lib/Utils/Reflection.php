@@ -290,31 +290,55 @@ class Reflection {
 	 **************************************************/
 	
 	/**
+	 * 获取类use引用列表
+	 *
+	 * @return array
+	 * @throws \ReflectionException
+	 */
+	public function getClassUseImports() {
+		return $this->gsPrivateProperty($this->getRefReaderClass(),
+		                                'imports',
+		                                null,
+		                                $this->getReader());
+	}
+	
+	/**
 	 * 获取属性注解
 	 *  遍历获取 回调每一项
 	 *
-	 * @param \Closure $callback
-	 * @param array    $filter
+	 * @param \Closure $callback       回调
+	 * @param array    $filter         过滤注解
+	 * @param array    $filterProperty 过滤属性
 	 *
 	 * @return Reflection
 	 * @throws \ReflectionException
 	 */
-	public function annotationPropertys(\Closure $callback, $filter = []) {
+	public function classPropertys(\Closure $callback, $filter = [], $filterProperty = []) {
 		if (!is_callable($callback)) {
 			return $this;
 		}
 		
-		$useImports = $this->gsPrivateProperty($this->getRefReaderClass(), 'imports', null, $this->getReader());
+		$useImports = $this->getClassUseImports();
 		
 		foreach ($this->getRefPropertys() as $property) {
-			if (!empty($filter) && !in_array($property->getName(), $filter)) {
+			if (!empty($filterProperty) && !in_array($property->getName(), $filterProperty)) {
 				continue;
 			}
 			
-			/** @var \ReflectionProperty $property */
 			$propertyAnno = $this->getReader()->getPropertyAnnotations($property);
+			if (empty($propertyAnno)) {
+				continue;
+			}
 			
-			$ret = call_user_func_array($callback, [$this, $property, $propertyAnno, $useImports]);
+			$_propertyAnno = $propertyAnno;
+			
+			if (!empty($filter)) {
+				$_propertyAnno = array_filter($propertyAnno, function ($var) use ($filter) {
+					return in_array($var, $filter);
+				}, ARRAY_FILTER_USE_KEY);
+			}
+			
+			$ret = call_user_func_array($callback, [$this, $property, $_propertyAnno, $useImports]);
 			if ($ret === false) {
 				break;
 			}

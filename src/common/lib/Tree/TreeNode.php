@@ -28,17 +28,17 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	/**
 	 * 子节点
 	 */
-	public $_children = [];
+	protected $_children = [];
 	
 	/**
 	 * key别名
 	 */
-	public $_aliasKeys = [];
+	protected $_aliasKeys = [];
 	
 	/**
 	 * key映射
 	 */
-	public $_asKeys = [];
+	protected $_asKeys = [];
 	
 	/**
 	 * 迭代器游标位置
@@ -136,7 +136,7 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	 *
 	 * @var array $_param
 	 */
-	public $_param = [];
+	protected $_param = [];
 	
 	
 	/**
@@ -295,7 +295,7 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	 *
 	 * @return array
 	 */
-	public function children(): array {
+	public function &children(): array {
 		return $this->_children;
 	}
 	
@@ -544,6 +544,15 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	 **************************************************/
 	
 	/**
+	 * 获取别名key列表
+	 *
+	 * @return array
+	 */
+	public function &aliasKeys() {
+		return $this->_aliasKeys;
+	}
+	
+	/**
 	 * 清空别名列表
 	 *
 	 * @return $this
@@ -617,6 +626,15 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	 * 映射key
 	 * key键名为b，a为b的真实名称映射，key虽是b但应该用a去访问
 	 **************************************************/
+	
+	/**
+	 * 获取映射key列表
+	 *
+	 * @return array
+	 */
+	public function &asKeys() {
+		return $this->_asKeys;
+	}
 	
 	/**
 	 * 清空映射列表
@@ -954,7 +972,7 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	/**
 	 * @return array
 	 */
-	public function getChildren(): array {
+	public function &getChildren(): array {
 		return $this->_children;
 	}
 	
@@ -1022,7 +1040,7 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	/**
 	 * @return array
 	 */
-	public function getParam(): array {
+	public function &getParam(): array {
 		return $this->_param;
 	}
 	

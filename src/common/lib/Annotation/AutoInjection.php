@@ -15,7 +15,6 @@ class AutoInjection extends Annotation {
 	
 	/**
 	 * 参数名
-	 * @Required()
 	 * @var string
 	 */
 	public $arg = '';

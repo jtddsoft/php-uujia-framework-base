@@ -5,6 +5,7 @@ namespace uujia\framework\base\common;
 
 
 use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\Result;
 
 /**
  * Class Config
@@ -12,6 +13,12 @@ use uujia\framework\base\common\lib\Config\ConfigManager;
  * @package uujia\framework\base\common
  */
 class Config {
+	
+	/**
+	 * @var Result
+	 * @AutoInjection("name" = "Result")
+	 */
+	protected $_result;
 	
 	/**
 	 * @var ConfigManager
