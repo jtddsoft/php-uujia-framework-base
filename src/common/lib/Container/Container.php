@@ -34,13 +34,13 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	// // 每次实例化都会存入对象实例 如果已存在就覆盖
 	// private $lastObj = [];
 	
-	/** @var $_list TreeFunc */
+	/** @var TreeFunc */
 	protected $_list;
 	
 	/**
 	 * key不存在时尝试自动new实例
 	 *
-	 * @var bool $_keyNotExistAutoCreate
+	 * @var bool
 	 */
 	protected $_keyNotExistAutoCreate = true;
 	
@@ -181,6 +181,11 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * @return string|false
 	 */
 	public function findClassNameSpace($className, $useImports = []) {
+		// 查找别名
+		$this->getList()->hasAlias($className) && $className = $this->getList()->getAlias($className);
+		// 查找映射
+		$this->getList()->hasAs($className) && $className = $this->getList()->getAs($className);
+		
 		if (class_exists($className)) {
 			return $className;
 		}
@@ -191,7 +196,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			$namespace = $useImports[$loweredClassName];
 			
 			if (class_exists($namespace)) {
-				return $className;
+				return $namespace;
 			}
 		}
 		
@@ -199,7 +204,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			$namespace = $useImports['__NAMESPACE__'] . '\\' . $className;
 			
 			if (class_exists($namespace)) {
-				return $className;
+				return $namespace;
 			}
 		}
 		
@@ -268,20 +273,21 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		}
 		
 		if (method_exists($className, '__construct') === false) {
-			// todo: 报错类构造函数未找到
+			// todo: 报错类构造函数未找到 我们要求必须有构造函数 可以从基类继承
 			return null;
 		}
 		
 		// 自动依赖注入
 		// todo: 不能用单例
 		// $ins = Reflection::from($className, '__construct', Reflection::ANNOTATION_OF_METHOD)
-		$refObj = new Reflection($className, '__construct', Reflection::ANNOTATION_OF_METHOD);
+		// $refObj = new Reflection($className, '__construct', Reflection::ANNOTATION_OF_METHOD);
+		$refObj = new Reflection($className, '', Reflection::ANNOTATION_OF_CLASS);
 		$ins    = $refObj
 			// 载入
 			->load()
 			
-			// 过滤注解
-			->annotation(AutoInjection::class)
+			// 过滤注解 由于获取注解时是class的 而__construct是默认获取并存入到了method中 因此要获取METHOD
+			->annotation(AutoInjection::class, Reflection::ANNOTATION_OF_METHOD)
 			
 			// 注入
 			->injection(
@@ -345,10 +351,10 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 					}
 					
 					// 遍历注解 取出AutoInjection注入部分 进行注入
-					foreach ($propertyAnno as $anno) {
-						$_class = $anno->name;
-						$_type = $anno->type;
-						$_value = $anno->value;
+					foreach ($propertyAnno as $annot) {
+						$_class = $annot->name;
+						$_type = $annot->type;
+						$_value = $annot->value;
 						
 						if (empty($_class)) {
 							continue;
@@ -360,11 +366,15 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 						                                   $useImports,
 						                                   $_value);
 						
+						if (is_null($_arg)) {
+							continue;
+						}
+						
 						// 注入
-						$me->gsPrivateProperty($me->getRefReaderClass(),
+						$me->gsPrivateProperty($me->getRefClass(),
 						                       $property->getName(),
 						                       $_arg,
-						                       $me->getReader());
+						                       $me->getInjectionInstance());
 					}
 					
 					return true;
@@ -596,6 +606,23 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	// public function removeCache($id) {
 	// 	unset($this->lastObj[$id]);
 	// }
+	/**
+	 * @return TreeFunc
+	 */
+	public function getList(): TreeFunc {
+		return $this->_list;
+	}
+	
+	/**
+	 * @param TreeFunc $list
+	 *
+	 * @return $this
+	 */
+	public function setList(TreeFunc $list) {
+		$this->_list = $list;
+		
+		return $this;
+	}
 	
 }
 

@@ -8,15 +8,24 @@ use uujia\framework\base\BaseService;
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
 use uujia\framework\base\common\Redis;
+use uujia\framework\base\common\Runner;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\UU;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 
 class Demo extends BaseService {
 	use InstanceBase;
+	
+	/**
+	 * @var Runner
+	 * @AutoInjection(name = "Runner")
+	 */
+	private $_runnerObj;
 	
 	protected $_x = 2;
 	protected $_y = 4;
@@ -94,8 +103,8 @@ class Demo extends BaseService {
 		// 	      Event::class,
 		//       ]);
 		
-		/** @var $configObj Config */
-		$configObj = $this->getConfig(); //UU::C(Config::class);
+		/** @var $configObj ConfigManager */
+		$configObj = $this->getConfig()->getConfigManagerObj(); //UU::C(Config::class);
 		$configObj->path(__DIR__ . '/config/error_code.php', '', '', 99);
 		
 		$paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
@@ -108,7 +117,7 @@ class Demo extends BaseService {
 			$_containerObj = $this->getContainer();
 			$_containerObj->list()->setAlias($_containerAlias);
 		}
-		$a = class_exists(AntoInjection::class);
+		
 		$this->getRedis()
 		     // ->setRedisProviderObj(new RedisProvider())
 		     ->loadConfig();

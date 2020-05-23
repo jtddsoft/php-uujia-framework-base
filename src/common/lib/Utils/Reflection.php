@@ -176,6 +176,8 @@ class Reflection {
 	
 	/**
 	 * 反射获取
+	 *
+	 * @return $this|null
 	 */
 	public function load() {
 		try {
@@ -192,6 +194,15 @@ class Reflection {
 					
 					$this->_setClassAnnotations($this->getReader()->getClassAnnotations($this->getRefClass()));
 					// var_dump($this->gsPrivateProperty($this->getRefReaderClass(), 'imports', null, $this->getReader()));
+					
+					// 将构造函数解析反射
+					if ($this->getRefClass()->hasMethod('__construct')) {
+						$this->_setRefMethod($this->getRefClass()->getMethod('__construct'));
+						$this->_setRefParameters($this->getRefMethod()->getParameters());
+						
+						$this->_setMethodAnnotations($this->getReader()->getMethodAnnotations($this->getRefMethod()));
+					}
+					
 					break;
 				
 				case self::ANNOTATION_OF_METHOD:
@@ -245,15 +256,18 @@ class Reflection {
 	/**
 	 * 筛选注解
 	 *
-	 * @param string $filter
+	 * @param string   $filter
+	 * @param null|int $annotationOf
 	 *
 	 * @return Reflection
 	 */
-	public function annotation($filter) {
+	public function annotation($filter, $annotationOf = null) {
 		$this->_annotationObjs = [];
 		
+		is_null($annotationOf) && $annotationOf = $this->_annotationOf;
+		
 		// 根据获取的类型获取注解
-		switch ($this->_annotationOf) {
+		switch ($annotationOf) {
 			case self::ANNOTATION_OF_CLASS:
 				// 获取类Class
 				foreach ($this->getClassAnnotations() as $item) {
@@ -296,10 +310,12 @@ class Reflection {
 	 * @throws \ReflectionException
 	 */
 	public function getClassUseImports() {
-		return $this->gsPrivateProperty($this->getRefReaderClass(),
-		                                'imports',
-		                                null,
-		                                $this->getReader());
+		$useImports = $this->gsPrivateProperty($this->getRefReaderClass(),
+		                                       'imports',
+		                                       null,
+		                                       $this->getReader());
+		
+		return $useImports[$this->getClassName()] ?? [];
 	}
 	
 	/**

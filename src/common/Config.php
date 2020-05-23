@@ -15,12 +15,6 @@ use uujia\framework\base\common\Result;
 class Config {
 	
 	/**
-	 * @var Result
-	 * @AutoInjection("name" = "Result")
-	 */
-	protected $_result;
-	
-	/**
 	 * @var ConfigManager
 	 */
 	protected $_configManagerObj;

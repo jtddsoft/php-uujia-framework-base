@@ -1,12 +1,12 @@
 <?php
 
-
+$t1 = microtime(true);
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Utils\Reflection as UUReflection;
 use uujia\framework\base\UU;
-
+use uujia\framework\base\common\Config;
 
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	include __DIR__ . '/vendor/autoload.php';
@@ -16,7 +16,8 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	
 	switch ($command) {
 		case 'demo':
-			$demo = new \uujia\framework\base\test\Demo();
+			// $demo = new \uujia\framework\base\test\Demo();
+			$demo = UU::C(\uujia\framework\base\test\Demo::class);
 			
 			for ($i = 0; $i < 1; $i++) {
 				var_dump($demo->test());
@@ -24,8 +25,11 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			// var_dump(UU::C(Base::class)->rt()->ok());
 			var_dump(UU::C(Base::class)->ok());
-			
-			
+			var_dump($demo);
+			// var_dump(UU::C(Config::class));
+			$t2 = microtime(true);
+			$t0 = $t2 - $t1;
+			echo "startTime: {$t1}, endTime: {$t2}. t: {$t0}";
 			break;
 		
 		case 'mqs':

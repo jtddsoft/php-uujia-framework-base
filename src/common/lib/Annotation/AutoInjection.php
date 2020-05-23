@@ -9,7 +9,7 @@ use Doctrine\Common\Annotations\Annotation;
  *
  * @package uujia\framework\base\common\lib\Annotation
  * @Annotation
- * @Target({"METHOD"})
+ * @Target({"METHOD", "PROPERTY"})
  */
 class AutoInjection extends Annotation {
 	
