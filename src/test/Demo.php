@@ -13,7 +13,7 @@ use uujia\framework\base\common\lib\Redis\RedisProvider;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
 use uujia\framework\base\common\Redis;
-use uujia\framework\base\common\Runner;
+use uujia\framework\base\common\Runner as Ru;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\UU;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
@@ -22,8 +22,8 @@ class Demo extends BaseService {
 	use InstanceBase;
 	
 	/**
-	 * @var Runner
-	 * @AutoInjection(name = "Runner")
+	 * @var Ru
+	 * @AutoInjection(name = "Ru")
 	 */
 	private $_runnerObj;
 	

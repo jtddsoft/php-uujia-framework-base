@@ -69,6 +69,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * 加载事件类
 	 *
+	 * @return \Generator
 	 */
 	public function loadEventHandle() {
 		$refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);

@@ -13,7 +13,7 @@ use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
-use uujia\framework\base\common\lib\Utils\Reflection;
+use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\traits\InstanceBase;
 use uujia\framework\base\common\traits\NameBase;
 use uujia\framework\base\common\traits\ResultBase;
@@ -34,8 +34,15 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	// // 每次实例化都会存入对象实例 如果已存在就覆盖
 	// private $lastObj = [];
 	
-	/** @var TreeFunc */
+	/**
+	 * @var TreeFunc
+	 */
 	protected $_list;
+	
+	/**
+	 * @var Reflection
+	 */
+	protected $_reflectionObj;
 	
 	/**
 	 * key不存在时尝试自动new实例
@@ -48,9 +55,11 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * ContainerProvider constructor.
 	 *
 	 * @param TreeFunc|null $list
+	 * @param Reflection    $reflectionObj
 	 */
-	public function __construct(TreeFunc $list = null) {
-		$this->_list = $list ?? new TreeFunc();
+	public function __construct(TreeFunc $list = null, Reflection $reflectionObj = null) {
+		$this->_list          = $list ?? new TreeFunc();
+		$this->_reflectionObj = $reflectionObj;
 		
 		parent::__construct();
 	}
@@ -281,8 +290,13 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		// todo: 不能用单例
 		// $ins = Reflection::from($className, '__construct', Reflection::ANNOTATION_OF_METHOD)
 		// $refObj = new Reflection($className, '__construct', Reflection::ANNOTATION_OF_METHOD);
-		$refObj = new Reflection($className, '', Reflection::ANNOTATION_OF_CLASS);
-		$ins    = $refObj
+		// $refObj = new Reflection($className, '', Reflection::ANNOTATION_OF_CLASS);
+		$refObj = $this->getReflectionObj();
+		
+		$ins = $refObj
+			// 设置className
+			->setClassName($className)
+			
 			// 载入
 			->load()
 			
@@ -353,7 +367,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 					// 遍历注解 取出AutoInjection注入部分 进行注入
 					foreach ($propertyAnno as $annot) {
 						$_class = $annot->name;
-						$_type = $annot->type;
+						$_type  = $annot->type;
 						$_value = $annot->value;
 						
 						if (empty($_class)) {
@@ -620,6 +634,28 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 */
 	public function setList(TreeFunc $list) {
 		$this->_list = $list;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return Reflection
+	 */
+	public function getReflectionObj(): Reflection {
+		if (empty($this->_reflectionObj)) {
+			$this->_reflectionObj = $this->_get(Reflection::class, true);
+		}
+		
+		return $this->_reflectionObj;
+	}
+	
+	/**
+	 * @param Reflection $reflectionObj
+	 *
+	 * @return $this
+	 */
+	public function setReflectionObj(Reflection $reflectionObj) {
+		$this->_reflectionObj = $reflectionObj;
 		
 		return $this;
 	}

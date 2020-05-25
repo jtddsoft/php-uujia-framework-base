@@ -13,7 +13,7 @@ use uujia\framework\base\common\lib\Event\EventHandleInterface;
  *
  * @package uujia\framework\base\test
  *
- * EventTrigger
+ * @EventTrigger
  * @EventListener(evt = {
  *     "app.test.eventTest.*.*:*"
  * })

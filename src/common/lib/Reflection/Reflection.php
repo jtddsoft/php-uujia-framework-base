@@ -1,6 +1,6 @@
 <?php
 
-namespace uujia\framework\base\common\lib\Utils;
+namespace uujia\framework\base\common\lib\Reflection;
 
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -11,7 +11,7 @@ use uujia\framework\base\common\traits\InstanceBase;
  * Class Reflection
  * 反射工具类
  *
- * @package uujia\framework\base\common\lib\Utils
+ * @package uujia\framework\base\common\lib\Reflection
  */
 class Reflection {
 	use InstanceBase;
@@ -138,7 +138,7 @@ class Reflection {
 	 * @param string $name      方法名或属性名
 	 * @param int    $of        类型所属（1-Class、2-Method、3-Property）
 	 */
-	public function __construct($className, $name = '', $of = self::ANNOTATION_OF_CLASS) {
+	public function __construct($className = '', $name = '', $of = self::ANNOTATION_OF_CLASS) {
 		// /** @var Reflection $me */
 		// $me = static::getInstance();
 		$this->setClassName($className);
@@ -236,6 +236,8 @@ class Reflection {
 	 *  METHOD_OF_PRIVATE
 	 *
 	 * @param int $filter
+	 *
+	 * @return Reflection
 	 */
 	public function methods($filter = self::METHOD_OF_PUBLIC) {
 		$this->_methodObjs = [];
