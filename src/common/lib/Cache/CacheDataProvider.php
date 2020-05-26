@@ -21,6 +21,13 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	protected $_parent;
 	
 	/**
+	 * Redis对象
+	 *
+	 * @var RedisProviderInterface $_redisProviderObj
+	 */
+	protected $_redisProviderObj;
+	
+	/**
 	 * 缓存Key前缀
 	 * （此处是来自上层的前缀 本层的真实前缀需要以此为基础拼接
 	 *  例如：$_cacheKeyPrefix = ['ev'] 要保存 key = ['ss'] 真实Key应为 'ev:ss'）
@@ -75,12 +82,16 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	/**
 	 * CacheDataProvider constructor.
 	 *
-	 * @param null|CacheDataManagerInterface  $parent
-	 * @param array $cacheKeyPrefix
-	 * @param array $config
+	 * @param null|CacheDataManagerInterface $parent
+	 * @param RedisProviderInterface|null    $redisProvider
+	 * @param array                          $cacheKeyPrefix
+	 * @param array                          $config
+	 *
+	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct($parent = null, $cacheKeyPrefix = [], $config = []) {
+	public function __construct($parent = null, RedisProviderInterface $redisProvider = null, $cacheKeyPrefix = [], $config = []) {
 		$this->_parent = $parent;
+		$this->_redisProviderObj = $redisProvider;
 		$this->_cacheKeyPrefix = $cacheKeyPrefix;
 		$this->_config = $config;
 		$this->_cache_expires_time = $config['cache_expires_time'] ?? CacheConst::CACHE_EXPIRES_EVENT_TIME;
@@ -300,10 +311,28 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	}
 	
 	/**
+	 * @return RedisProviderInterface
+	 */
+	public function getRedisProviderObj(): RedisProviderInterface {
+		return $this->_redisProviderObj;
+	}
+	
+	/**
+	 * @param RedisProviderInterface $redisProviderObj
+	 * @return $this
+	 */
+	public function setRedisProviderObj(RedisProviderInterface $redisProviderObj) {
+		$this->_redisProviderObj = $redisProviderObj;
+		
+		return $this;
+	}
+	
+	/**
 	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
-		return $this->getParent()->getRedisObj();
+		return $this->getRedisProviderObj()->getRedisObj();
 	}
+	
 	
 }

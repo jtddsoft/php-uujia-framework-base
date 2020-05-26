@@ -1,10 +1,9 @@
 <?php
 
-$t1 = microtime(true);
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Utils\Json;
-use uujia\framework\base\common\lib\Utils\Reflection as UUReflection;
+use uujia\framework\base\common\lib\Reflection\Reflection as UUReflection;
 use uujia\framework\base\UU;
 use uujia\framework\base\common\Config;
 
@@ -14,6 +13,8 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	echo 'Input command: ';
 	$command = trim(fgets(STDIN));
 	
+	$t1 = microtime(true);
+	
 	switch ($command) {
 		case 'demo':
 			// $demo = new \uujia\framework\base\test\Demo();
@@ -21,15 +22,17 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			for ($i = 0; $i < 1; $i++) {
 				var_dump($demo->test());
+				// $demo->test();
 			}
 			
 			// var_dump(UU::C(Base::class)->rt()->ok());
+			// echo json_encode(UU::C(Base::class)->ok(), JSON_UNESCAPED_UNICODE) . "\n";
 			var_dump(UU::C(Base::class)->ok());
-			var_dump($demo);
+			// var_dump($demo);
 			// var_dump(UU::C(Config::class));
 			$t2 = microtime(true);
 			$t0 = $t2 - $t1;
-			echo "startTime: {$t1}, endTime: {$t2}. t: {$t0}";
+			echo "startTime: {$t1}, endTime: {$t2}. t: {$t0}\n";
 			break;
 		
 		case 'mqs':

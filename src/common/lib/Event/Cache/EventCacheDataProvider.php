@@ -9,8 +9,9 @@ use uujia\framework\base\common\lib\Annotation\EventListener;
 use uujia\framework\base\common\lib\Annotation\EventTrigger;
 use uujia\framework\base\common\lib\Cache\CacheDataProvider;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Utils\Json;
-use uujia\framework\base\common\lib\Utils\Reflection as UUReflection;
+use uujia\framework\base\common\lib\Reflection\Reflection as UUReflection;
 
 /**
  * Class EventCacheDataProvider
@@ -30,14 +31,23 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * EventCacheDataProvider constructor.
 	 *
-	 * @param EventName $eventNameObj
+	 * @param null                        $parent
+	 * @param RedisProviderInterface|null $redisProvider
+	 * @param array                       $cacheKeyPrefix
+	 * @param array                       $config
+	 * @param EventName                   $eventNameObj
 	 *
+	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 * @AutoInjection(arg = "eventNameObj", type = "cc")
 	 */
-	public function __construct(EventName $eventNameObj) {
+	public function __construct($parent = null,
+	                            RedisProviderInterface $redisProvider = null,
+	                            $cacheKeyPrefix = [],
+	                            $config = [],
+	                            EventName $eventNameObj = null) {
 		$this->_eventNameObj = $eventNameObj;
 		
-		parent::__construct();
+		parent::__construct($parent, $redisProvider, $cacheKeyPrefix, $config);
 	}
 	
 	/**
@@ -51,6 +61,17 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		(!in_array('eventNameObj', $exclude)) && $this->getEventNameObj()->reset($exclude['eventNameObjExclude'] ?? []);
 		
 		return parent::reset($exclude);
+	}
+	
+	/**************************************************************
+	 * cache
+	 **************************************************************/
+	
+	/**
+	 * 写事件监听到缓存
+	 */
+	public function writeEventListenToCache() {
+	
 	}
 	
 	/**************************************************************
@@ -72,6 +93,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * @return \Generator
 	 */
 	public function loadEventHandle() {
+		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
 		$refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
 		
 		foreach ($this->getEventClassNames() as $itemClassName) {

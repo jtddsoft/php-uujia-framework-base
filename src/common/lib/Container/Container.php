@@ -40,11 +40,6 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	protected $_list;
 	
 	/**
-	 * @var Reflection
-	 */
-	protected $_reflectionObj;
-	
-	/**
 	 * key不存在时尝试自动new实例
 	 *
 	 * @var bool
@@ -57,9 +52,8 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * @param TreeFunc|null $list
 	 * @param Reflection    $reflectionObj
 	 */
-	public function __construct(TreeFunc $list = null, Reflection $reflectionObj = null) {
+	public function __construct(TreeFunc $list = null) {
 		$this->_list          = $list ?? new TreeFunc();
-		$this->_reflectionObj = $reflectionObj;
 		
 		parent::__construct();
 	}
@@ -291,7 +285,8 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		// $ins = Reflection::from($className, '__construct', Reflection::ANNOTATION_OF_METHOD)
 		// $refObj = new Reflection($className, '__construct', Reflection::ANNOTATION_OF_METHOD);
 		// $refObj = new Reflection($className, '', Reflection::ANNOTATION_OF_CLASS);
-		$refObj = $this->getReflectionObj();
+		// $refObj = $this->getReflectionObj();
+		$refObj = $this->newReflectionObj();
 		
 		$ins = $refObj
 			// 设置className
@@ -641,23 +636,8 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	/**
 	 * @return Reflection
 	 */
-	public function getReflectionObj(): Reflection {
-		if (empty($this->_reflectionObj)) {
-			$this->_reflectionObj = $this->_get(Reflection::class, true);
-		}
-		
-		return $this->_reflectionObj;
-	}
-	
-	/**
-	 * @param Reflection $reflectionObj
-	 *
-	 * @return $this
-	 */
-	public function setReflectionObj(Reflection $reflectionObj) {
-		$this->_reflectionObj = $reflectionObj;
-		
-		return $this;
+	public function newReflectionObj(): Reflection {
+		return new Reflection();
 	}
 	
 }

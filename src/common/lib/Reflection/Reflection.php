@@ -139,8 +139,6 @@ class Reflection {
 	 * @param int    $of        类型所属（1-Class、2-Method、3-Property）
 	 */
 	public function __construct($className = '', $name = '', $of = self::ANNOTATION_OF_CLASS) {
-		// /** @var Reflection $me */
-		// $me = static::getInstance();
 		$this->setClassName($className);
 		$this->setAnnotationOf($of);
 		
@@ -153,8 +151,6 @@ class Reflection {
 				$this->setPropertyName($name);
 				break;
 		}
-		
-		// return $me;
 	}
 	
 	/**
