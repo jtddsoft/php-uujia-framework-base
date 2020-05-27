@@ -4,10 +4,10 @@
 namespace uujia\framework\base\common\lib\MQ;
 
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\ResultTrait;
 
 abstract class AbstractMQ extends BaseClass implements MQInterface {
-	use ResultBase;
+	use ResultTrait;
 	
 	// public static $_CLIENT_TYPE = [
 	// 	'unknow'    => 0,   // 未知

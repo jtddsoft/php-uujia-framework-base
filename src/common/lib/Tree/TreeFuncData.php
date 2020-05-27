@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\lib\Tree;
 
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class TreeFuncData
@@ -12,7 +12,7 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Tree
  */
 class TreeFuncData extends BaseClass {
-	use ResultBase;
+	use ResultTrait;
 	
 	const OTHER_KEY_RESULT = 'result';
 	

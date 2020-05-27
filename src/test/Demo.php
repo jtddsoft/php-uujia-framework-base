@@ -14,12 +14,12 @@ use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
 use uujia\framework\base\common\Redis;
 use uujia\framework\base\common\Runner as Ru;
-use uujia\framework\base\common\traits\InstanceBase;
+use uujia\framework\base\common\traits\InstanceTrait;
 use uujia\framework\base\UU;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 
 class Demo extends BaseService {
-	use InstanceBase;
+	use InstanceTrait;
 	
 	/**
 	 * @var Ru
@@ -105,13 +105,13 @@ class Demo extends BaseService {
 		
 		/** @var $configObj ConfigManager */
 		$configObj = $this->getConfig()->getConfigManagerObj(); //UU::C(Config::class);
-		$configObj->path(__DIR__ . '/config/error_code.php', '', '', 99);
+		$configObj->path(__DIR__ . '/config/error_code.php', '', 99);
 		
 		$paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
 		$configObj->path($paths);
 		
 		// 获取容器配置container_config
-		$_containerAlias = $configObj->loadValue('container', '', 'container.alias');
+		$_containerAlias = $configObj->loadValue('container.container.alias');
 		
 		if (!empty($_containerAlias)) {
 			$_containerObj = $this->getContainer();

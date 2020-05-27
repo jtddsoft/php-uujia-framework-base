@@ -8,7 +8,7 @@ use uujia\framework\base\common\lib\Server\ServerParameter;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class ServerRouteLocal
@@ -16,7 +16,7 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Event
  */
 class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
-	use ResultBase;
+	use ResultTrait;
 	
 	/**
 	 * 父级

@@ -653,7 +653,7 @@ class Logger extends BaseClass implements LoggerInterface {
 	 * @return array|string|int|null
 	 */
 	public function getConfigValue() {
-		return $this->getConfigObj()->loadValue('', self::LOG_CONFIG_NAME);
+		return $this->getConfigObj()->loadValue(self::LOG_CONFIG_NAME);
 	}
 	
 	/**

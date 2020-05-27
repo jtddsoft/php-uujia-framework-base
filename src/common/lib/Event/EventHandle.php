@@ -8,7 +8,7 @@ use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class EventHandle
@@ -28,7 +28,7 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Event
  */
 abstract class EventHandle extends BaseClass implements EventHandleInterface, StoppableEventInterface {
-	use ResultBase;
+	use ResultTrait;
 	
 	/**
 	 * 唯一标识

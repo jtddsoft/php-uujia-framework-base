@@ -5,7 +5,7 @@ namespace uujia\framework\base\common\lib\Event;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\traits\InstanceBase;
+use uujia\framework\base\common\traits\InstanceTrait;
 
 /**
  * Class EventFilter

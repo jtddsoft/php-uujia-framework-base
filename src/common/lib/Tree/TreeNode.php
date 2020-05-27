@@ -5,7 +5,7 @@ namespace uujia\framework\base\common\lib\Tree;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class ItemKeys
@@ -13,7 +13,7 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Tree
  */
 class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
-	use ResultBase;
+	use ResultTrait;
 	
 	// 默认权重
 	const DEFAULT_WEIGHT = 100;

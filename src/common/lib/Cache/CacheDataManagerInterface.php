@@ -28,4 +28,20 @@ interface CacheDataManagerInterface {
 	 */
 	public function regProvider($key, $itemProvider);
 	
+	/**
+	 * 获取缓存key前缀
+	 *
+	 * @return array
+	 */
+	public function &getCacheKeyPrefix(): array;
+	
+	/**
+	 * 设置缓存key前缀
+	 *
+	 * @param array $cacheKeyPrefix
+	 *
+	 * @return $this
+	 */
+	public function setCacheKeyPrefix(array $cacheKeyPrefix);
+	
 }

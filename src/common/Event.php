@@ -14,8 +14,8 @@ use uujia\framework\base\common\lib\Utils\Str as UUStr;
  * @package uujia\framework\base\common
  */
 class Event extends Base {
-	// use NameBase;
-	// use ResultBase;
+	// use NameTrait;
+	// use ResultTrait;
 	
 	/** @var Config $_configObj */
 	protected $_configObj;

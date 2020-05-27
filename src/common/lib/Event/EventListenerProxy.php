@@ -13,7 +13,7 @@ use uujia\framework\base\common\lib\Server\ServerParameter;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class EventListenerProxy
@@ -25,7 +25,7 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Event
  */
 class EventListenerProxy extends BaseClass implements EventListenerProxyInterface {
-	use ResultBase;
+	use ResultTrait;
 	
 	/**
 	 * 事件名称对象

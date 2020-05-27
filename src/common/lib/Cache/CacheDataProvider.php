@@ -7,6 +7,7 @@ namespace uujia\framework\base\common\lib\Cache;
 use uujia\framework\base\common\consts\CacheConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
+use uujia\framework\base\common\lib\Runner\RunnerManager;
 
 /**
  * Class CacheDataProvider
@@ -26,6 +27,13 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	 * @var RedisProviderInterface $_redisProviderObj
 	 */
 	protected $_redisProviderObj;
+	
+	/**
+	 * RunnerManager对象
+	 *
+	 * @var RunnerManager $_runnerManagerObj
+	 */
+	protected $_runnerManagerObj;
 	
 	/**
 	 * 缓存Key前缀
@@ -58,12 +66,12 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	 */
 	protected $_params = [];
 	
-	/**
-	 * 配置项
-	 *
-	 * @var array $_config
-	 */
-	protected $_config = [];
+	// /**
+	//  * 配置项
+	//  *
+	//  * @var array $_config
+	//  */
+	// protected $_config = [];
 	
 	/**
 	 * 缓存有效时间
@@ -83,18 +91,18 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	 * CacheDataProvider constructor.
 	 *
 	 * @param null|CacheDataManagerInterface $parent
-	 * @param RedisProviderInterface|null    $redisProvider
-	 * @param array                          $cacheKeyPrefix
-	 * @param array                          $config
+	 * @param RedisProviderInterface|null    $redisProviderObj
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct($parent = null, RedisProviderInterface $redisProvider = null, $cacheKeyPrefix = [], $config = []) {
+	public function __construct($parent = null,
+	                            RedisProviderInterface $redisProviderObj = null) {
 		$this->_parent = $parent;
-		$this->_redisProviderObj = $redisProvider;
-		$this->_cacheKeyPrefix = $cacheKeyPrefix;
-		$this->_config = $config;
-		$this->_cache_expires_time = $config['cache_expires_time'] ?? CacheConst::CACHE_EXPIRES_EVENT_TIME;
+		$this->_redisProviderObj = $redisProviderObj;
+		// $this->_cacheKeyPrefix = $cacheKeyPrefix;
+		// $this->_config = $config;
+		// $this->_cache_expires_time = $config['cache_expires_time'] ?? CacheConst::CACHE_EXPIRES_EVENT_TIME;
+		$this->_cache_expires_time = CacheConst::CACHE_EXPIRES_EVENT_TIME;
 		
 		parent::__construct();
 	}
@@ -108,11 +116,13 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	/**
 	 * 构建缓存Key
 	 *
+	 * @param string $key
+	 *
 	 * @return string
 	 */
-	public function makeCacheKey() {
+	public function makeCacheKey($key = '') {
 		$k = $this->getCacheKeyPrefix();
-		$k[] = $this->_key;
+		$k[] = !empty($key) ? $key : $this->_key;
 		
 		return implode(':', $k);
 	}
@@ -256,23 +266,23 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 		return $this;
 	}
 	
-	/**
-	 * @return array
-	 */
-	public function getConfig(): array {
-		return $this->_config;
-	}
-	
-	/**
-	 * @param array $config
-	 *
-	 * @return CacheDataProvider
-	 */
-	public function _setConfig(array $config) {
-		$this->_config = $config;
-		
-		return $this;
-	}
+	// /**
+	//  * @return array
+	//  */
+	// public function getConfig(): array {
+	// 	return $this->_config;
+	// }
+	//
+	// /**
+	//  * @param array $config
+	//  *
+	//  * @return CacheDataProvider
+	//  */
+	// public function _setConfig(array $config) {
+	// 	$this->_config = $config;
+	//
+	// 	return $this;
+	// }
 	
 	/**
 	 * @return float|int
@@ -332,6 +342,24 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	 */
 	public function getRedisObj() {
 		return $this->getRedisProviderObj()->getRedisObj();
+	}
+	
+	/**
+	 * @return RunnerManager
+	 */
+	public function getRunnerManagerObj(): RunnerManager {
+		return $this->_runnerManagerObj;
+	}
+	
+	/**
+	 * @param RunnerManager $runnerManagerObj
+	 *
+	 * @return $this
+	 */
+	public function setRunnerManagerObj(RunnerManager $runnerManagerObj) {
+		$this->_runnerManagerObj = $runnerManagerObj;
+		
+		return $this;
 	}
 	
 	

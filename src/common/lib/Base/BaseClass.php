@@ -4,10 +4,10 @@ namespace uujia\framework\base\common\lib\Base;
 
 
 use Psr\Container\ContainerInterface;
-use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\NameTrait;
 
 class BaseClass implements BaseClassInterface {
-	use NameBase;
+	use NameTrait;
 	
 	/**
 	 * 容器

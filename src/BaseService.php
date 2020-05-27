@@ -16,10 +16,10 @@ use uujia\framework\base\common\MQ;
 use uujia\framework\base\common\Redis;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\lib\Container\Container;
-use uujia\framework\base\common\traits\NameBase;
+use uujia\framework\base\common\traits\NameTrait;
 
 class BaseService {
-	use NameBase;
+	use NameTrait;
 	
 	public function __construct() {
 		$this->init();

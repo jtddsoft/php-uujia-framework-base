@@ -8,7 +8,8 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\Arr;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\lib\Utils\Str;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class ConfigManager
@@ -16,7 +17,7 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Config
  */
 class ConfigManager extends BaseClass {
-	use ResultBase;
+	use ResultTrait;
 	
 	// 配置构建工厂 只是文件路径的方法集合
 	// public $_config_list_path = [
@@ -124,12 +125,12 @@ class ConfigManager extends BaseClass {
 	 *       path('/config/app_config.php', 'app');
 	 *
 	 * @param string|array $path
-	 * @param string       $type
 	 * @param string       $name
-	 * @param int          $weight  权重
+	 * @param int          $weight 权重
+	 *
 	 * @return $this
 	 */
-	public function path($path, $type = '', $name = '', $weight = TreeFunc::DEFAULT_WEIGHT) {
+	public function path($path, $name = '', $weight = TreeFunc::DEFAULT_WEIGHT) {
 		$_paths = [];
 		if (is_string($path)) {
 			$_paths[] = $path;
@@ -143,9 +144,10 @@ class ConfigManager extends BaseClass {
 		
 		foreach ($_paths as $_path) {
 			// type转换为全名 例如：type = 'app' 转为name = 'app_config'
-			$_name = $this->getConfigName($type, $name);
+			// $_name = $this->getConfigName($type, $name);
 			
-			if (empty($_name)) {
+			$_name = $name;
+			if (empty($name)) {
 				$_name = basename($_path, '.php');
 			}
 			
@@ -179,14 +181,12 @@ class ConfigManager extends BaseClass {
 	/**
 	 * 加载配置
 	 *
-	 * @param string $type
-	 * @param string $name
-	 * @param string $dotPath   以.分隔的配置结构路径
+	 * @param string $dotPath 以.分隔的配置结构路径
 	 *
 	 * @return array|string|null
 	 */
-	public function load($type = '', $name = '', $dotPath = '') {
-		$this->_lastValue = $this->loadValue($type, $name, $dotPath);
+	public function load($dotPath = '') {
+		$this->_lastValue = $this->loadValue($dotPath);
 		
 		return $this;
 	}
@@ -194,27 +194,57 @@ class ConfigManager extends BaseClass {
 	/**
 	 * 加载配置并返回值
 	 *
-	 * @param string $type
-	 * @param string $name
-	 * @param string $dotPath   以.分隔的配置结构路径
+	 * @param string $dotPath 以.分隔的配置结构路径
 	 *
 	 * @return array|string|int|null
 	 */
-	public function loadValue($type = '', $name = '', $dotPath = '') {
+	public function loadValue($dotPath = '') {
 		// type转换为全名 例如：type = 'app' 转为name = 'app_config'
-		$_name = $this->getConfigName($type, $name);
+		// $_name = $this->getConfigName($type, $name);
 		
 		// $config = include __DIR__ . "./config/error_code.php";
 		
 		/** @var array|string|null $config */
-		$config = $this->getListValue($_name)->getDataValue();
+		$config = null;
+		// $config = $this->getListValue($_name)->getDataValue();
 		
 		// 以.分隔的配置路径 a.b.c = $config['a']['b']['c']
 		if (!empty($dotPath)) {
 			$_dots = Arr::strToArr($dotPath, '.');
 			
-			$_value = $config;
+			$_value = null;
+			$_first = true;
 			foreach ($_dots as $item) {
+				if ($_first) {
+					// 第一遍循环 查找主键key
+					$_name = $item;
+					if (Str::rightCompare($_name, '_config') === 0) {
+						// 如果是_config结尾 没有找到 直接跳出
+						if (!$this->getList()->has($_name)) {
+							$_value = null;
+							break;
+						}
+						
+						$_value = $this->getListValue($_name)->getDataValue();
+					} else {
+						// 不是_config结尾
+						if ($this->getList()->has($_name)) {
+							// 找到
+							$_value = $this->getListValue($_name)->getDataValue();
+						} elseif ($this->getList()->has($_name . '_config')) {
+							// 如果name没有找到 就尝试在name结尾加上_config找 找到了
+							$_value = $this->getListValue($_name . '_config')->getDataValue();
+						} else {
+							// 啥都找不到 跳出
+							$_value = null;
+							break;
+						}
+					}
+					
+					$_first = false;
+					continue;
+				}
+				
 				if (empty($_value[$item])) {
 					$_value = null;
 					break;
@@ -321,27 +351,27 @@ class ConfigManager extends BaseClass {
 		return $this;
 	}
 	
-	/**
-	 * 获取配置名称
-	 *  例如：app_config
-	 *
-	 * @param string $type
-	 * @param string $name
-	 *
-	 * @return string
-	 */
-	public function getConfigName($type = '', $name = '') {
-		if (!empty($type) && !empty($name)) {
-			$type = $this->_type;
-			$name = $this->_name;
-		}
-		
-		if (!empty($type)) {
-			$name = $type . '_config';
-		}
-		
-		return $name;
-	}
+	// /**
+	//  * 获取配置名称
+	//  *  例如：app_config
+	//  *
+	//  * @param string $type
+	//  * @param string $name
+	//  *
+	//  * @return string
+	//  */
+	// public function getConfigName($type = '', $name = '') {
+	// 	if (!empty($type) && !empty($name)) {
+	// 		$type = $this->_type;
+	// 		$name = $this->_name;
+	// 	}
+	//
+	// 	if (!empty($type)) {
+	// 		$name = $type . '_config';
+	// 	}
+	//
+	// 	return $name;
+	// }
 	
 	/**
 	 * 获取列表

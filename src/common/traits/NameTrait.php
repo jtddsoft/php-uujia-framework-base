@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\traits;
 
 
-trait NameBase {
+trait NameTrait {
 	protected $name_info = [
 		'name' => '',
 		'intro' => '',

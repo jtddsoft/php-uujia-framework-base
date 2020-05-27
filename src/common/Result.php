@@ -13,8 +13,8 @@ use uujia\framework\base\common\lib\Error\ErrorCodeConfig;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Utils\Response;
-use uujia\framework\base\common\traits\NameBase;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\NameTrait;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class Result
@@ -22,7 +22,7 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common
  */
 class Result extends BaseClass implements ResultInterface, LoggerAwareInterface {
-	use ResultBase;
+	use ResultTrait;
 	
 	// 配置对象 依赖于配置管理class 必须事先初始化
 	/** @var ErrorCodeConfig */

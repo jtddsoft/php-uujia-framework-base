@@ -8,7 +8,7 @@ use uujia\framework\base\common\consts\EventConst;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Utils\Arr;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class EventName
@@ -27,7 +27,7 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Event\Name
  */
 class EventName extends BaseClass implements EventNameInterface {
-	use ResultBase;
+	use ResultTrait;
 	
 	/**
 	 * 运行时管理对象

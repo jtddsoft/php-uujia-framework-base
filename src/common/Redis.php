@@ -85,7 +85,7 @@ class Redis extends BaseClass {
 		
 		$configRedis = $this->getConfigObj()
 		                    ->getConfigManagerObj()
-		                    ->loadValue('redis', '', 'redis');
+		                    ->loadValue('redis.redis');
 		$configRedis = array_merge($_redisParam, $configRedis);
 		$this->getRedisProviderObj()
 		     ->setHost($configRedis['host'])

@@ -5,7 +5,7 @@ namespace uujia\framework\base\common\lib\Reflection;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use uujia\framework\base\common\traits\InstanceBase;
+use uujia\framework\base\common\traits\InstanceTrait;
 
 /**
  * Class Reflection
@@ -14,7 +14,7 @@ use uujia\framework\base\common\traits\InstanceBase;
  * @package uujia\framework\base\common\lib\Reflection
  */
 class Reflection {
-	use InstanceBase;
+	use InstanceTrait;
 	
 	const ANNOTATION_OF_CLASS = 1;
 	const ANNOTATION_OF_METHOD = 2;

@@ -38,14 +38,12 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 	/**
 	 * CacheDataManager constructor.
 	 *
-	 * @param RedisProviderInterface|null $redisProvider
-	 * @param array                       $cacheKeyPrefix
-	 *
+	 * @param RedisProviderInterface|null $redisProviderObj
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct(RedisProviderInterface $redisProvider = null, $cacheKeyPrefix = []) {
-		$this->_redisProviderObj = $redisProvider;
-		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+	public function __construct(RedisProviderInterface $redisProviderObj = null) {
+		$this->_redisProviderObj = $redisProviderObj;
+		// $this->_cacheKeyPrefix = $cacheKeyPrefix;
 		
 		parent::__construct();
 	}
@@ -149,7 +147,31 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 			->setLoadCache(false);
 	}
 	
+	/**************************************************************
+	 * get set
+	 **************************************************************/
 	
+	/**
+	 * 获取缓存key前缀
+	 *
+	 * @return array
+	 */
+	public function &getCacheKeyPrefix(): array {
+		return $this->_cacheKeyPrefix;
+	}
+	
+	/**
+	 * 设置缓存key前缀
+	 *
+	 * @param array $cacheKeyPrefix
+	 *
+	 * @return $this
+	 */
+	public function setCacheKeyPrefix(array $cacheKeyPrefix) {
+		$this->_cacheKeyPrefix = $cacheKeyPrefix;
+		
+		return $this;
+	}
 	
 	/**
 	 * 获取缓存数据供应商列表对象

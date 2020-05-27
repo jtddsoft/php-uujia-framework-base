@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\traits;
 
 
-trait InstanceBase {
+trait InstanceTrait {
 	/**
 	 * 实例对象
 	 */

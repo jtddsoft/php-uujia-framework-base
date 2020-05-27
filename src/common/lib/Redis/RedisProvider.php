@@ -4,10 +4,10 @@ namespace uujia\framework\base\common\lib\Redis;
 
 use uujia\framework\base\common\Config;
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\ResultTrait;
 
 class RedisProvider extends BaseClass implements RedisProviderInterface {
-	use ResultBase;
+	use ResultTrait;
 	
 	/**
 	 * @var \Redis|\Swoole\Coroutine\Redis $_redisObj

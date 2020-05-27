@@ -6,7 +6,7 @@ namespace uujia\framework\base\common\traits;
 
 use uujia\framework\base\common\consts\ResultConst;
 
-trait ResultBase {
+trait ResultTrait {
 	
 	// ResultConst
 	

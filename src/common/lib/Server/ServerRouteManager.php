@@ -7,9 +7,9 @@ use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\ServerRouteLocal;
 use uujia\framework\base\common\lib\Utils\Network;
-use uujia\framework\base\common\traits\InstanceBase;
-use uujia\framework\base\common\traits\NameBase;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\InstanceTrait;
+use uujia\framework\base\common\traits\NameTrait;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class ServerRouteManager
@@ -17,8 +17,8 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Server
  */
 class ServerRouteManager extends BaseClass {
-	use ResultBase;
-	use InstanceBase;
+	use ResultTrait;
+	use InstanceTrait;
 	
 	/**
 	 * 服务器参数类

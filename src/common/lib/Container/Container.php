@@ -14,9 +14,9 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Reflection\Reflection;
-use uujia\framework\base\common\traits\InstanceBase;
-use uujia\framework\base\common\traits\NameBase;
-use uujia\framework\base\common\traits\ResultBase;
+use uujia\framework\base\common\traits\InstanceTrait;
+use uujia\framework\base\common\traits\NameTrait;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class Container
@@ -25,10 +25,10 @@ use uujia\framework\base\common\traits\ResultBase;
  * @package uujia\framework\base\common\lib\Container
  */
 class Container extends BaseClass implements ContainerInterface, \Iterator, \ArrayAccess {
-	use NameBase;
-	use ResultBase;
+	use NameTrait;
+	use ResultTrait;
 	
-	// use InstanceBase;
+	// use InstanceTrait;
 	
 	// private $c = [];
 	// // 每次实例化都会存入对象实例 如果已存在就覆盖
