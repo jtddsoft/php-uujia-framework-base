@@ -3,6 +3,7 @@
 
 namespace uujia\framework\base\common\lib\Event\Cache;
 
+use Generator;
 use ReflectionMethod;
 use uujia\framework\base\common\consts\EventConst;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
@@ -99,17 +100,14 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 *
 	 * @param array $param
 	 *
-	 * @return $this
+	 * @return Generator
 	 */
-	public function toCacheEventListenLocal($param = []) {
+	public function makeCacheEventListenLocal($param = []) {
 		/********************************
 		 * 分两部分
 		 *  1、只是个列表 方便遍历
 		 *  2、String类型的key value。其中key就是监听者要监听的事件名称（可能有通配符模糊匹配）
 		 ********************************/
-		
-		// 监听者列表缓存中的key
-		$keyListenList = $this->getKeyListenList();
 		
 		/********************************
 		 * 拆分param
@@ -124,10 +122,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		$_className = $param['className'];
 		
 		if (empty($_listeners)) {
-			return $this;
+			yield [];
 		}
 		
 		// todo: 是否之前反射时需要实例化EventHandle 调用一下某个方法自定义一些操作？
+		
 		
 		// 遍历每一个监听注解
 		foreach ($_listeners as $listener) {
@@ -157,26 +156,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 					
 					$name = "{$namespace}.{$m[1]}.{$m[2]}:{$uuid}";
 					
-					// 写入监听列表到缓存
-					$this->getRedisObj()->zAdd($keyListenList, $weight, $name);
-					
-					// 构建缓存数据 并转json 【本地】
-					$jsonData = $this->getEventCacheDataObj()
-					                 ->reset()
-					                 ->setServerName('main')
-					                 ->setServerType('event')
-					                 ->setClassNameSpace($_className)
-					                 ->setParam([])
-					                 ->toJson();
-					
-					// 构建EventName 生成key
-					$_evtNameObj = $this->getEventNameObj()->reset();
-					$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER);
-					
-					
-					// 写入缓存key
-					
-					
+					yield [
+						'weight' => $weight,
+						'name' => $name,
+						'className' => $_className,
+					];
 				}
 			} else {
 				foreach ($evt as $ev) {
@@ -185,8 +169,65 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 					}
 					
 					$name[] = "{$namespace}.{$ev}:{$uuid}";
+					
+					yield [
+						'weight' => $weight,
+						'name' => $name,
+						'className' => $_className,
+					];
 				}
 			}
+		}
+	}
+	
+	/**
+	 * 写本地事件监听到缓存
+	 *
+	 * @param array $param
+	 *
+	 * @return $this
+	 */
+	public function toCacheEventListenLocal($param = []) {
+		// 监听者列表缓存中的key
+		$keyListenList = $this->getKeyListenList();
+		
+		foreach ($this->makeCacheEventListenLocal() as $item) {
+			$_weight = $item['weight'] ?? 100;
+			$_name = $item['name'] ?? '';
+			$_className = $item['className'] ?? '';
+			
+			if (empty($name)) {
+				continue;
+			}
+			
+			// 写入监听列表到缓存
+			$this->getRedisObj()->zAdd($keyListenList, $_weight, $_name);
+			
+			// 构建缓存数据 并转json 【本地】
+			$jsonData = $this->getEventCacheDataObj()
+			                 ->reset()
+			                 ->setServerName('main')
+			                 ->setServerType('event')
+			                 ->setClassNameSpace($_className)
+			                 ->setParam([])
+			                 ->toJson();
+			
+			// 构建EventName 生成key
+			$_evtNameObj = $this->getEventNameObj()
+			                    ->reset()
+			                    ->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER)
+			                    ->switchLite()
+			                    ->parse($name)
+			                    ->makeEventName();
+			
+			if ($_evtNameObj->isErr()) {
+				continue;
+			}
+			
+			$_evtKey = $_evtNameObj->getEventName();
+			
+			// 写入缓存key
+			$this->getRedisObj()->zAdd($_evtKey, $_weight, $jsonData);
 		}
 		
 		return $this;
@@ -199,7 +240,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * 获取收集事件类名集合
 	 *
-	 * @return \Generator
+	 * @return Generator
 	 */
 	public function getEventClassNames() {
 		yield [];
@@ -208,7 +249,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * 加载事件类
 	 *
-	 * @return \Generator
+	 * @return Generator
 	 */
 	public function loadEventHandle() {
 		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);

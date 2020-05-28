@@ -178,7 +178,6 @@ class Demo extends BaseService {
 		
 	}
 	
-	
 	public function event() {
 		$event = $this->getEvent();
 		$event->listen('a#*', function ($param) {
@@ -188,6 +187,19 @@ class Demo extends BaseService {
 		});
 		
 		return $event->trigger('a', [1]);
+	}
+	
+	private function funA() {
+		$a = 1;
+		if ($a == 1) {
+			yield 200;
+		}
+	}
+	
+	public function testYield() {
+		foreach ($this->funA() as $item) {
+			echo 'do Demo::testYield=' . $item . "\n";
+		}
 	}
 	
 }

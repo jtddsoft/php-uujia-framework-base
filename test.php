@@ -19,6 +19,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	switch ($command) {
 		case 'demo':
 			// $demo = new \uujia\framework\base\test\Demo();
+			/** @var \uujia\framework\base\test\Demo $demo */
 			$demo = UU::C(\uujia\framework\base\test\Demo::class);
 			
 			for ($i = 0; $i < 1; $i++) {
@@ -32,8 +33,21 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			// var_dump($demo);
 			// var_dump(UU::C(Config::class));
 			
-			echo Str::is('app.order.goods.add.*:*', 'app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca') ? 'true' : 'false';
+			// echo Str::is('app.order.goods.add.*:*', 'app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca') ? 'true' : 'false';
 			echo "\n";
+			
+			$funA = function () {
+				$a = 1;
+				if ($a == 0) {
+					yield 100;
+				}
+			};
+			
+			foreach ($funA() as $item) {
+				echo 'do funA=' . $item . "\n";
+			}
+			
+			$demo->testYield();
 		
 			$t2 = microtime(true);
 			$t0 = $t2 - $t1;
