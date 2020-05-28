@@ -117,6 +117,30 @@ class EventCacheData extends BaseClass implements EventCacheDataInterface {
 		return $this->load($_dataCache, false);
 	}
 	
+	/**
+	 * 转数组
+	 *
+	 * @return array
+	 */
+	public function toArray() {
+		return [
+			'serverName'     => $this->getServerName(),
+			'serverType'     => $this->getServerType(),
+			'classNameSpace' => $this->getClassNameSpace(),
+			'param'          => $this->getParam(),
+		];
+	}
+	
+	/**
+	 * 转json
+	 *
+	 * @return array|false|string
+	 */
+	public function toJson() {
+		$arr = $this->toArray();
+		return Json::je($arr);
+	}
+	
 	/**************************************************************
 	 * get set
 	 **************************************************************/

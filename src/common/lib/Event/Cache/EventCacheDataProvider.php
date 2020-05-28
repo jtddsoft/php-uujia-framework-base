@@ -3,11 +3,14 @@
 
 namespace uujia\framework\base\common\lib\Event\Cache;
 
+use ReflectionMethod;
 use uujia\framework\base\common\consts\EventConst;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Annotation\EventListener;
 use uujia\framework\base\common\lib\Annotation\EventTrigger;
 use uujia\framework\base\common\lib\Cache\CacheDataProvider;
+use uujia\framework\base\common\lib\Event\EventHandle;
+use uujia\framework\base\common\lib\Event\EventHandleInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
@@ -29,6 +32,29 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 */
 	protected $_eventNameObj = null;
 	
+	/**
+	 * 事件缓存数据对象
+	 *
+	 * @var EventCacheData;
+	 */
+	protected $_eventCacheDataObj;
+	
+	/**
+	 * 监听者列表的key
+	 *  Key=app:event:listens Value=Redis中是有序集合
+	 *
+	 * @var string
+	 */
+	protected $_keyListenList = '';
+	
+	/**
+	 * 监听者列表的key
+	 *  Key=app:event:triggers Value=Redis中是有序集合
+	 *
+	 * @var string
+	 */
+	protected $_keyTriggerList = '';
+	
 	
 	/**
 	 * EventCacheDataProvider constructor.
@@ -36,14 +62,17 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * @param null                        $parent
 	 * @param RedisProviderInterface|null $redisProviderObj
 	 * @param EventName                   $eventNameObj
+	 * @param EventCacheData|null         $eventCacheDataObj
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 * @AutoInjection(arg = "eventNameObj", type = "cc")
 	 */
 	public function __construct($parent = null,
 	                            RedisProviderInterface $redisProviderObj = null,
-	                            EventName $eventNameObj = null) {
-		$this->_eventNameObj = $eventNameObj;
+	                            EventName $eventNameObj = null,
+	                            EventCacheData $eventCacheDataObj = null) {
+		$this->_eventNameObj      = $eventNameObj;
+		$this->_eventCacheDataObj = $eventCacheDataObj;
 		
 		parent::__construct($parent, $redisProviderObj);
 	}
@@ -66,23 +95,99 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 **************************************************************/
 	
 	/**
-	 * 写事件监听到缓存
+	 * 写本地事件监听到缓存
 	 *
-	 * @param array $listen
+	 * @param array $param
 	 *
 	 * @return $this
 	 */
-	public function writeEventListenToCache($listen = []) {
-		// 构建key的层级数组
-		$keys = [];
-		$keys[] = $this->getParent()->getCacheKeyPrefix();
-		$keys[] = 'event';
-		$keys[] = 'listen';
+	public function toCacheEventListenLocal($param = []) {
+		/********************************
+		 * 分两部分
+		 *  1、只是个列表 方便遍历
+		 *  2、String类型的key value。其中key就是监听者要监听的事件名称（可能有通配符模糊匹配）
+		 ********************************/
 		
-		// key的层级数组转成字符串key
-		$key = Arr::arrToStr($keys, ':');
+		// 监听者列表缓存中的key
+		$keyListenList = $this->getKeyListenList();
 		
+		/********************************
+		 * 拆分param
+		 ********************************/
 		
+		/** @var EventListener[] $_listeners */
+		$_listeners = $param['listener'];
+		
+		/** @var ReflectionMethod[] $_methods */
+		$_methods = $param['publicMethods'];
+		
+		$_className = $param['className'];
+		
+		if (empty($_listeners)) {
+			return $this;
+		}
+		
+		// todo: 是否之前反射时需要实例化EventHandle 调用一下某个方法自定义一些操作？
+		
+		// 遍历每一个监听注解
+		foreach ($_listeners as $listener) {
+			// 命名空间（事件名头部、事件名前缀）
+			$namespace = $listener->nameSpace;
+			
+			// uuid
+			$uuid = !empty($listener->uuid) ? $listener->uuid : '*';
+			
+			// evt
+			$evt = $listener->evt;
+			
+			// weight
+			$weight = $listener->weight;
+			
+			if (empty($namespace)) {
+				continue;
+			}
+			
+			// 寻找匹配的行为名称和触发时机{behavior_name}.{trigger_timing}
+			if (empty($evt)) {
+				foreach ($_methods as $method) {
+					preg_match_all(EventHandleInterface::PCRE_FUNC_LISTENER_NAME, $method->getName(), $m, PREG_SET_ORDER);
+					if (empty($m)) {
+						continue;
+					}
+					
+					$name = "{$namespace}.{$m[1]}.{$m[2]}:{$uuid}";
+					
+					// 写入监听列表到缓存
+					$this->getRedisObj()->zAdd($keyListenList, $weight, $name);
+					
+					// 构建缓存数据 并转json 【本地】
+					$jsonData = $this->getEventCacheDataObj()
+					                 ->reset()
+					                 ->setServerName('main')
+					                 ->setServerType('event')
+					                 ->setClassNameSpace($_className)
+					                 ->setParam([])
+					                 ->toJson();
+					
+					// 构建EventName 生成key
+					$_evtNameObj = $this->getEventNameObj()->reset();
+					$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER);
+					
+					
+					// 写入缓存key
+					
+					
+				}
+			} else {
+				foreach ($evt as $ev) {
+					if (empty($ev)) {
+						continue;
+					}
+					
+					$name[] = "{$namespace}.{$ev}:{$uuid}";
+				}
+			}
+		}
 		
 		return $this;
 	}
@@ -115,7 +220,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 				->load();
 			
 			$_refMethods = $refObj
-				->methods(UUReflection::METHOD_OF_PUBLIC);
+				->methods(UUReflection::METHOD_OF_PUBLIC)
+				->getMethodObjs();
 			
 			$_evtListener = $refObj
 				->annotation(EventListener::class)
@@ -145,6 +251,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			}
 			
 			$result = [
+				'className'     => $itemClassName,
 				'publicMethods' => $_refMethods,
 				'listener'      => $_evtListener,
 				'trigger'       => $_evtTrigger,
@@ -230,6 +337,82 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 */
 	public function setEventNameObj(EventName $eventNameObj) {
 		$this->_eventNameObj = $eventNameObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return EventCacheData
+	 */
+	public function getEventCacheDataObj(): EventCacheData {
+		return $this->_eventCacheDataObj;
+	}
+	
+	/**
+	 * @param EventCacheData $eventCacheDataObj
+	 *
+	 * @return $this
+	 */
+	public function setEventCacheDataObj(EventCacheData $eventCacheDataObj) {
+		$this->_eventCacheDataObj = $eventCacheDataObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getKeyListenList(): string {
+		if (empty($this->_keyListenList)) {
+			// 构建key的层级数组
+			$keys   = [];
+			$keys[] = $this->getParent()->getCacheKeyPrefix();
+			$keys[] = 'event';
+			$keys[] = 'listens';
+			
+			// key的层级数组转成字符串key
+			$this->_keyListenList = Arr::arrToStr($keys, ':');
+		}
+		
+		return $this->_keyListenList;
+	}
+	
+	/**
+	 * @param string $keyListenList
+	 *
+	 * @return $this
+	 */
+	public function setKeyListenList(string $keyListenList) {
+		$this->_keyListenList = $keyListenList;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getKeyTriggerList(): string {
+		if (empty($this->_keyTriggerList)) {
+			// 构建key的层级数组
+			$keys   = [];
+			$keys[] = $this->getParent()->getCacheKeyPrefix();
+			$keys[] = 'event';
+			$keys[] = 'triggers';
+			
+			// key的层级数组转成字符串key
+			$this->_keyTriggerList = Arr::arrToStr($keys, ':');
+		}
+		
+		return $this->_keyTriggerList;
+	}
+	
+	/**
+	 * @param string $keyTriggerList
+	 *
+	 * @return $this
+	 */
+	public function setKeyTriggerList(string $keyTriggerList) {
+		$this->_keyTriggerList = $keyTriggerList;
 		
 		return $this;
 	}

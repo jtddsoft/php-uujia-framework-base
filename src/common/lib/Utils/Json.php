@@ -10,7 +10,7 @@ class Json {
 	 *
 	 * @param $value
 	 *
-	 * @return false|string
+	 * @return false|string|array
 	 */
 	public static function je($value) {
 		return json_encode($value, JSON_UNESCAPED_UNICODE);
@@ -21,7 +21,7 @@ class Json {
 	 *
 	 * @param $value
 	 *
-	 * @return false|string
+	 * @return false|string|array
 	 */
 	public static function encode($value) {
 		return json_encode($value, JSON_UNESCAPED_UNICODE);

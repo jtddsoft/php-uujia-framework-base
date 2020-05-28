@@ -14,9 +14,13 @@ use uujia\framework\base\common\lib\Event\EventHandleInterface;
  * @package uujia\framework\base\test
  *
  * @EventTrigger
- * @EventListener(evt = {
- *     "app.test.eventTest.*.*:*"
- * })
+ * @EventListener(
+ *     namespace = "app.test.eventTest",
+ *     uuid = "*",
+ *     evt = {
+ *          "add.*"
+ *     }
+ * )
  */
 class EventTest extends EventHandle {
 	

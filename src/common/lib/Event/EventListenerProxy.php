@@ -72,6 +72,8 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	
 	/**
 	 * 构建
+	 *
+	 * @return $this
 	 */
 	public function make() {
 		$_eventNameObj = $this->getEventNameObj();
@@ -118,6 +120,8 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 				// $serverParameter->_setRet($ret)
 				return $ret;
 			});
+		
+		return $this;
 	}
 	
 	/**

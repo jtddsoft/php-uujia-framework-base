@@ -636,7 +636,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	/**
 	 * @return Reflection
 	 */
-	public function newReflectionObj(): Reflection {
+	public function newReflectionObj():Reflection {
 		return new Reflection();
 	}
 	

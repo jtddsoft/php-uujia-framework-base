@@ -4,6 +4,7 @@ use uujia\framework\base\common\Base;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Reflection\Reflection as UUReflection;
+use uujia\framework\base\common\lib\Utils\Str;
 use uujia\framework\base\UU;
 use uujia\framework\base\common\Config;
 
@@ -30,6 +31,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			var_dump(UU::C(Base::class)->ok());
 			// var_dump($demo);
 			// var_dump(UU::C(Config::class));
+			
+			echo Str::is('app.order.goods.add.*:*', 'app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca') ? 'true' : 'false';
+			echo "\n";
+		
 			$t2 = microtime(true);
 			$t0 = $t2 - $t1;
 			echo "startTime: {$t1}, endTime: {$t2}. t: {$t0}\n";

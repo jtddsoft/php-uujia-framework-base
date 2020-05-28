@@ -32,4 +32,10 @@ class EventTrigger extends Annotation {
 	 */
 	public $evt = [];
 	
+	/**
+	 * 权重
+	 * @var int
+	 */
+	public $weight = 100;
+	
 }
