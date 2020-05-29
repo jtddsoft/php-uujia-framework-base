@@ -17,7 +17,7 @@ use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Utils\Arr;
 use uujia\framework\base\common\lib\Utils\Json;
-use uujia\framework\base\common\lib\Reflection\Reflection as UUReflection;
+use uujia\framework\base\common\lib\Reflection\Reflection;
 
 /**
  * Class EventCacheDataProvider
@@ -41,6 +41,13 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	protected $_eventCacheDataObj;
 	
 	/**
+	 * 反射对象
+	 *
+	 * @var Reflection;
+	 */
+	protected $_reflectionObj = null;
+	
+	/**
 	 * 监听者列表的key
 	 *  Key=app:event:listens Value=Redis中是有序集合
 	 *
@@ -56,6 +63,37 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 */
 	protected $_keyTriggerList = '';
 	
+	/*******************************
+	 * 解析EventHandle 临时存储
+	 *******************************/
+	
+	/**
+	 * 类名
+	 *
+	 * @var string
+	 */
+	protected $_className = '';
+	
+	/**
+	 * 反射得到所有public方法
+	 *
+	 * @var ReflectionMethod[]
+	 */
+	protected $_refMethods = [];
+	
+	/**
+	 * 反射得到注解 EventListener 集合
+	 *
+	 * @var EventListener[]
+	 */
+	protected $_evtListeners = [];
+	
+	/**
+	 * 反射得到注解 EventTrigger 集合
+	 *
+	 * @var EventTrigger[]
+	 */
+	protected $_evtTriggers = [];
 	
 	/**
 	 * EventCacheDataProvider constructor.
@@ -64,16 +102,20 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * @param RedisProviderInterface|null $redisProviderObj
 	 * @param EventName                   $eventNameObj
 	 * @param EventCacheData|null         $eventCacheDataObj
+	 * @param Reflection                  $reflectionObj
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 * @AutoInjection(arg = "eventNameObj", type = "cc")
+	 * @AutoInjection(arg = "reflectionObj", type = "cc")
 	 */
 	public function __construct($parent = null,
 	                            RedisProviderInterface $redisProviderObj = null,
 	                            EventName $eventNameObj = null,
-	                            EventCacheData $eventCacheDataObj = null) {
+	                            EventCacheData $eventCacheDataObj = null,
+	                            Reflection $reflectionObj = null) {
 		$this->_eventNameObj      = $eventNameObj;
 		$this->_eventCacheDataObj = $eventCacheDataObj;
+		$this->_reflectionObj     = $reflectionObj;
 		
 		parent::__construct($parent, $redisProviderObj);
 	}
@@ -96,13 +138,87 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 **************************************************************/
 	
 	/**
+	 * 清空EventListen相关缓存
+	 *  1、一个列表
+	 *  2、一堆key
+	 *
+	 * @return $this
+	 */
+	public function clearCacheEventListen() {
+		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
+		$redis = $this->getRedisObj();
+		
+		// 1、清空列表
+		
+		// 监听者列表缓存中的key
+		$keyListenList = $this->getKeyListenList();
+		
+		// 清空缓存key
+		$redis->del($keyListenList);
+		
+		// 2、清空一堆key
+		
+		// 搜索key
+		$k = $this->getEventNameObj()->getAppName() . ':' . EventConst::CACHE_KEY_PREFIX_LISTENER . ':*';
+		
+		$iterator = null;
+		
+		while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
+			if (empty($keys)) {
+				continue;
+			}
+			
+			$redis->del($keys);
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 清空EventListen相关缓存
+	 *  1、一个列表
+	 *  2、一堆key
+	 *
+	 * @return $this
+	 */
+	public function clearCacheEventTrigger() {
+		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
+		$redis = $this->getRedisObj();
+		
+		// 1、清空列表
+		
+		// 监听者列表缓存中的key
+		$keyTriggerList = $this->getKeyTriggerList();
+		
+		// 清空缓存key
+		$redis->del($keyTriggerList);
+		
+		// 2、清空一堆key
+		
+		// 搜索key
+		$k = $this->getEventNameObj()->getAppName() . ':' . EventConst::CACHE_KEY_PREFIX_TRIGGER . ':*';
+		
+		$iterator = null;
+		
+		while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
+			if (empty($keys)) {
+				continue;
+			}
+			
+			$redis->del($keys);
+		}
+		
+		return $this;
+	}
+	
+	/**
 	 * 写本地事件监听到缓存
 	 *
-	 * @param array $param
+	 * @param $className
 	 *
 	 * @return Generator
 	 */
-	public function makeCacheEventListenLocal($param = []) {
+	public function makeCacheEventListenLocal($className) {
 		/********************************
 		 * 分两部分
 		 *  1、只是个列表 方便遍历
@@ -110,16 +226,12 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		 ********************************/
 		
 		/********************************
-		 * 拆分param
+		 * 解析class
 		 ********************************/
 		
-		/** @var EventListener[] $_listeners */
-		$_listeners = $param['listener'];
-		
-		/** @var ReflectionMethod[] $_methods */
-		$_methods = $param['publicMethods'];
-		
-		$_className = $param['className'];
+		$_listeners = $this->getEvtListeners();
+		$_methods   = $this->getRefMethods();
+		$_className = $this->getClassName();
 		
 		if (empty($_listeners)) {
 			yield [];
@@ -157,8 +269,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 					$name = "{$namespace}.{$m[1]}.{$m[2]}:{$uuid}";
 					
 					yield [
-						'weight' => $weight,
-						'name' => $name,
+						'weight'    => $weight,
+						'name'      => $name,
 						'className' => $_className,
 					];
 				}
@@ -171,8 +283,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 					$name[] = "{$namespace}.{$ev}:{$uuid}";
 					
 					yield [
-						'weight' => $weight,
-						'name' => $name,
+						'weight'    => $weight,
+						'name'      => $name,
 						'className' => $_className,
 					];
 				}
@@ -183,18 +295,17 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * 写本地事件监听到缓存
 	 *
-	 * @param array $param
+	 * @param $className
 	 *
 	 * @return $this
 	 */
-	public function toCacheEventListenLocal($param = []) {
+	public function toCacheEventListenLocal($className) {
 		// 监听者列表缓存中的key
 		$keyListenList = $this->getKeyListenList();
 		
-		foreach ($this->makeCacheEventListenLocal() as $item) {
+		foreach ($this->makeCacheEventListenLocal($className) as $item) {
 			$_weight = $item['weight'] ?? 100;
-			$_name = $item['name'] ?? '';
-			$_className = $item['className'] ?? '';
+			$_name   = $item['name'] ?? '';
 			
 			if (empty($name)) {
 				continue;
@@ -208,7 +319,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			                 ->reset()
 			                 ->setServerName('main')
 			                 ->setServerType('event')
-			                 ->setClassNameSpace($_className)
+			                 ->setClassNameSpace($className)
 			                 ->setParam([])
 			                 ->toJson();
 			
@@ -242,64 +353,76 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 *
 	 * @return Generator
 	 */
-	public function getEventClassNames() {
+	public function getEventClassNames(): Generator {
 		yield [];
 	}
 	
 	/**
-	 * 加载事件类
+	 * 加载收集的事件类集合
 	 *
-	 * @return Generator
+	 * @return $this
 	 */
-	public function loadEventHandle() {
+	public function loadEventHandles() {
 		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
-		$refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
+		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
 		
 		foreach ($this->getEventClassNames() as $itemClassName) {
-			$refObj
-				->setClassName($itemClassName)
-				->load();
-			
-			$_refMethods = $refObj
-				->methods(UUReflection::METHOD_OF_PUBLIC)
-				->getMethodObjs();
-			
-			$_evtListener = $refObj
-				->annotation(EventListener::class)
-				->getAnnotationObjs();
-			
-			$_evtTrigger = $refObj
-				->annotation(EventTrigger::class)
-				->getAnnotationObjs();
-			
-			// 根据EventHandle确定下EventName的初始信息 例如：evtt、evtl
-			$_evtNameObj = $this->getEventNameObj()->reset();
-			
-			$_evtExistL = false;
-			$_evtExistT = false;
-			
-			$_evtNameSpaceL = '';
-			$_evtNameSpaceT = '';
-			
-			if (!empty($_evtListener) && !empty($_evtTrigger)) {
-				$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER_LISTENER);
-				
-				
-			} elseif (!empty($_evtListener)) {
-				$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER);
-			} elseif (!empty($_evtTrigger)) {
-				$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER);
-			}
-			
-			$result = [
-				'className'     => $itemClassName,
-				'publicMethods' => $_refMethods,
-				'listener'      => $_evtListener,
-				'trigger'       => $_evtTrigger,
-			];
-			
-			yield $result;
+			$this->parseEventHandle($itemClassName)
+			     ->toCacheEventListenLocal($itemClassName);
 		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 解析事件类
+	 *
+	 * @param $className
+	 *
+	 * @return $this
+	 */
+	public function parseEventHandle($className) {
+		$refObj = $this->getReflectionObj()
+		               ->reset()
+		               ->setClassName($className)
+		               ->load();
+		
+		$this->setRefMethods($refObj->methods(Reflection::METHOD_OF_PUBLIC)
+		                            ->getMethodObjs());
+		
+		$this->setEvtListeners($refObj->annotation(EventListener::class)
+		                              ->getAnnotationObjs());
+		
+		$this->setEvtTriggers($refObj->annotation(EventTrigger::class)
+		                             ->getAnnotationObjs());
+		
+		// // 根据EventHandle确定下EventName的初始信息 例如：evtt、evtl
+		// $_evtNameObj = $this->getEventNameObj()->reset();
+		//
+		// $_evtExistL = false;
+		// $_evtExistT = false;
+		//
+		// $_evtNameSpaceL = '';
+		// $_evtNameSpaceT = '';
+		//
+		// if (!empty($_evtListener) && !empty($_evtTrigger)) {
+		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER_LISTENER);
+		//
+		//
+		// } elseif (!empty($_evtListener)) {
+		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER);
+		// } elseif (!empty($_evtTrigger)) {
+		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER);
+		// }
+		
+		// $result = [
+		// 	'className'     => $className,
+		// 	'publicMethods' => $_refMethods,
+		// 	'listener'      => $_evtListener,
+		// 	'trigger'       => $_evtTrigger,
+		// ];
+		
+		return $this;
 	}
 	
 	/**
@@ -341,6 +464,9 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * 写入缓存
 	 */
 	public function toCache() {
+		// 先清空
+		$this->clearCache();
+		
 		
 	}
 	
@@ -357,7 +483,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * 清空缓存
 	 */
 	public function clearCache() {
-	
+		$this->clearCacheEventListen();
+		
+		parent::clearCache();
+		
+		return $this;
 	}
 	
 	/**************************************************************
@@ -396,6 +526,28 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 */
 	public function setEventCacheDataObj(EventCacheData $eventCacheDataObj) {
 		$this->_eventCacheDataObj = $eventCacheDataObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return Reflection
+	 */
+	public function getReflectionObj(): Reflection {
+		if (empty($this->_reflectionObj)) {
+			$this->_reflectionObj = new Reflection();
+		}
+		
+		return $this->_reflectionObj;
+	}
+	
+	/**
+	 * @param Reflection $reflectionObj
+	 *
+	 * @return $this
+	 */
+	public function setReflectionObj(Reflection $reflectionObj) {
+		$this->_reflectionObj = $reflectionObj;
 		
 		return $this;
 	}
@@ -454,6 +606,78 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 */
 	public function setKeyTriggerList(string $keyTriggerList) {
 		$this->_keyTriggerList = $keyTriggerList;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getClassName(): string {
+		return $this->_className;
+	}
+	
+	/**
+	 * @param string $className
+	 *
+	 * @return $this
+	 */
+	public function setClassName(string $className) {
+		$this->_className = $className;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return ReflectionMethod[]
+	 */
+	public function &getRefMethods(): array {
+		return $this->_refMethods;
+	}
+	
+	/**
+	 * @param ReflectionMethod[] $refMethods
+	 *
+	 * @return $this
+	 */
+	public function setRefMethods(array $refMethods) {
+		$this->_refMethods = $refMethods;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return EventListener[]
+	 */
+	public function &getEvtListeners(): array {
+		return $this->_evtListeners;
+	}
+	
+	/**
+	 * @param EventListener[] $evtListeners
+	 *
+	 * @return $this
+	 */
+	public function setEvtListeners(array $evtListeners) {
+		$this->_evtListeners = $evtListeners;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return EventTrigger[]
+	 */
+	public function &getEvtTriggers(): array {
+		return $this->_evtTriggers;
+	}
+	
+	/**
+	 * @param EventTrigger[] $evtTriggers
+	 *
+	 * @return $this
+	 */
+	public function setEvtTriggers(array $evtTriggers) {
+		$this->_evtTriggers = $evtTriggers;
 		
 		return $this;
 	}

@@ -160,9 +160,11 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	
 	/**
 	 * 清空缓存
+	 *
+	 * @return $this
 	 */
 	public function clearCache() {
-	
+		return $this;
 	}
 	
 	/**

@@ -68,6 +68,20 @@ class BaseClass implements BaseClassInterface {
 	/**
 	 * @return ContainerInterface
 	 */
+	public function di() {
+		return $this->_container;
+	}
+	
+	/**
+	 * @return ContainerInterface
+	 */
+	public function getDI() {
+		return $this->_container;
+	}
+	
+	/**
+	 * @return ContainerInterface
+	 */
 	public function getContainer() {
 		return $this->_container;
 	}

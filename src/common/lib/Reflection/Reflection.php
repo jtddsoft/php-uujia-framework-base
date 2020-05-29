@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Reflection;
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\InstanceTrait;
 
 /**
@@ -13,7 +14,7 @@ use uujia\framework\base\common\traits\InstanceTrait;
  *
  * @package uujia\framework\base\common\lib\Reflection
  */
-class Reflection {
+class Reflection extends BaseClass {
 	use InstanceTrait;
 	
 	const ANNOTATION_OF_CLASS = 1;
@@ -151,6 +152,38 @@ class Reflection {
 				$this->setPropertyName($name);
 				break;
 		}
+		
+		parent::__construct();
+	}
+	
+	/**
+	 * 复位 属性归零
+	 *
+	 * @param array $exclude
+	 *
+	 * @return $this
+	 */
+	public function reset($exclude = []) {
+		(!in_array('reader', $exclude)) && $this->_reader = null;
+		(!in_array('refReaderClass', $exclude)) && $this->_refReaderClass = null;
+		(!in_array('className', $exclude)) && $this->_className = '';
+		(!in_array('methodName', $exclude)) && $this->_methodName = '';
+		(!in_array('propertyName', $exclude)) && $this->_propertyName = '';
+		(!in_array('refClass', $exclude)) && $this->_refClass = null;
+		(!in_array('refMethod', $exclude)) && $this->_refMethod = null;
+		(!in_array('refProperty', $exclude)) && $this->_refProperty = null;
+		(!in_array('refMethods', $exclude)) && $this->_refMethods = [];
+		(!in_array('refParameters', $exclude)) && $this->_refParameters = [];
+		(!in_array('refPropertys', $exclude)) && $this->_refPropertys = [];
+		(!in_array('classAnnotations', $exclude)) && $this->_classAnnotations = [];
+		(!in_array('methodAnnotations', $exclude)) && $this->_methodAnnotations = [];
+		(!in_array('propertyAnnotations', $exclude)) && $this->_propertyAnnotations = [];
+		(!in_array('methodObjs', $exclude)) && $this->_methodObjs = [];
+		(!in_array('annotationOf', $exclude)) && $this->_annotationOf = self::ANNOTATION_OF_CLASS;
+		(!in_array('annotationObjs', $exclude)) && $this->_annotationObjs = [];
+		(!in_array('injectionInstance', $exclude)) && $this->_injectionInstance = null;
+		
+		return parent::reset($exclude);
 	}
 	
 	/**

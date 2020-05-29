@@ -189,15 +189,15 @@ class Demo extends BaseService {
 		return $event->trigger('a', [1]);
 	}
 	
-	private function funA() {
-		$a = 1;
-		if ($a == 1) {
-			yield 200;
+	private function funA($a) {
+		// $a = 1;
+		for ($i = 0; $i < $a; $i++) {
+			yield $i;
 		}
 	}
 	
 	public function testYield() {
-		foreach ($this->funA() as $item) {
+		foreach ($this->funA(2) as $item) {
 			echo 'do Demo::testYield=' . $item . "\n";
 		}
 	}

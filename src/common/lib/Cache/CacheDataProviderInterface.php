@@ -35,6 +35,8 @@ interface CacheDataProviderInterface {
 	
 	/**
 	 * 清空缓存
+	 *
+	 * @return $this
 	 */
 	public function clearCache();
 	
