@@ -193,11 +193,9 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * 写本地事件监听到缓存
 	 *
-	 * @param $className
-	 *
 	 * @return Generator
 	 */
-	public function makeCacheEventListenLocal($className) {
+	public function makeCacheEventListenLocal() {
 		/********************************
 		 * 分两部分
 		 *  1、只是个列表 方便遍历

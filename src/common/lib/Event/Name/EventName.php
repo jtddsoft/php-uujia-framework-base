@@ -253,14 +253,14 @@ class EventName extends BaseClass implements EventNameInterface {
 		$this->setEventName($eventName);
 		
 		$re = preg_match_all(self::PCRE_NAME, $_eventName, $m, PREG_SET_ORDER);
-		if (!empty($re)) {
+		if ($re === false) {
 			// todo: 异常
 			$this->error('事件名称解析失败');
 			
 			return $this;
 		}
 		
-		if (empty($m)) {
+		if (empty($m) || empty($m[0])) {
 			// todo: 异常
 			$this->error('事件名称格式不正确解析失败');
 			
@@ -268,24 +268,24 @@ class EventName extends BaseClass implements EventNameInterface {
 		}
 		
 		// 校验匹配后所得数组元素个数 由于0的位置是匹配的全字符 要先减去1 所剩为真正匹配的各个属性
-		if (!in_array(count($m) - 1, self::PCRE_NAME_SPLIT_COUNT)) {
+		if (!in_array(count($m[0]) - 1, self::PCRE_NAME_SPLIT_COUNT)) {
 			// todo: 异常
 			$this->error('事件名称解析格式不正确');
 			
 			return $this;
 		}
 		
-		(count($m) > self::PCRE_NAME_APPNAME_INDEX) && $this->setAppName($m[self::PCRE_NAME_APPNAME_INDEX]);
-		(count($m) > self::PCRE_NAME_MODENAME_INDEX) && $this->setModeName($m[self::PCRE_NAME_MODENAME_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_APPNAME_INDEX) && $this->setAppName($m[0][self::PCRE_NAME_APPNAME_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_MODENAME_INDEX) && $this->setModeName($m[0][self::PCRE_NAME_MODENAME_INDEX]);
 		
-		(count($m) > self::PCRE_NAME_TYPE_INDEX) && $this->setType($m[self::PCRE_NAME_TYPE_INDEX]);
-		(count($m) > self::PCRE_NAME_COM_INDEX) && $this->setCom($m[self::PCRE_NAME_COM_INDEX]);
-		(count($m) > self::PCRE_NAME_EVENT_INDEX) && $this->setEvent($m[self::PCRE_NAME_EVENT_INDEX]);
-		(count($m) > self::PCRE_NAME_BEHAVIOR_INDEX) && $this->setBehavior($m[self::PCRE_NAME_BEHAVIOR_INDEX]);
-		(count($m) > self::PCRE_NAME_TIMING_INDEX) && $this->setTiming($m[self::PCRE_NAME_TIMING_INDEX]);
-		(count($m) > self::PCRE_NAME_UUID_INDEX) && $this->setUuid($m[self::PCRE_NAME_UUID_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_TYPE_INDEX) && $this->setType($m[0][self::PCRE_NAME_TYPE_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_COM_INDEX) && $this->setCom($m[0][self::PCRE_NAME_COM_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_EVENT_INDEX) && $this->setEvent($m[0][self::PCRE_NAME_EVENT_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_BEHAVIOR_INDEX) && $this->setBehavior($m[0][self::PCRE_NAME_BEHAVIOR_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_TIMING_INDEX) && $this->setTiming($m[0][self::PCRE_NAME_TIMING_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_UUID_INDEX) && $this->setUuid($m[0][self::PCRE_NAME_UUID_INDEX]);
 		
-		(count($m) > self::PCRE_NAME_TMP_INDEX) && $this->setTmp($m[self::PCRE_NAME_TMP_INDEX]);
+		(count($m[0]) > self::PCRE_NAME_TMP_INDEX) && $this->setTmp($m[0][self::PCRE_NAME_TMP_INDEX]);
 		
 		$this->validateProperty();
 		if ($this->isErr()) {
