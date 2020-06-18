@@ -6,6 +6,7 @@ use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
 use uujia\framework\base\common\ErrorConfig;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\MQ\MQCollection;
@@ -173,6 +174,13 @@ class BaseService {
 	 */
 	public function getRedis(): Redis {
 		return UU::C(Redis::class);
+	}
+	
+	/**
+	 * @return CacheDataManagerInterface
+	 */
+	public function getCacheDataManager(): CacheDataManagerInterface {
+		return UU::C(CacheDataManagerInterface::class);
 	}
 	
 	

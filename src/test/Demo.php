@@ -111,16 +111,22 @@ class Demo extends BaseService {
 		$configObj->path($paths);
 		
 		// 获取容器配置container_config
-		$_containerAlias = $configObj->loadValue('container.container.alias');
+		$_containerConfig = $configObj->loadValue('container.container');
+		$_containerAlias  = $_containerConfig['alias'] ?? [];
+		$_containerAs     = $_containerConfig['as'] ?? [];
 		
-		if (!empty($_containerAlias)) {
-			$_containerObj = $this->getContainer();
-			$_containerObj->list()->setAlias($_containerAlias);
+		if (!empty($_containerAlias) || !empty($_containerAs)) {
+			// $_containerObj = $this->getContainer();
+			// $_containerObj->list()->setAlias($_containerAlias);
+			$this->getContainer()
+			     ->list()
+			     ->setAlias($_containerAlias)
+			     ->setAs($_containerAs);
 		}
 		
 		$this->getRedis()
-		     // ->setRedisProviderObj(new RedisProvider())
-		     ->loadConfig();
+			// ->setRedisProviderObj(new RedisProvider())
+			 ->loadConfig();
 	}
 	
 	public function test() {
@@ -141,16 +147,16 @@ class Demo extends BaseService {
 	public function subscribeRabbitMQ() {
 		$mq = $this->getMQCollection()->getRabbitMQObj();
 		$mq->connect()
-			->queue(Log::RABBITMQ_QUEUE)
-			->exchange(Log::RABBITMQ_EXCHANGE)
-			->routingKey(Log::RABBITMQ_ROUTING_KEY)
-			->routingKeyBinding(Log::RABBITMQ_ROUTING_KEY_BINDING)
-			->setCallbackSubscribe(function ($body, $envelope, $queue) {
-				/** @var $envelope \AMQPEnvelope */
-				/** @var $queue \AMQPQueue */
-				echo $body . "\n";
-			})
-			->subscribe();
+		   ->queue(Log::RABBITMQ_QUEUE)
+		   ->exchange(Log::RABBITMQ_EXCHANGE)
+		   ->routingKey(Log::RABBITMQ_ROUTING_KEY)
+		   ->routingKeyBinding(Log::RABBITMQ_ROUTING_KEY_BINDING)
+		   ->setCallbackSubscribe(function ($body, $envelope, $queue) {
+			   /** @var $envelope \AMQPEnvelope */
+			   /** @var $queue \AMQPQueue */
+			   echo $body . "\n";
+		   })
+		   ->subscribe();
 		
 	}
 	
@@ -158,8 +164,7 @@ class Demo extends BaseService {
 		$mq = $this->getMQCollection()->getMQTTObj();
 		$mq->topics('Logger_2019')
 		   ->clientId('Logger2019')
-			->connect()
-			
+		   ->connect()
 		   ->setCallbackSubscribe(function ($message) {
 			   // echo json_encode($message) . "\n";
 			   var_dump($message);
@@ -173,8 +178,8 @@ class Demo extends BaseService {
 		$mq->topics('Logger_2019')
 		   ->clientId('Logger20191')
 			// ->connect()
-			
-		   ->publish('111111111222222222');
+
+           ->publish('111111111222222222');
 		
 	}
 	
@@ -182,7 +187,7 @@ class Demo extends BaseService {
 		$event = $this->getEvent();
 		$event->listen('a#*', function ($param) {
 			// echo Json::je($param);
-		
+			
 			return $this->getResult()->ok();
 		});
 		
@@ -200,6 +205,10 @@ class Demo extends BaseService {
 		foreach ($this->funA(2) as $item) {
 			echo 'do Demo::testYield=' . $item . "\n";
 		}
+	}
+	
+	public function eventProviderReg() {
+	
 	}
 	
 }

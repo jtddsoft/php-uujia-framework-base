@@ -150,6 +150,86 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	}
 	
 	/**************************************************************
+	 * data
+	 **************************************************************/
+	
+	/**
+	 * 获取收集事件类名集合
+	 *  yield [];
+	 *
+	 * @return Generator
+	 */
+	abstract public function getEventClassNames(): Generator;
+	
+	/**
+	 * 加载收集的事件类集合
+	 *
+	 * @return $this
+	 */
+	public function loadEventHandles() {
+		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
+		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
+		
+		foreach ($this->getEventClassNames() as $itemClassName) {
+			$this->parseEventHandle($itemClassName)
+			     ->toCacheEventListenLocal();
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * 解析事件类
+	 *
+	 * @param $className
+	 *
+	 * @return $this
+	 */
+	public function parseEventHandle($className) {
+		$refObj = $this->getReflectionObj()
+		               ->reset()
+		               ->setClassName($className)
+		               ->load();
+		
+		$this->setRefMethods($refObj->methods(Reflection::METHOD_OF_PUBLIC)
+		                            ->getMethodObjs());
+		
+		$this->setEvtListeners($refObj->annotation(EventListener::class)
+		                              ->getAnnotationObjs());
+		
+		$this->setEvtTriggers($refObj->annotation(EventTrigger::class)
+		                             ->getAnnotationObjs());
+		
+		// // 根据EventHandle确定下EventName的初始信息 例如：evtt、evtl
+		// $_evtNameObj = $this->getEventNameObj()->reset();
+		//
+		// $_evtExistL = false;
+		// $_evtExistT = false;
+		//
+		// $_evtNameSpaceL = '';
+		// $_evtNameSpaceT = '';
+		//
+		// if (!empty($_evtListener) && !empty($_evtTrigger)) {
+		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER_LISTENER);
+		//
+		//
+		// } elseif (!empty($_evtListener)) {
+		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER);
+		// } elseif (!empty($_evtTrigger)) {
+		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER);
+		// }
+		
+		// $result = [
+		// 	'className'     => $className,
+		// 	'publicMethods' => $_refMethods,
+		// 	'listener'      => $_evtListener,
+		// 	'trigger'       => $_evtTrigger,
+		// ];
+		
+		return $this;
+	}
+	
+	/**************************************************************
 	 * cache event listen
 	 **************************************************************/
 	
@@ -272,15 +352,16 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * 写本地事件监听到缓存
 	 *
-	 * @param $className
-	 *
 	 * @return $this
 	 */
-	public function toCacheEventListenLocal($className) {
+	public function toCacheEventListenLocal() {
+		// 类名
+		$className = $this->getClassName();
+		
 		// 监听者列表缓存中的key
 		$keyListenList = $this->getKeyListenList();
 		
-		foreach ($this->makeCacheEventListenLocal($className) as $item) {
+		foreach ($this->makeCacheEventListenLocal() as $item) {
 			$_weight = $item['weight'] ?? 100;
 			$_name   = $item['name'] ?? '';
 			
@@ -497,86 +578,6 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		return $this;
 	}
 	
-	/**************************************************************
-	 * data
-	 **************************************************************/
-	
-	/**
-	 * 获取收集事件类名集合
-	 *  yield [];
-	 *
-	 * @return Generator
-	 */
-	abstract public function getEventClassNames(): Generator;
-	
-	/**
-	 * 加载收集的事件类集合
-	 *
-	 * @return $this
-	 */
-	public function loadEventHandles() {
-		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
-		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
-		
-		foreach ($this->getEventClassNames() as $itemClassName) {
-			$this->parseEventHandle($itemClassName)
-			     ->toCacheEventListenLocal($itemClassName);
-		}
-		
-		return $this;
-	}
-	
-	/**
-	 * 解析事件类
-	 *
-	 * @param $className
-	 *
-	 * @return $this
-	 */
-	public function parseEventHandle($className) {
-		$refObj = $this->getReflectionObj()
-		               ->reset()
-		               ->setClassName($className)
-		               ->load();
-		
-		$this->setRefMethods($refObj->methods(Reflection::METHOD_OF_PUBLIC)
-		                            ->getMethodObjs());
-		
-		$this->setEvtListeners($refObj->annotation(EventListener::class)
-		                              ->getAnnotationObjs());
-		
-		$this->setEvtTriggers($refObj->annotation(EventTrigger::class)
-		                             ->getAnnotationObjs());
-		
-		// // 根据EventHandle确定下EventName的初始信息 例如：evtt、evtl
-		// $_evtNameObj = $this->getEventNameObj()->reset();
-		//
-		// $_evtExistL = false;
-		// $_evtExistT = false;
-		//
-		// $_evtNameSpaceL = '';
-		// $_evtNameSpaceT = '';
-		//
-		// if (!empty($_evtListener) && !empty($_evtTrigger)) {
-		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER_LISTENER);
-		//
-		//
-		// } elseif (!empty($_evtListener)) {
-		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER);
-		// } elseif (!empty($_evtTrigger)) {
-		// 	$_evtNameObj->setModeName(EventConst::CACHE_KEY_PREFIX_TRIGGER);
-		// }
-		
-		// $result = [
-		// 	'className'     => $className,
-		// 	'publicMethods' => $_refMethods,
-		// 	'listener'      => $_evtListener,
-		// 	'trigger'       => $_evtTrigger,
-		// ];
-		
-		return $this;
-	}
-	
 	/**
 	 * 构建缓存Key
 	 *
@@ -590,6 +591,10 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		return parent::makeCacheKey($key); // TODO: Change the autogenerated stub
 	}
+	
+	/**************************************************************
+	 * Cache
+	 **************************************************************/
 	
 	/**
 	 * 构建并获取数据 如果缓存没有就写入缓存
@@ -619,7 +624,10 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 先清空
 		$this->clearCache();
 		
+		// 加载事件
+		$this->loadEventHandles();
 		
+		return $this;
 	}
 	
 	/**
