@@ -3,7 +3,7 @@
 
 namespace uujia\framework\base\common\lib\Event\Cache;
 
-use uujia\framework\base\common\consts\EventConst;
+use uujia\framework\base\common\consts\EventConstInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Utils\Json;
 
@@ -83,10 +83,10 @@ class EventCacheData extends BaseClass implements EventCacheDataInterface {
 	public function load($cacheData = [], $isReset = true) {
 		$isReset && $this->reset();
 		
-		$this->setServerName($cacheData[EventConst::CACHE_SP_SERVERNAME] ?? '')
-		     ->setServerType($cacheData[EventConst::CACHE_SP_SERVERTYPE] ?? '')
-		     ->setClassNameSpace($cacheData[EventConst::CACHE_SP_CLASSNAMESPACE] ?? '')
-		     ->setParam($cacheData[EventConst::CACHE_SP__PARAM] ?? []);
+		$this->setServerName($cacheData[EventConstInterface::CACHE_SP_SERVERNAME] ?? '')
+		     ->setServerType($cacheData[EventConstInterface::CACHE_SP_SERVERTYPE] ?? '')
+		     ->setClassNameSpace($cacheData[EventConstInterface::CACHE_SP_CLASSNAMESPACE] ?? '')
+		     ->setParam($cacheData[EventConstInterface::CACHE_SP__PARAM] ?? []);
 		
 		return $this;
 	}

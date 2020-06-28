@@ -3,10 +3,9 @@
 
 namespace uujia\framework\base\common\lib\Event;
 
-use uujia\framework\base\common\consts\EventConst;
+
+use uujia\framework\base\common\consts\EventConstInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\lib\Cache\CacheClassInterface;
-use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Server\ServerParameter;
@@ -153,10 +152,10 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 */
 	public function loadCache(EventCacheDataInterface $cacheDataObj) {
 		$this->resetSP()
-		     ->setSPServerName($cacheData[EventConst::CACHE_SP_SERVERNAME] ?? '')
-		     ->setSPServerType($cacheData[EventConst::CACHE_SP_SERVERTYPE] ?? '')
-		     ->setSPClassNameSpace($cacheData[EventConst::CACHE_SP_CLASSNAMESPACE] ?? '')
-		     ->setSPParam($cacheData[EventConst::CACHE_SP__PARAM] ?? [])
+		     ->setSPServerName($cacheData[EventConstInterface::CACHE_SP_SERVERNAME] ?? '')
+		     ->setSPServerType($cacheData[EventConstInterface::CACHE_SP_SERVERTYPE] ?? '')
+		     ->setSPClassNameSpace($cacheData[EventConstInterface::CACHE_SP_CLASSNAMESPACE] ?? '')
+		     ->setSPParam($cacheData[EventConstInterface::CACHE_SP__PARAM] ?? [])
 		     ->make();
 		
 		return $this;

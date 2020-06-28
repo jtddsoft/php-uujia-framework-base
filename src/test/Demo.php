@@ -7,7 +7,9 @@ namespace uujia\framework\base\test;
 use uujia\framework\base\BaseService;
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
+use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
 use uujia\framework\base\common\lib\Utils\Json;
@@ -47,7 +49,7 @@ class Demo extends BaseService {
 	/**
 	 * @param int $x
 	 */
-	public function setX(int $x): void {
+	public function setX(int $x) {
 		$this->_x = $x;
 	}
 	
@@ -61,7 +63,7 @@ class Demo extends BaseService {
 	/**
 	 * @param int $y
 	 */
-	public function setY(int $y): void {
+	public function setY(int $y) {
 		$this->_y = $y;
 	}
 	
@@ -208,7 +210,13 @@ class Demo extends BaseService {
 	}
 	
 	public function eventProviderReg() {
-	
+		/** @var CacheDataManagerInterface $cacheDataMgr */
+		$cacheDataMgr = UU::C(CacheDataManagerInterface::class);
+		
+		/** @var EventCacheDataProviderTest $eventCacheDataProvider */
+		$eventCacheDataProvider = UU::C(EventCacheDataProviderTest::class);
+		
+		$cacheDataMgr->regProvider(CacheConstInterface::DATA_PROVIDER_KEY_EVENT, $eventCacheDataProvider);
 	}
 	
 }

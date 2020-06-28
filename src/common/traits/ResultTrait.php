@@ -4,11 +4,11 @@
 namespace uujia\framework\base\common\traits;
 
 
-use uujia\framework\base\common\consts\ResultConst;
+use uujia\framework\base\common\consts\ResultConstInterface;
 
 trait ResultTrait {
 	
-	// ResultConst
+	// ResultConstInterface
 	
 	// 错误代码构造方法工厂（构造回调Func） 用时才加载
 	// private $_errCodeFactory = null;
@@ -18,10 +18,10 @@ trait ResultTrait {
 	/**
 	 * 缓存返回值
 	 */
-	private $code = 200;
+	private $code   = 200;
 	private $status = 'success';
-	private $msg = '操作完成';
-	public $data = [];
+	private $msg    = '操作完成';
+	public  $data   = [];
 	
 	// 缓存最后一次返回值 包括code msg。。。
 	public $last_return
@@ -74,9 +74,10 @@ trait ResultTrait {
 	 * @return array|\think\response\Json
 	 */
 	public function code($code = 1000, $data = []) {
-		$_ret                           = ResultConst::RESULT_ERROR;
-		$_ret[ResultConst::RESULT_CODE] = $code;
-		$_ret[ResultConst::RESULT_DATA] = $data;
+		$_ret = ResultConstInterface::RESULT_ERROR;
+		
+		$_ret[ResultConstInterface::RESULT_CODE] = $code;
+		$_ret[ResultConstInterface::RESULT_DATA] = $data;
 		
 		if (empty($this->_errCodeCache)) {
 			if (!empty($this->_errCodeFactory) && $this->_errCodeFactory instanceof \Closure) {
@@ -84,7 +85,7 @@ trait ResultTrait {
 			}
 		}
 		
-		$_ret[ResultConst::RESULT_MSG] = $this->_errCodeCache[$code]['error_code'] ?? '未知错误';
+		$_ret[ResultConstInterface::RESULT_MSG] = $this->_errCodeCache[$code]['error_code'] ?? '未知错误';
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
@@ -103,10 +104,11 @@ trait ResultTrait {
 	 * @return array|\think\response\Json
 	 */
 	public function error($msg = 'error', $code = 1000, $data = []) {
-		$_ret                           = ResultConst::RESULT_ERROR;
-		$_ret[ResultConst::RESULT_CODE] = $code;
-		$_ret[ResultConst::RESULT_MSG]  = $msg;
-		$_ret[ResultConst::RESULT_DATA] = $data;
+		$_ret = ResultConstInterface::RESULT_ERROR;
+		
+		$_ret[ResultConstInterface::RESULT_CODE] = $code;
+		$_ret[ResultConstInterface::RESULT_MSG]  = $msg;
+		$_ret[ResultConstInterface::RESULT_DATA] = $data;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
@@ -115,17 +117,18 @@ trait ResultTrait {
 	}
 	
 	public function ok() {
-		$_ret = ResultConst::RESULT_OK;
+		$_ret = ResultConstInterface::RESULT_OK;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
 		
-		return ResultConst::RESULT_OK;
+		return ResultConstInterface::RESULT_OK;
 	}
 	
 	public function data($data = []) {
-		$_ret                           = ResultConst::RESULT_OK;
-		$_ret[ResultConst::RESULT_DATA] = $data;
+		$_ret = ResultConstInterface::RESULT_OK;
+		
+		$_ret[ResultConstInterface::RESULT_DATA] = $data;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
@@ -151,7 +154,7 @@ trait ResultTrait {
 	public function isOk($ret = []) {
 		$_ret = !empty($ret) ? $ret : $this->getLastReturn();
 		
-		if ($_ret[ResultConst::RESULT_CODE] == ResultConst::OK_CODE) {
+		if ($_ret[ResultConstInterface::RESULT_CODE] == ResultConstInterface::OK_CODE) {
 			return true;
 		}
 		
@@ -192,7 +195,7 @@ trait ResultTrait {
 	public function setCode(int $code) {
 		$this->code = $code;
 		
-		$this->last_return[ResultConst::RESULT_CODE] = $code;
+		$this->last_return[ResultConstInterface::RESULT_CODE] = $code;
 		
 		return $this;
 	}
@@ -216,7 +219,7 @@ trait ResultTrait {
 	public function setStatus(string $status) {
 		$this->status = $status;
 		
-		$this->last_return[ResultConst::RESULT_STATUS] = $status;
+		$this->last_return[ResultConstInterface::RESULT_STATUS] = $status;
 		
 		return $this;
 	}
@@ -240,7 +243,7 @@ trait ResultTrait {
 	public function setMsg(string $msg) {
 		$this->msg = $msg;
 		
-		$this->last_return[ResultConst::RESULT_MSG] = $msg;
+		$this->last_return[ResultConstInterface::RESULT_MSG] = $msg;
 		
 		return $this;
 	}
@@ -264,7 +267,7 @@ trait ResultTrait {
 	public function setData(array $data) {
 		$this->data = $data;
 		
-		$this->last_return[ResultConst::RESULT_DATA] = $data;
+		$this->last_return[ResultConstInterface::RESULT_DATA] = $data;
 		
 		return $this;
 	}
@@ -288,10 +291,10 @@ trait ResultTrait {
 	public function setLastReturn(array $last_return) {
 		$this->last_return = array_merge($this->last_return, $last_return);
 		
-		$this->setCode($this->last_return[ResultConst::RESULT_CODE]);
-		$this->setMsg($this->last_return[ResultConst::RESULT_MSG]);
-		$this->setStatus($this->last_return[ResultConst::RESULT_STATUS]);
-		$this->setData($this->last_return[ResultConst::RESULT_DATA]);
+		$this->setCode($this->last_return[ResultConstInterface::RESULT_CODE]);
+		$this->setMsg($this->last_return[ResultConstInterface::RESULT_MSG]);
+		$this->setStatus($this->last_return[ResultConstInterface::RESULT_STATUS]);
+		$this->setData($this->last_return[ResultConstInterface::RESULT_DATA]);
 		
 		// 添加到返回值列表
 		$this->addResults($this->last_return);

@@ -5,10 +5,11 @@ namespace uujia\framework\base\common\lib\Event\Cache;
 
 use Generator;
 use ReflectionMethod;
-use uujia\framework\base\common\consts\EventConst;
+use uujia\framework\base\common\consts\EventConstInterface;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Annotation\EventListener;
 use uujia\framework\base\common\lib\Annotation\EventTrigger;
+use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Cache\CacheDataProvider;
 use uujia\framework\base\common\lib\Event\EventHandle;
 use uujia\framework\base\common\lib\Event\EventHandleInterface;
@@ -114,20 +115,20 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * EventCacheDataProvider constructor.
 	 *
-	 * @param null                        $parent
+	 * @param CacheDataManagerInterface   $parent
 	 * @param RedisProviderInterface|null $redisProviderObj
 	 * @param EventName                   $eventNameObj
-	 * @param EventCacheData|null         $eventCacheDataObj
+	 * @param EventCacheDataInterface     $eventCacheDataObj
 	 * @param Reflection                  $reflectionObj
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 * @AutoInjection(arg = "eventNameObj", type = "cc")
 	 * @AutoInjection(arg = "reflectionObj", type = "cc")
 	 */
-	public function __construct($parent = null,
+	public function __construct(CacheDataManagerInterface $parent = null,
 	                            RedisProviderInterface $redisProviderObj = null,
 	                            EventName $eventNameObj = null,
-	                            EventCacheData $eventCacheDataObj = null,
+	                            EventCacheDataInterface $eventCacheDataObj = null,
 	                            Reflection $reflectionObj = null) {
 		$this->_eventNameObj      = $eventNameObj;
 		$this->_eventCacheDataObj = $eventCacheDataObj;
@@ -255,7 +256,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 2、清空一堆key
 		
 		// 搜索key
-		$k = $this->getEventNameObj()->getAppName() . ':' . EventConst::CACHE_KEY_PREFIX_LISTENER . ':*';
+		$k = $this->getEventNameObj()->getAppName() . ':' . EventConstInterface::CACHE_KEY_PREFIX_LISTENER . ':*';
 		
 		$iterator = null;
 		
@@ -385,7 +386,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			// 构建EventName 生成key
 			$_evtNameObj = $this->getEventNameObj()
 			                    ->reset()
-			                    ->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER)
+			                    ->setModeName(EventConstInterface::CACHE_KEY_PREFIX_LISTENER)
 			                    ->switchLite()
 			                    ->parse($name)
 			                    ->makeEventName();
@@ -429,7 +430,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 2、清空一堆key
 		
 		// 搜索key
-		$k = $this->getEventNameObj()->getAppName() . ':' . EventConst::CACHE_KEY_PREFIX_TRIGGER . ':*';
+		$k = $this->getEventNameObj()->getAppName() . ':' . EventConstInterface::CACHE_KEY_PREFIX_TRIGGER . ':*';
 		
 		$iterator = null;
 		
@@ -560,7 +561,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			// 构建EventName 生成key
 			$_evtNameObj = $this->getEventNameObj()
 			                    ->reset()
-			                    ->setModeName(EventConst::CACHE_KEY_PREFIX_LISTENER)
+			                    ->setModeName(EventConstInterface::CACHE_KEY_PREFIX_LISTENER)
 			                    ->switchLite()
 			                    ->parse($name)
 			                    ->makeEventName();
@@ -778,7 +779,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			// 构建key的层级数组
 			$keys   = [];
 			$keys[] = $this->getParent()->getCacheKeyPrefix();
-			$keys[] = EventConst::CACHE_KEY_PREFIX_LISTENER;
+			$keys[] = EventConstInterface::CACHE_KEY_PREFIX_LISTENER;
 			
 			// key的层级数组转成字符串key
 			$this->_keyListenPrefix = Arr::arrToStr($keys, ':');
@@ -806,7 +807,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			// 构建key的层级数组
 			$keys   = [];
 			$keys[] = $this->getParent()->getCacheKeyPrefix();
-			$keys[] = EventConst::CACHE_KEY_PREFIX_TRIGGER;
+			$keys[] = EventConstInterface::CACHE_KEY_PREFIX_TRIGGER;
 			
 			// key的层级数组转成字符串key
 			$this->_keyTriggerPrefix = Arr::arrToStr($keys, ':');

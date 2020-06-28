@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Cache;
 
 
 use uujia\framework\base\common\consts\CacheConst;
+use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
@@ -95,14 +96,14 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct($parent = null,
+	public function __construct(CacheDataManagerInterface $parent = null,
 	                            RedisProviderInterface $redisProviderObj = null) {
 		$this->_parent = $parent;
 		$this->_redisProviderObj = $redisProviderObj;
 		// $this->_cacheKeyPrefix = $cacheKeyPrefix;
 		// $this->_config = $config;
 		// $this->_cache_expires_time = $config['cache_expires_time'] ?? CacheConst::CACHE_EXPIRES_EVENT_TIME;
-		$this->_cache_expires_time = CacheConst::CACHE_EXPIRES_EVENT_TIME;
+		$this->_cache_expires_time = CacheConstInterface::CACHE_EXPIRES_EVENT_TIME;
 		
 		parent::__construct();
 	}

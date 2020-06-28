@@ -4,7 +4,7 @@
 namespace uujia\framework\base\common\lib\Event\Name;
 
 
-use uujia\framework\base\common\consts\EventConst;
+use uujia\framework\base\common\consts\EventConstInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Utils\Arr;
@@ -210,7 +210,7 @@ class EventName extends BaseClass implements EventNameInterface {
 		(!in_array('eventName', $exclude)) && $this->_eventName = '';
 		
 		(!in_array('appName', $exclude)) && $this->_appName = $this->getRunnerManagerObj()->getAppName() ?? 'app';
-		(!in_array('modeName', $exclude)) && $this->_modeName = EventConst::CACHE_KEY_PREFIX_LISTENER;
+		(!in_array('modeName', $exclude)) && $this->_modeName = EventConstInterface::CACHE_KEY_PREFIX_LISTENER;
 		
 		(!in_array('type', $exclude)) && $this->_type = '';
 		(!in_array('com', $exclude)) && $this->_com = '';
@@ -245,7 +245,7 @@ class EventName extends BaseClass implements EventNameInterface {
 		// 如果为精简模式 则默认填写app_name和mode_name （isIgnoreAppName和isIgnoreModeName必须配合成对使用）
 		if ($this->isIgnoreAppName() && $this->isIgnoreModeName()) {
 			$_appName = $this->getAppName() ?: ($this->getRunnerManagerObj()->getAppName() ?: 'app');
-			$_modeName = $this->getModeName() ?: EventConst::CACHE_KEY_PREFIX_LISTENER;
+			$_modeName = $this->getModeName() ?: EventConstInterface::CACHE_KEY_PREFIX_LISTENER;
 			
 			$_eventName = "{$_appName}:{$_modeName}:{$_eventName}";
 		}

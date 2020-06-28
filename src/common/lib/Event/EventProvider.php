@@ -4,13 +4,9 @@
 namespace uujia\framework\base\common\lib\Event;
 
 
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
-use uujia\framework\base\common\Config;
-use uujia\framework\base\common\consts\CacheConst;
-use uujia\framework\base\common\consts\EventConst;
-use uujia\framework\base\common\consts\ServerConst;
-use uujia\framework\base\common\Event;
+use uujia\framework\base\common\consts\CacheConstInterface;
+use uujia\framework\base\common\consts\EventConstInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
@@ -20,12 +16,9 @@ use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Event\Name\EventNameInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
-use uujia\framework\base\common\lib\Server\ServerParameterInterface;
-use uujia\framework\base\common\lib\Server\ServerRouteInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
-use uujia\framework\base\common\lib\Utils\Json;
 
 /**
  * Class EventProvider
@@ -145,7 +138,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		$this->_eventFilterObj    = $eventFilterObj;
 		
 		$this->_cacheKeyListenPrefix   = $cacheKeyListenPrefix;
-		$this->_cacheKeyListenPrefix[] = EventConst::CACHE_KEY_PREFIX_LISTENER;
+		$this->_cacheKeyListenPrefix[] = EventConstInterface::CACHE_KEY_PREFIX_LISTENER;
 		
 		parent::__construct();
 	}
@@ -387,8 +380,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// 		     function ($data, $it, $params) use ($_dataCache, $_serverRouteManagerObj) {
 		// 			     $_eventListenerProxyObj = new EventListenerProxy($_serverRouteManagerObj);
 		// 			     $_eventListenerProxyObj
-		// 				     ->setSPServerName($_dataCache[EventConst::CACHE_SP_SERVERNAME] ?? '')
-		// 				     ->setSPServerType($_dataCache[EventConst::CACHE_SP_SERVERTYPE] ?? '')
+		// 				     ->setSPServerName($_dataCache[EventConstInterface::CACHE_SP_SERVERNAME] ?? '')
+		// 				     ->setSPServerType($_dataCache[EventConstInterface::CACHE_SP_SERVERTYPE] ?? '')
 		// 				     ->_setContainer($this->getContainer())
 		// 				     ->make();
 		//
@@ -572,7 +565,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function setCacheKeyListenPrefix(array $cacheKeyPrefix, $isAddListenPrefix = true) {
 		$this->_cacheKeyListenPrefix = $cacheKeyPrefix;
-		$isAddListenPrefix && $this->_cacheKeyListenPrefix[] = EventConst::CACHE_KEY_PREFIX_LISTENER;
+		$isAddListenPrefix && $this->_cacheKeyListenPrefix[] = EventConstInterface::CACHE_KEY_PREFIX_LISTENER;
 		
 		return $this;
 	}
@@ -715,7 +708,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function getCacheDataProvider() {
 		$cdMgr      = $this->getCacheDataManagerObj();
-		$cdProvider = $cdMgr->getProviderList()->get(CacheConst::DATA_PROVIDER_KEY_EVENT);
+		$cdProvider = $cdMgr->getProviderList()->get(CacheConstInterface::DATA_PROVIDER_KEY_EVENT);
 		
 		return $cdProvider;
 	}

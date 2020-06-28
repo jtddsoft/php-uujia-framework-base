@@ -5,7 +5,7 @@ namespace uujia\framework\base\common\lib\Event;
 
 
 use Psr\EventDispatcher\EventDispatcherInterface;
-use uujia\framework\base\common\consts\ResultConst;
+use uujia\framework\base\common\consts\ResultConstInterface;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
@@ -93,7 +93,7 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 			$reData = $item->getData();
 			
 			$objPQ->insert($item->getLastReturn(),
-			                  $reData['weight'] ?? ResultConst::RESULT_WEIGHT_DEFAULT);
+			                  $reData['weight'] ?? ResultConstInterface::RESULT_WEIGHT_DEFAULT);
 		}
 		
 		// todo：排序返回值优先级

@@ -6,14 +6,13 @@ namespace uujia\framework\base\common;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
-use uujia\framework\base\common\consts\ResultConst;
+use uujia\framework\base\common\consts\ResultConstInterface;
 use uujia\framework\base\common\interfaces\ResultInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Error\ErrorCodeConfig;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Utils\Response;
-use uujia\framework\base\common\traits\NameTrait;
 use uujia\framework\base\common\traits\ResultTrait;
 
 /**
@@ -34,9 +33,9 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	
 	// 返回类型
 	const RETURN_TYPE = [
-			'arr'  => 1, // 返回数组
-			'json' => 2, // 返回json
-		];
+		'arr'  => 1, // 返回数组
+		'json' => 2, // 返回json
+	];
 	
 	// 返回类型
 	protected $return_type = 1;
@@ -70,7 +69,7 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name']  = self::class;
 		$this->name_info['intro'] = '返回值管理';
 	}
 	
@@ -114,13 +113,16 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	 *
 	 * @param string $msg
 	 * @param int    $code
+	 * @param array  $data
 	 *
 	 * @return array|\think\response\Json
 	 */
-	public function error($msg = 'error', $code = 1000) {
-		$_ret         = ResultConst::RESULT_ERROR;
-		$_ret['code'] = $code;
-		$_ret['msg']  = $msg;
+	public function error($msg = 'error', $code = 1000, $data = []) {
+		$_ret = ResultConstInterface::RESULT_ERROR;
+		
+		$_ret[ResultConstInterface::RESULT_CODE] = $code;
+		$_ret[ResultConstInterface::RESULT_MSG]  = $msg;
+		$_ret[ResultConstInterface::RESULT_DATA] = $data;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
@@ -147,14 +149,17 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	/**
 	 * 返回错误码 自动解析错误msg
 	 *
-	 * @param int $code
+	 * @param int   $code
+	 * @param array $data
 	 *
 	 * @return array|mixed|string
 	 */
-	public function code($code = 1000) {
-		$_ret         = ResultConst::RESULT_ERROR;
-		$_ret['code'] = $code;
-		$_ret['msg']  = $this->getErrObj()->find($code);
+	public function code($code = 1000, $data = []) {
+		$_ret = ResultConstInterface::RESULT_ERROR;
+		
+		$_ret[ResultConstInterface::RESULT_CODE] = $code;
+		$_ret[ResultConstInterface::RESULT_MSG]  = $this->getErrObj()->find($code);
+		$_ret[ResultConstInterface::RESULT_DATA] = $data;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
@@ -179,7 +184,7 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	}
 	
 	public function ok() {
-		$_ret = ResultConst::RESULT_OK;
+		$_ret = ResultConstInterface::RESULT_OK;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
@@ -199,8 +204,9 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	}
 	
 	public function data($data = []) {
-		$_ret           = ResultConst::RESULT_OK;
-		$_ret['result'] = $data;
+		$_ret = ResultConstInterface::RESULT_OK;
+		
+		$_ret[ResultConstInterface::RESULT_DATA] = $data;
 		
 		// 记录最后的错误信息
 		$this->setLastReturn($_ret);
