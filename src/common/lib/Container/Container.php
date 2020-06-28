@@ -260,11 +260,15 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	/**
 	 * 创建类实例
 	 *
+	 * @param $id
 	 * @param $className
 	 *
 	 * @return null|object
+	 * @throws \ReflectionException
 	 */
-	public function _makeClass($className) {
+	public function _makeClass($id, $className) {
+		// todo: 动态代理实现AOP 全部按接口来实现
+		
 		if (!is_string($className)) {
 			// todo: 报错类未找到
 			return null;
@@ -422,7 +426,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		if ($isNew) {
 			$className = $id;
 			
-			return $this->_makeClass($className);
+			return $this->_makeClass($id, $className);
 		} else {
 			$item = $_list->get($id);
 		}
@@ -445,14 +449,14 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 				 *       由于key的键名与实际a不同 因此可以存储a的多份实例 用他不同的映射昵称去区分
 				 */
 				
-				// 查找别名
-				$it->getParent()->hasAlias($id) && $id = $it->getParent()->getAlias($id);
-				// 查找映射
-				$it->getParent()->hasAs($id) && $id = $it->getParent()->getAs($id);
-				
 				$className = $id;
 				
-				return $this->_makeClass($className);
+				// 查找别名
+				$it->getParent()->hasAlias($id) && $className = $it->getParent()->getAlias($id);
+				// 查找映射
+				$it->getParent()->hasAs($id) && $className = $it->getParent()->getAs($id);
+				
+				return $this->_makeClass($id, $className);
 			};
 			
 			// 将工厂加入到Data
