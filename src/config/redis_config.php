@@ -11,7 +11,7 @@ return [
 		// redis端口
 		'port'     => 6379,
 		// 密码
-		'password' => '',
+		'password' => '1234',
 	],
 	
 ];

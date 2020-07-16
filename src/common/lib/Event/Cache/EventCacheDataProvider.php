@@ -14,6 +14,7 @@ use uujia\framework\base\common\lib\Cache\CacheDataProvider;
 use uujia\framework\base\common\lib\Event\EventHandle;
 use uujia\framework\base\common\lib\Event\EventHandleInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use uujia\framework\base\common\lib\Event\Name\EventNameInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Utils\Arr;
@@ -301,7 +302,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 遍历每一个监听注解
 		foreach ($_listeners as $listener) {
 			// 命名空间（事件名头部、事件名前缀）
-			$namespace = $listener->nameSpace;
+			$namespace = $listener->namespace;
 			
 			// uuid
 			$uuid = !empty($listener->uuid) ? $listener->uuid : '*';
@@ -338,7 +339,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 						continue;
 					}
 					
-					$name[] = "{$namespace}.{$ev}:{$uuid}";
+					$name = "{$namespace}.{$ev}:{$uuid}";
 					
 					yield [
 						'weight'    => $weight,
@@ -366,7 +367,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			$_weight = $item['weight'] ?? 100;
 			$_name   = $item['name'] ?? '';
 			
-			if (empty($name)) {
+			if (empty($_name)) {
 				continue;
 			}
 			
@@ -388,7 +389,9 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			                    ->reset()
 			                    ->setModeName(EventConstInterface::CACHE_KEY_PREFIX_LISTENER)
 			                    ->switchLite()
-			                    ->parse($name)
+			                    ->parse($_name, EventNameInterface::PCRE_NAME_FULL_LIKE)
+								->switchFull()
+								->setIgnoreTmp(true)
 			                    ->makeEventName();
 			
 			if ($_evtNameObj->isErr()) {
@@ -477,7 +480,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 遍历每一个监听注解
 		foreach ($_listeners as $listener) {
 			// 命名空间（事件名头部、事件名前缀）
-			$namespace = $listener->nameSpace;
+			$namespace = $listener->namespace;
 			
 			// uuid
 			$uuid = !empty($listener->uuid) ? $listener->uuid : '*';
@@ -719,8 +722,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	public function getKeyListenList(): string {
 		if (empty($this->_keyListenList)) {
 			// 构建key的层级数组
-			$keys   = [];
-			$keys[] = $this->getParent()->getCacheKeyPrefix();
+			// $keys   = [];
+			$keys = $this->getParent()->getCacheKeyPrefix();
 			$keys[] = 'event';
 			$keys[] = 'listens';
 			

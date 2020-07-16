@@ -234,10 +234,10 @@ class EventName extends BaseClass implements EventNameInterface {
 	 * 载入事件名称 拆分事件属性
 	 *
 	 * @param string $eventName
-	 *
+	 * @param string $pregPcre
 	 * @return $this
 	 */
-	public function parse($eventName = '') {
+	public function parse($eventName = '', $pregPcre = self::PCRE_NAME_FULL) {
 		$this->resetResult();
 		
 		$_eventName = !empty($eventName) ? $eventName : $this->getEventName();
@@ -250,9 +250,9 @@ class EventName extends BaseClass implements EventNameInterface {
 			$_eventName = "{$_appName}:{$_modeName}:{$_eventName}";
 		}
 		
-		$this->setEventName($eventName);
+		$this->setEventName($_eventName);
 		
-		$re = preg_match_all(self::PCRE_NAME, $_eventName, $m, PREG_SET_ORDER);
+		$re = preg_match_all($pregPcre, $_eventName, $m, PREG_SET_ORDER);
 		if ($re === false) {
 			// todo: 异常
 			$this->error('事件名称解析失败');
@@ -330,11 +330,11 @@ class EventName extends BaseClass implements EventNameInterface {
 		
 		$_eventNameArr = [];
 		
-		if ($this->isIgnoreAppName()) {
+		if (!$this->isIgnoreAppName()) {
 			$_eventNameArr[] = $_appName;
 		}
 		
-		if ($this->isIgnoreModeName()) {
+		if (!$this->isIgnoreModeName()) {
 			$_eventNameArr[] = $_modeName;
 		}
 		
@@ -348,11 +348,11 @@ class EventName extends BaseClass implements EventNameInterface {
 		
 		$_eventNameArr[] = Arr::arrToStr($_evNameArr, '.');
 		
-		if ($this->isIgnoreUUID()) {
+		if (!$this->isIgnoreUUID()) {
 			$_eventNameArr[] = $_uuid;
 		}
 		
-		if ($this->isIgnoreTmp()) {
+		if (!$this->isIgnoreTmp()) {
 			$_eventNameArr[] = self::EVENT_NAME_TMP_TEXT;
 		}
 		

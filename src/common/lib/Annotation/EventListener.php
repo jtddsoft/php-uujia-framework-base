@@ -18,7 +18,7 @@ class EventListener extends Annotation {
 	 * @Required()
 	 * @var string
 	 */
-	public $nameSpace = '';
+	public $namespace = '';
 	
 	/**
 	 * UUID

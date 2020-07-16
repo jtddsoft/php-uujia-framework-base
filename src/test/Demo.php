@@ -213,6 +213,8 @@ class Demo extends BaseService {
 		/** @var CacheDataManagerInterface $cacheDataMgr */
 		$cacheDataMgr = UU::C(CacheDataManagerInterface::class);
 		
+		$cacheDataMgr->setCacheKeyPrefix(['app']);
+		
 		/** @var EventCacheDataProviderTest $eventCacheDataProvider */
 		$eventCacheDataProvider = UU::C(EventCacheDataProviderTest::class);
 		

@@ -22,6 +22,7 @@ interface EventNameInterface {
 	const PCRE_NAME = '/^(\w+)\.(\w+)\.(\w+)\.(\w+)\.{0,1}(before|after|x|event|success|error)?:{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?/';
 	
 	const PCRE_NAME_FULL = '/^(\w+):(evtl|evtt):(\w+)\.(\w+)\.(\w+)\.(\w+)\.{0,1}(before|after|x|event|success|error)?:{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12})?:{0,1}(tmp)?/';
+	const PCRE_NAME_FULL_LIKE = '/^(\w+):(evtl|evtt):(\w+)\.(\w+)\.(\w+)\.(\w+)\.{0,1}(before|after|x|event|success|error|\*)?:{0,1}([0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}|\*)?:{0,1}(tmp)?/';
 	
 	/**
 	 * 事件名称拆分后可能的数量 4、5或6
