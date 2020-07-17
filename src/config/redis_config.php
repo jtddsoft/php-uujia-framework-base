@@ -12,6 +12,8 @@ return [
 		'port'     => 6379,
 		// 密码
 		'password' => '1234',
+		// db ?
+		'select'   => 5,
 	],
 	
 ];

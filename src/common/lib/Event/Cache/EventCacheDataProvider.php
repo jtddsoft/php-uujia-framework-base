@@ -193,6 +193,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		               ->setClassName($className)
 		               ->load();
 		
+		$this->setClassName($className);
+		
 		$this->setRefMethods($refObj->methods(Reflection::METHOD_OF_PUBLIC)
 		                            ->getMethodObjs());
 		
@@ -257,7 +259,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 2、清空一堆key
 		
 		// 搜索key
-		$k = $this->getEventNameObj()->getAppName() . ':' . EventConstInterface::CACHE_KEY_PREFIX_LISTENER . ':*';
+		// $k = $this->getEventNameObj()->getAppName() . ':' . EventConstInterface::CACHE_KEY_PREFIX_LISTENER . ':*';
+		$k = $this->getKeyListenPrefix(['*']);
 		
 		$iterator = null;
 		
@@ -433,7 +436,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 2、清空一堆key
 		
 		// 搜索key
-		$k = $this->getEventNameObj()->getAppName() . ':' . EventConstInterface::CACHE_KEY_PREFIX_TRIGGER . ':*';
+		// $k = $this->getEventNameObj()->getAppName() . ':' . EventConstInterface::CACHE_KEY_PREFIX_TRIGGER . ':*';
+		$k = $this->getKeyTriggerPrefix(['*']);
 		
 		$iterator = null;
 		
@@ -448,139 +452,229 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		return $this;
 	}
 	
+	// /**
+	//  * 【暂时停用】写本地事件触发者到缓存
+	//  *
+	//  * @return Generator
+	//  */
+	// public function makeCacheEventTriggerLocal() {
+	// 	/********************************
+	// 	 * 分两部分
+	// 	 *  1、只是个列表 方便遍历
+	// 	 *  2、String类型的key value。其中key就是监听者要监听的事件名称（可能有通配符模糊匹配）
+	// 	 ********************************/
+	//
+	// 	/********************************
+	// 	 * 解析class
+	// 	 ********************************/
+	//
+	// 	$_listeners = $this->getEvtListeners();
+	// 	$_methods   = $this->getRefMethods();
+	// 	$_className = $this->getClassName();
+	//
+	// 	if (empty($_listeners)) {
+	// 		yield [];
+	// 	}
+	//
+	// 	// todo: 是否之前反射时需要实例化EventHandle 调用一下某个方法自定义一些操作？
+	//
+	//
+	// 	// 遍历每一个监听注解
+	// 	foreach ($_listeners as $listener) {
+	// 		// 命名空间（事件名头部、事件名前缀）
+	// 		$namespace = $listener->namespace;
+	//
+	// 		// uuid
+	// 		$uuid = !empty($listener->uuid) ? $listener->uuid : '*';
+	//
+	// 		// evt
+	// 		$evt = $listener->evt;
+	//
+	// 		// weight
+	// 		$weight = $listener->weight;
+	//
+	// 		if (empty($namespace)) {
+	// 			continue;
+	// 		}
+	//
+	// 		// 寻找匹配的行为名称和触发时机{behavior_name}.{trigger_timing}
+	// 		if (empty($evt)) {
+	// 			foreach ($_methods as $method) {
+	// 				preg_match_all(EventHandleInterface::PCRE_FUNC_LISTENER_NAME, $method->getName(), $m, PREG_SET_ORDER);
+	// 				if (empty($m)) {
+	// 					continue;
+	// 				}
+	//
+	// 				$name = "{$namespace}.{$m[1]}.{$m[2]}:{$uuid}";
+	//
+	// 				yield [
+	// 					'weight'    => $weight,
+	// 					'name'      => $name,
+	// 					'className' => $_className,
+	// 				];
+	// 			}
+	// 		} else {
+	// 			foreach ($evt as $ev) {
+	// 				if (empty($ev)) {
+	// 					continue;
+	// 				}
+	//
+	// 				$name = "{$namespace}.{$ev}:{$uuid}";
+	//
+	// 				yield [
+	// 					'weight'    => $weight,
+	// 					'name'      => $name,
+	// 					'className' => $_className,
+	// 				];
+	// 			}
+	// 		}
+	// 	}
+	// }
+	
+	// /**
+	//  * 【暂时停用】写本地事件触发者到缓存
+	//  *
+	//  * @param $className
+	//  *
+	//  * @return $this
+	//  */
+	// public function toCacheEventTriggerLocal($className) {
+	// 	// 监听者列表缓存中的key
+	// 	$keyListenList = $this->getKeyListenList();
+	//
+	// 	foreach ($this->makeCacheEventListenLocal() as $item) {
+	// 		$_weight = $item['weight'] ?? 100;
+	// 		$_name   = $item['name'] ?? '';
+	//
+	// 		if (empty($name)) {
+	// 			continue;
+	// 		}
+	//
+	// 		// 写入监听列表到缓存
+	// 		// $this->getRedisObj()->zAdd($keyListenList, $_weight, $_name);
+	// 		$this->getRedisObj()->hSet($keyListenList, $_name, $className);
+	//
+	// 		// 构建缓存数据 并转json 【本地】
+	// 		$jsonData = $this->getEventCacheDataObj()
+	// 		                 ->reset()
+	// 		                 ->setServerName('main')
+	// 		                 ->setServerType('event')
+	// 		                 ->setClassNameSpace($className)
+	// 		                 ->setParam([])
+	// 		                 ->toJson();
+	//
+	// 		// 构建EventName 生成key
+	// 		$_evtNameObj = $this->getEventNameObj()
+	// 		                    ->reset()
+	// 		                    ->setModeName(EventConstInterface::CACHE_KEY_PREFIX_LISTENER)
+	// 		                    ->switchLite()
+	// 		                    ->parse($name)
+	// 		                    ->makeEventName();
+	//
+	// 		if ($_evtNameObj->isErr()) {
+	// 			continue;
+	// 		}
+	//
+	// 		$_evtKey = $_evtNameObj->getEventName();
+	//
+	// 		// 写入缓存key
+	// 		$this->getRedisObj()->zAdd($_evtKey, $_weight, $jsonData);
+	// 	}
+	//
+	// 	return $this;
+	// }
+	
 	/**
-	 * 写本地事件触发者到缓存
+	 * 判断缓存是否存在触发key
+	 * date: 2020/7/17 16:48
 	 *
-	 * @param $className
+	 * @param string $className
 	 *
-	 * @return Generator
+	 * @return mixed|string
 	 */
-	public function makeCacheEventTriggerLocal($className) {
-		/********************************
-		 * 分两部分
-		 *  1、只是个列表 方便遍历
-		 *  2、String类型的key value。其中key就是监听者要监听的事件名称（可能有通配符模糊匹配）
-		 ********************************/
+	public function hasCacheTriggerKey(string $className) {
+		$keyTriggerList = $this->getKeyTriggerList();
 		
-		/********************************
-		 * 解析class
-		 ********************************/
-		
-		$_listeners = $this->getEvtListeners();
-		$_methods   = $this->getRefMethods();
-		$_className = $this->getClassName();
-		
-		if (empty($_listeners)) {
-			yield [];
-		}
-		
-		// todo: 是否之前反射时需要实例化EventHandle 调用一下某个方法自定义一些操作？
-		
-		
-		// 遍历每一个监听注解
-		foreach ($_listeners as $listener) {
-			// 命名空间（事件名头部、事件名前缀）
-			$namespace = $listener->namespace;
-			
-			// uuid
-			$uuid = !empty($listener->uuid) ? $listener->uuid : '*';
-			
-			// evt
-			$evt = $listener->evt;
-			
-			// weight
-			$weight = $listener->weight;
-			
-			if (empty($namespace)) {
-				continue;
-			}
-			
-			// 寻找匹配的行为名称和触发时机{behavior_name}.{trigger_timing}
-			if (empty($evt)) {
-				foreach ($_methods as $method) {
-					preg_match_all(EventHandleInterface::PCRE_FUNC_LISTENER_NAME, $method->getName(), $m, PREG_SET_ORDER);
-					if (empty($m)) {
-						continue;
-					}
-					
-					$name = "{$namespace}.{$m[1]}.{$m[2]}:{$uuid}";
-					
-					yield [
-						'weight'    => $weight,
-						'name'      => $name,
-						'className' => $_className,
-					];
-				}
-			} else {
-				foreach ($evt as $ev) {
-					if (empty($ev)) {
-						continue;
-					}
-					
-					$name[] = "{$namespace}.{$ev}:{$uuid}";
-					
-					yield [
-						'weight'    => $weight,
-						'name'      => $name,
-						'className' => $_className,
-					];
-				}
-			}
-		}
+		return $this->getRedisObj()->hExists($keyTriggerList, $className);
 	}
 	
 	/**
-	 * 写本地事件触发者到缓存
+	 * 查找获取触发key
+	 * date: 2020/7/17 16:48
 	 *
-	 * @param $className
+	 * @param string $className
 	 *
-	 * @return $this
+	 * @return mixed|string
 	 */
-	public function toCacheEventTriggerLocal($className) {
-		// 监听者列表缓存中的key
-		$keyListenList = $this->getKeyListenList();
+	public function findCacheTriggerKey(string $className) {
+		$keyTriggerList = $this->getKeyTriggerList();
 		
-		foreach ($this->makeCacheEventListenLocal($className) as $item) {
-			$_weight = $item['weight'] ?? 100;
-			$_name   = $item['name'] ?? '';
+		return $this->getRedisObj()->hGet($keyTriggerList, $className);
+	}
+	
+	/**
+	 * 写入触发key
+	 * date: 2020/7/17 16:48
+	 *
+	 * @param string $className 哈希的key 为触发者的类名 例如：uujia\framework\base\test\EventTest
+	 * @param string $eventName 哈希的value 为触发者的事件名 例如：app.test.eventTest.add.before:{#uuid}
+	 *
+	 * @return mixed|string
+	 */
+	public function writeCacheTriggerKey(string $className, string $eventName) {
+		$keyTriggerList = $this->getKeyTriggerList();
+		
+		return $this->getRedisObj()->hSet($keyTriggerList, $className, $eventName);
+	}
+	
+	public function makeCacheTriggerKeyLocal(string $className) {
+		// 查找匹配的监听者
+		
+		
+	}
+	
+	public function toCacheTriggerKeyLocal(string $className) {
+		// todo: 循环写入
+		return $this->makeCacheTriggerKeyLocal($className);
+	}
+	
+	public function fromCacheTriggerKeyLocal($className) {
+		$keyTriggerList = $this->getKeyTriggerList();
+		
+		// 查找是否存在
+		$hExist = $this->getRedisObj()->hExists($keyTriggerList, $className);
+		
+		// 如果存在获取内容 返回
+		$hEventName = '';
+		
+		if ($hExist) {
+			$hEventName = $this->getRedisObj()->hGet($keyTriggerList, $className);
 			
-			if (empty($name)) {
-				continue;
-			}
-			
-			// 写入监听列表到缓存
-			// $this->getRedisObj()->zAdd($keyListenList, $_weight, $_name);
-			$this->getRedisObj()->hSet($keyListenList, $_name, $className);
-			
-			// 构建缓存数据 并转json 【本地】
-			$jsonData = $this->getEventCacheDataObj()
-			                 ->reset()
-			                 ->setServerName('main')
-			                 ->setServerType('event')
-			                 ->setClassNameSpace($className)
-			                 ->setParam([])
-			                 ->toJson();
-			
-			// 构建EventName 生成key
-			$_evtNameObj = $this->getEventNameObj()
-			                    ->reset()
-			                    ->setModeName(EventConstInterface::CACHE_KEY_PREFIX_LISTENER)
-			                    ->switchLite()
-			                    ->parse($name)
-			                    ->makeEventName();
-			
-			if ($_evtNameObj->isErr()) {
-				continue;
-			}
-			
-			$_evtKey = $_evtNameObj->getEventName();
-			
-			// 写入缓存key
-			$this->getRedisObj()->zAdd($_evtKey, $_weight, $jsonData);
+			// 根据hEventName查evtt中所有匹配的监听者
+			goto listenReader;
 		}
 		
-		return $this;
+		// 如果不存在 构建并写入 返回
+		
+		
+		
+		
+		
+		listenReader: {
+			$k = $this->getKeyListenPrefix([$hEventName]);
+			
+			
+			
+			
+			
+			
+		}
 	}
+	
+	
+	/**************************************************************
+	 * Cache
+	 **************************************************************/
 	
 	/**
 	 * 构建缓存Key
@@ -595,10 +689,6 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		return parent::makeCacheKey($key); // TODO: Change the autogenerated stub
 	}
-	
-	/**************************************************************
-	 * Cache
-	 **************************************************************/
 	
 	/**
 	 * 构建并获取数据 如果缓存没有就写入缓存
@@ -647,7 +737,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * 清空缓存
 	 */
 	public function clearCache() {
+		// 清空监听
 		$this->clearCacheEventListen();
+		
+		// 清空触发
+		$this->clearCacheEventTrigger();
 		
 		parent::clearCache();
 		
@@ -717,18 +811,23 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	}
 	
 	/**
+	 * @param array $ks
+	 *
 	 * @return string
 	 */
-	public function getKeyListenList(): string {
-		if (empty($this->_keyListenList)) {
+	public function getKeyListenList(array $ks = []): string {
+		if (empty($this->_keyListenList) || !empty($ks)) {
 			// 构建key的层级数组
 			// $keys   = [];
 			$keys = $this->getParent()->getCacheKeyPrefix();
 			$keys[] = 'event';
 			$keys[] = 'listens';
 			
+			// 附加额外key
+			$keys = array_merge($keys, $ks);
+			
 			// key的层级数组转成字符串key
-			$this->_keyListenList = Arr::arrToStr($keys, ':');
+			empty($ks) && $this->_keyListenList = Arr::arrToStr($keys, ':');
 		}
 		
 		return $this->_keyListenList;
@@ -746,18 +845,23 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	}
 	
 	/**
+	 * @param array $ks
+	 *
 	 * @return string
 	 */
-	public function getKeyTriggerList(): string {
-		if (empty($this->_keyTriggerList)) {
+	public function getKeyTriggerList(array $ks = []): string {
+		if (empty($this->_keyTriggerList) || !empty($ks)) {
 			// 构建key的层级数组
-			$keys   = [];
-			$keys[] = $this->getParent()->getCacheKeyPrefix();
+			// $keys   = [];
+			$keys = $this->getParent()->getCacheKeyPrefix();
 			$keys[] = 'event';
 			$keys[] = 'triggers';
 			
+			// 附加额外key
+			$keys = array_merge($keys, $ks);
+			
 			// key的层级数组转成字符串key
-			$this->_keyTriggerList = Arr::arrToStr($keys, ':');
+			empty($ks) && $this->_keyTriggerList = Arr::arrToStr($keys, ':');
 		}
 		
 		return $this->_keyTriggerList;
@@ -775,17 +879,22 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	}
 	
 	/**
+	 * @param array $ks
+	 *
 	 * @return string
 	 */
-	public function getKeyListenPrefix(): string {
-		if (empty($this->_keyListenPrefix)) {
+	public function getKeyListenPrefix(array $ks = []): string {
+		if (empty($this->_keyListenPrefix) || !empty($ks)) {
 			// 构建key的层级数组
-			$keys   = [];
-			$keys[] = $this->getParent()->getCacheKeyPrefix();
+			// $keys   = [];
+			$keys = $this->getParent()->getCacheKeyPrefix();
 			$keys[] = EventConstInterface::CACHE_KEY_PREFIX_LISTENER;
 			
+			// 附加额外key
+			$keys = array_merge($keys, $ks);
+			
 			// key的层级数组转成字符串key
-			$this->_keyListenPrefix = Arr::arrToStr($keys, ':');
+			empty($ks) && $this->_keyListenPrefix = Arr::arrToStr($keys, ':');
 		}
 		
 		return $this->_keyListenPrefix;
@@ -803,17 +912,22 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	}
 	
 	/**
+	 * @param array $ks
+	 *
 	 * @return string
 	 */
-	public function getKeyTriggerPrefix(): string {
-		if (empty($this->_keyTriggerPrefix)) {
+	public function getKeyTriggerPrefix(array $ks = []): string {
+		if (empty($this->_keyTriggerPrefix) || !empty($ks)) {
 			// 构建key的层级数组
-			$keys   = [];
-			$keys[] = $this->getParent()->getCacheKeyPrefix();
+			// $keys   = [];
+			$keys = $this->getParent()->getCacheKeyPrefix();
 			$keys[] = EventConstInterface::CACHE_KEY_PREFIX_TRIGGER;
 			
+			// 附加额外key
+			$keys = array_merge($keys, $ks);
+			
 			// key的层级数组转成字符串key
-			$this->_keyTriggerPrefix = Arr::arrToStr($keys, ':');
+			empty($ks) && $this->_keyTriggerPrefix = Arr::arrToStr($keys, ':');
 		}
 		
 		return $this->_keyTriggerPrefix;

@@ -229,7 +229,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		//      ->getCacheDataManagerObj()
 		//      ->getProviderList()
 		//      ->getKeyDataValue(CacheConst::DATA_PROVIDER_KEY_EVENT);
-		$this->getCacheDataProvider();
+		//$this->getCacheDataProvider();
 		
 		return $this;
 	}
@@ -704,6 +704,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	/**
+	 * 获取事件缓存供应商对象
+	 *
 	 * @return TreeFunc|null
 	 */
 	public function getCacheDataProvider() {

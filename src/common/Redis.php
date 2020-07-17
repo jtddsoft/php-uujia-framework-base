@@ -73,6 +73,8 @@ class Redis extends BaseClass {
 			'port'     => 6379,
 			// 密码
 			'password' => '',
+			// db ?
+			'select'   => 0,
 		];
 		
 		// if (empty($this->getRedisProviderObj())) {
@@ -92,6 +94,7 @@ class Redis extends BaseClass {
 			 ->setPort($configRedis['port'])
 			 ->setPassword($configRedis['password'])
 			 ->setPrefix($configRedis['prefix'])
+			 ->setSelect($configRedis['select'])
 			 ->connect();
 		
 		return $this;

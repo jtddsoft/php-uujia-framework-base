@@ -10,56 +10,66 @@ class RedisProvider extends BaseClass implements RedisProviderInterface {
 	use ResultTrait;
 	
 	/**
-	 * @var \Redis|\Swoole\Coroutine\Redis $_redisObj
+	 * @var \Redis|\Swoole\Coroutine\Redis
 	 */
 	protected $_redisObj;
 	
 	/**
 	 * 是否启用
-	 * @var bool $_enabled
+	 * @var bool
 	 */
 	protected $_enabled = true;
 	
 	/**
 	 * 前缀
-	 * @var string $_prefix
+	 * @var string
 	 */
 	protected $_prefix = '';
 	
 	/**
 	 * 主机或域名
-	 * @var string $_host
+	 * @var string
 	 */
 	protected $_host = '';
 	
 	/**
 	 * 端口
-	 * @var int $_port
+	 * @var int
 	 */
 	protected $_port = 6379;
 	
 	/**
 	 * 密码
-	 * @var string $_password
+	 * @var string
 	 */
 	protected $_password = '';
+	
+	/**
+	 * 密码
+	 * @var int
+	 */
+	protected $_select = 0;
 	
 	/**
 	 * Redis constructor.
 	 *
 	 * @param \Redis|\Swoole\Coroutine\Redis $redisObj
-	 * @param string $host
-	 * @param int    $port
-	 * @param string $password
-	 * @param string $prefix
+	 * @param string                         $host
+	 * @param int                            $port
+	 * @param string                         $password
+	 * @param string                         $prefix
+	 * @param int                            $select
 	 */
-	public function __construct($redisObj = null, string $host = '', int $port = 6379, string $password = '', string $prefix = '') {
+	public function __construct($redisObj = null,
+	                            string $host = '', int $port = 6379, string $password = '', string $prefix = '',
+	                            int $select = 0) {
 		$this->_redisObj = $redisObj ?? new \Redis();
 		
 		$this->_host = $host;
 		$this->_post = $port;
 		$this->_password = $password;
 		$this->_prefix = $prefix;
+		$this->_select = $select;
 		
 		parent::__construct();
 	}
@@ -89,7 +99,11 @@ class RedisProvider extends BaseClass implements RedisProviderInterface {
 	 */
 	public function connect() {
 		if ($this->isEnabled()) {
+			// connect
 			$this->getRedisObj()->connect($this->getHost(), $this->getPort());
+			// select
+			$this->getRedisObj()->select($this->getSelect());
+			// password
 			!empty($this->getPassword()) && $this->getRedisObj()->auth($this->getPassword());
 			
 			if (!$this->getRedisObj()->isConnected()) {
@@ -186,6 +200,22 @@ class RedisProvider extends BaseClass implements RedisProviderInterface {
 	 */
 	public function setPassword(string $password) {
 		$this->_password = $password;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return int
+	 */
+	public function getSelect(): int {
+		return $this->_select;
+	}
+	
+	/**
+	 * @param int $select
+	 */
+	public function setSelect(int $select) {
+		$this->_select = $select;
 		
 		return $this;
 	}

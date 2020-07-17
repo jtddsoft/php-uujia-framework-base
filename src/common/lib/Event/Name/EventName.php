@@ -161,6 +161,8 @@ class EventName extends BaseClass implements EventNameInterface {
 	public function __construct(RunnerManager $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
 		
+		$this->reset();
+		
 		parent::__construct();
 	}
 	
