@@ -659,6 +659,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		
 		
+		
+		
+		
+		goto listenReader;
+		
 		listenReader: {
 			// 构建key app:evtt:app.test.event.add.before:{#uuid}
 			$k = $this->getKeyTriggerPrefix([$eventName]);
@@ -673,7 +678,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			// 如果存在 读取监听列表（key是触发者的标识名 value是有序集合存储的是从监听列表中匹配的服务配置json）
 			$listenList = $this->getRedisObj()->zRange($k, 0, -1, true);
 			
-			yield $listenList;
+			yield $listenList; // todo: 如果后续没有其他操作就合并为一行 不再占用一个变量
 		}
 	}
 	
