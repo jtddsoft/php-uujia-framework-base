@@ -588,67 +588,66 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * 判断缓存是否存在触发key
 	 * date: 2020/7/17 16:48
 	 *
-	 * @param string $className
+	 * @param string $eventName
 	 *
 	 * @return mixed|string
 	 */
-	public function hasCacheTriggerKey(string $className) {
+	public function hasCacheTriggerKey(string $eventName) {
 		$keyTriggerList = $this->getKeyTriggerList();
 		
-		return $this->getRedisObj()->hExists($keyTriggerList, $className);
+		return $this->getRedisObj()->hExists($keyTriggerList, $eventName);
 	}
 	
 	/**
 	 * 查找获取触发key
 	 * date: 2020/7/17 16:48
 	 *
-	 * @param string $className
+	 * @param string $eventName
 	 *
 	 * @return mixed|string
 	 */
-	public function findCacheTriggerKey(string $className) {
+	public function findCacheTriggerKey(string $eventName) {
 		$keyTriggerList = $this->getKeyTriggerList();
 		
-		return $this->getRedisObj()->hGet($keyTriggerList, $className);
+		return $this->getRedisObj()->hGet($keyTriggerList, $eventName);
 	}
 	
 	/**
 	 * 写入触发key
 	 * date: 2020/7/17 16:48
 	 *
-	 * @param string $className 哈希的key 为触发者的类名 例如：uujia\framework\base\test\EventTest
-	 * @param string $eventName 哈希的value 为触发者的事件名 例如：app.test.eventTest.add.before:{#uuid}
+	 * @param string $eventName 哈希的key 为触发者的事件名 例如：app.test.eventTest.add.before:{#uuid}
+	 * @param string $className 哈希的value 为触发者的类名 例如：uujia\framework\base\test\EventTest
 	 *
 	 * @return mixed|string
 	 */
-	public function writeCacheTriggerKey(string $className, string $eventName) {
+	public function writeCacheTriggerKey(string $eventName, string $className) {
 		$keyTriggerList = $this->getKeyTriggerList();
 		
-		return $this->getRedisObj()->hSet($keyTriggerList, $className, $eventName);
+		return $this->getRedisObj()->hSet($keyTriggerList, $eventName, $className);
 	}
 	
-	public function makeCacheTriggerKeyLocal(string $className) {
+	public function makeCacheTriggerKeyLocal(string $eventName) {
 		// 查找匹配的监听者
 		
 		
 	}
 	
-	public function toCacheTriggerKeyLocal(string $className) {
+	public function toCacheTriggerKeyLocal(string $eventName) {
 		// todo: 循环写入
-		return $this->makeCacheTriggerKeyLocal($className);
+		return $this->makeCacheTriggerKeyLocal($eventName);
 	}
 	
-	public function fromCacheTriggerKeyLocal($className) {
+	public function fromCacheTriggerKeyLocal($eventName, $className = '') {
 		$keyTriggerList = $this->getKeyTriggerList();
 		
 		// 查找是否存在
-		$hExist = $this->getRedisObj()->hExists($keyTriggerList, $className);
+		$hExist = $this->getRedisObj()->hExists($keyTriggerList, $eventName);
 		
 		// 如果存在获取内容 返回
-		$hEventName = '';
-		
 		if ($hExist) {
-			$hEventName = $this->getRedisObj()->hGet($keyTriggerList, $className);
+			// 暂时不需要获取className 因为使用触发者类主要是提供事件标识 并不做实际事情
+			// $hClassName = $this->getRedisObj()->hGet($keyTriggerList, $eventName);
 			
 			// 根据hEventName查evtt中所有匹配的监听者
 			goto listenReader;
@@ -661,13 +660,20 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		
 		listenReader: {
-			$k = $this->getKeyListenPrefix([$hEventName]);
+			// 构建key app:evtt:app.test.event.add.before:{#uuid}
+			$k = $this->getKeyTriggerPrefix([$eventName]);
+			// 判断可以是否存在
+			$kExist = $this->getRedisObj()->exists($k);
 			
+			// 如果不存在 返回空
+			if (!$kExist) {
+				yield [];
+			}
 			
+			// 如果存在 读取监听列表（key是触发者的标识名 value是有序集合存储的是从监听列表中匹配的服务配置json）
+			$listenList = $this->getRedisObj()->zRange($k, 0, -1, true);
 			
-			
-			
-			
+			yield $listenList;
 		}
 	}
 	

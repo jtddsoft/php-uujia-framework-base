@@ -129,10 +129,10 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	public function handle() {
 		$this->resetResult();
 		
-		$re=  $this->getServerRouteManagerObj()
-		            ->setServerParameter($this->getServerParameter())
-		            ->load(null, null, true)
-		            ->route();
+		$re = $this->getServerRouteManagerObj()
+		           ->setServerParameter($this->getServerParameter())
+		           ->load(null, null, true)
+		           ->route();
 		
 		$this->assignLastReturn($re);
 		

@@ -144,6 +144,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			$ee = 'onAdd1XX';
 			preg_match_all(\uujia\framework\base\common\lib\Event\EventHandle::PCRE_FUNC_LISTENER_NAME, $ee, $m, PREG_SET_ORDER);
 			var_dump($m);
+			
+			$ee = 'add1XX';
+			preg_match_all(\uujia\framework\base\common\lib\Event\EventHandle::PCRE_FUNC_TRIGGER_NAME, $ee, $m, PREG_SET_ORDER);
+			var_dump($m);
 			break;
 		
 		case 'anno':

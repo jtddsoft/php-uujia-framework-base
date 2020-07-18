@@ -93,7 +93,7 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 			$reData = $item->getData();
 			
 			$objPQ->insert($item->getLastReturn(),
-			                  $reData['weight'] ?? ResultConstInterface::RESULT_WEIGHT_DEFAULT);
+			               $reData['weight'] ?? ResultConstInterface::RESULT_WEIGHT_DEFAULT);
 		}
 		
 		// todo：排序返回值优先级
