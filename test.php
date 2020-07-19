@@ -181,7 +181,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			/** @var \uujia\framework\base\test\EventCacheDataProviderTest $evtCDP */
 			$evtCDP = UU::C(\uujia\framework\base\test\EventCacheDataProviderTest::class);
 			
-			$evtCDP->toCache();
+			var_dump($evtCDP->make());
 			
 			break;
 	}

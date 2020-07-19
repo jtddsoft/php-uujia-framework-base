@@ -66,14 +66,14 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	protected $_list;
 	
-	// /**
-	//  * 要触发的事件对象
-	//  *  事件调度会传来EventHandle对象的触发形态
-	//  * （EventHandle 主要取事件标识 addons.rubbish2.user.LoginBefore）
-	//  *
-	//  * @var EventHandle;
-	//  */
-	// protected $_eventHandle;
+	/**
+	 * 要触发的事件对象
+	 *  事件调度会传来EventHandle对象的触发形态
+	 * （EventHandle 主要取事件标识 addons.rubbish2.user.LoginBefore）
+	 *
+	 * @var EventHandle;
+	 */
+	protected $_eventHandle;
 	
 	/**
 	 * 要触发的事件对象
@@ -151,11 +151,13 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @inheritDoc
 	 */
 	public function getListenersForEvent(object $event): iterable {
-		if (!($event instanceof EventNameInterface)) {
+		if (!($event instanceof EventHandleInterface)) {
 			return [];
 		}
 		
-		$this->_setEventNameObj($event);
+		$this->_setEventHandle($event);
+		
+		$this->_setEventNameObj($event->getEventNameObj());
 		
 		yield from $this->_make();
 	}
@@ -165,6 +167,11 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 *  1、查缓存是否存在
 	 *      1）存在 继续
 	 *      2）不存在 构建参数存入缓存
+	 *
+	 * 实际是
+	 *  写入时 写的是监听者列表
+	 *  获取时 获取的是针对要触发的触发者相匹配的监听者有序集合列表
+	 *        其中保存的就是server参数json（如果触发者列表未构建不存在 会自动构建匹配）
 	 */
 	public function _make() {
 		if (!$this->hasCache()) {
@@ -178,10 +185,17 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	
 	/**
 	 * 读取缓存
+	 * 这里获取的是触发者相匹配的监听者有序集合列表
+	 * app:evtt:app.test.event.add.before:{#uuid} -> {server_param json}
 	 *
 	 * @inheritDoc
 	 */
 	public function fromCache() {
+		// todo：去调用事件缓存供应商EventCacheDataProvider的fromCache
+		
+		
+		
+		
 		// todo: 从触发的EventHandle中解出当前触发事件名
 		$_evtNameObj = $this->getEventNameObj();
 		
@@ -220,6 +234,9 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	
 	/**
 	 * 调用缓存管理器收集数据记入缓存
+	 * 这里写入的是监听者列表（哈希表和有序集合列表）
+	 * app:event:listens -> {app.test.event.add.*:* => uujia\framework\base\test\EventTest}
+	 * app:evtl:app.test.event.add.*:* -> {server_param json}
 	 *
 	 * @inheritDoc
 	 */
@@ -229,7 +246,10 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		//      ->getCacheDataManagerObj()
 		//      ->getProviderList()
 		//      ->getKeyDataValue(CacheConst::DATA_PROVIDER_KEY_EVENT);
+		
 		//$this->getCacheDataProvider();
+		
+		// todo: 去调用事件缓存供应商EventCacheDataProvider的toCache
 		
 		return $this;
 	}
@@ -253,6 +273,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// // 	}
 		// // }
 		// return !empty($reKeys);
+		
+		// todo: 去调用事件缓存供应商EventCacheDataProvider的hasCache
 		
 		return $this->getEventFilterObj()
 		            ->setRedisObj($this->getRedisObj())
@@ -278,6 +300,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// }
 		//
 		// return $this;
+		
+		// todo: 去调用事件缓存供应商EventCacheDataProvider来清空
 		
 		foreach ($this->getEventFilterObj()
 		              ->setPrefix($this->getCacheKeyListenPrefix())
@@ -570,23 +594,23 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		return $this;
 	}
 	
-	// /**
-	//  * @return EventHandle
-	//  */
-	// public function getEventHandle(): EventHandle {
-	// 	return $this->_eventHandle;
-	// }
-	//
-	// /**
-	//  * @param EventHandleInterface $eventHandle
-	//  *
-	//  * @return $this
-	//  */
-	// public function setEventHandle(EventHandle $eventHandle) {
-	// 	$this->_eventHandle = $eventHandle;
-	//
-	// 	return $this;
-	// }
+	/**
+	 * @return EventHandle
+	 */
+	public function getEventHandle(): EventHandle {
+		return $this->_eventHandle;
+	}
+	
+	/**
+	 * @param EventHandleInterface $eventHandle
+	 *
+	 * @return $this
+	 */
+	public function _setEventHandle(EventHandle $eventHandle) {
+		$this->_eventHandle = $eventHandle;
+	
+		return $this;
+	}
 	
 	/**
 	 * @return EventName

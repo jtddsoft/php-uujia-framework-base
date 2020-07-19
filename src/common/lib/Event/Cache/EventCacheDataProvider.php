@@ -20,6 +20,7 @@ use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Utils\Arr;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Reflection\Reflection;
+use uujia\framework\base\common\lib\Utils\Str;
 
 /**
  * Class EventCacheDataProvider
@@ -86,11 +87,18 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 *******************************/
 	
 	/**
-	 * 类名
+	 * 监听者类名
 	 *
 	 * @var string
 	 */
-	protected $_className = '';
+	protected $_classNameListener = '';
+	
+	/**
+	 * 触发者类名
+	 *
+	 * @var string
+	 */
+	protected $_classNameTrigger = '';
 	
 	/**
 	 * 反射得到所有public方法
@@ -193,7 +201,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		               ->setClassName($className)
 		               ->load();
 		
-		$this->setClassName($className);
+		$this->setClassNameListener($className);
 		
 		$this->setRefMethods($refObj->methods(Reflection::METHOD_OF_PUBLIC)
 		                            ->getMethodObjs());
@@ -293,7 +301,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		$_listeners = $this->getEvtListeners();
 		$_methods   = $this->getRefMethods();
-		$_className = $this->getClassName();
+		$_className = $this->getClassNameListener();
 		
 		if (empty($_listeners)) {
 			yield [];
@@ -361,7 +369,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 */
 	public function toCacheEventListenLocal() {
 		// 类名
-		$className = $this->getClassName();
+		$className = $this->getClassNameListener();
 		
 		// 监听者列表缓存中的key
 		$keyListenList = $this->getKeyListenList();
@@ -627,59 +635,104 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		return $this->getRedisObj()->hSet($keyTriggerList, $eventName, $className);
 	}
 	
-	public function makeCacheTriggerKeyLocal(string $eventName) {
-		// 查找匹配的监听者
+	/**
+	 * 构建监听者列表
+	 *
+	 * @param string $eventName
+	 * @param string $className
+	 * @return Generator
+	 */
+	public function makeCacheTriggerKeyLocal(string $eventName, $className = '') {
+		$keyTriggerList = $this->getKeyTriggerList();
 		
+		// 1、构建哈希表记录
+		$this->getRedisObj()->hSet($keyTriggerList, $eventName, $className);
 		
+		// 2、构建key app:evtt:app.test.event.add.before:{#uuid}
+		$k = $this->getKeyTriggerPrefix([$eventName]);
+		
+		// 2-1、判断是否存在 存在就清空
+		$kExist = $this->getRedisObj()->exists($k);
+		if ($kExist) {
+			$this->getRedisObj()->del($k);
+		}
+		
+		// 2-2、获取所有监听者 触发者比对出匹配的监听者 抄入触发者列表
+		
+		// 2-2-1 监听者列表key
+		$keyListenList = $this->getKeyListenList();
+		
+		// 2-2-2 获取监听者列表
+		$listenList = $this->getRedisObj()->hKeys($keyListenList);
+		
+		yield $listenList;
 	}
 	
-	public function toCacheTriggerKeyLocal(string $eventName) {
-		// todo: 循环写入
-		return $this->makeCacheTriggerKeyLocal($eventName);
+	/**
+	 * 写入与触发者匹配的监听者有序集合列表
+	 *
+	 * @param string $eventName
+	 * @param string $className
+	 * @return $this
+	 */
+	public function toCacheTriggerKeyLocal(string $eventName, $className = '') {
+		// 2-2-3 循环匹配 抄入触发者列表
+		foreach ($this->makeCacheTriggerKeyLocal($eventName, $className) as $hKey) {
+			if (!Str::is($hKey, $eventName)) {
+				continue;
+			}
+			
+			// 读取监听者有序集合列表
+			$zListenList = $this->getRedisObj()->zRange($hKey, 0, -1);
+			
+			// 抄入触发者有序集合列表
+			foreach ($zListenList as $zValue => $zScore) {
+				$this->getRedisObj()->zAdd($eventName, $zScore, $zValue);
+			}
+		}
+		
+		return $this;
 	}
 	
+	/**
+	 * 获取缓存中与触发者匹配的监听者有序集合列表
+	 *
+	 * @param        $eventName
+	 * @param string $className
+	 * @return Generator
+	 */
 	public function fromCacheTriggerKeyLocal($eventName, $className = '') {
 		$keyTriggerList = $this->getKeyTriggerList();
 		
-		// 查找是否存在
+		// 查找哈希表中是否存在事件标识记录
 		$hExist = $this->getRedisObj()->hExists($keyTriggerList, $eventName);
 		
-		// 如果存在获取内容 返回
-		if ($hExist) {
-			// 暂时不需要获取className 因为使用触发者类主要是提供事件标识 并不做实际事情
-			// $hClassName = $this->getRedisObj()->hGet($keyTriggerList, $eventName);
-			
-			// 根据hEventName查evtt中所有匹配的监听者
-			goto listenReader;
-		}
-		
 		// 如果不存在 构建并写入 返回
-		
-		
-		
-		
-		
-		
-		
-		
-		goto listenReader;
-		
-		listenReader: {
-			// 构建key app:evtt:app.test.event.add.before:{#uuid}
-			$k = $this->getKeyTriggerPrefix([$eventName]);
-			// 判断可以是否存在
-			$kExist = $this->getRedisObj()->exists($k);
-			
-			// 如果不存在 返回空
-			if (!$kExist) {
-				yield [];
-			}
-			
-			// 如果存在 读取监听列表（key是触发者的标识名 value是有序集合存储的是从监听列表中匹配的服务配置json）
-			$listenList = $this->getRedisObj()->zRange($k, 0, -1, true);
-			
-			yield $listenList; // todo: 如果后续没有其他操作就合并为一行 不再占用一个变量
+		if (!$hExist) {
+			$this->toCacheTriggerKeyLocal($eventName, $className);
 		}
+		
+		// 如果存在获取内容 返回
+		// 暂时不需要获取className 因为使用触发者类主要是提供事件标识 并不做实际事情
+		// $hClassName = $this->getRedisObj()->hGet($keyTriggerList, $eventName);
+		
+		// 根据hEventName查evtt中所有匹配的监听者
+		
+		// 构建key app:evtt:app.test.event.add.before:{#uuid}
+		$k = $this->getKeyTriggerPrefix([$eventName]);
+		
+		// 判断可以是否存在
+		$kExist = $this->getRedisObj()->exists($k);
+		
+		// 如果不存在 返回空
+		if (!$kExist) {
+			yield [];
+		}
+		
+		// 如果存在 读取监听列表（key是触发者的标识名 value是有序集合存储的是从监听列表中匹配的服务配置json）
+		$zListenList = $this->getRedisObj()->zRange($k, 0, -1, true);
+		
+		yield $zListenList; // todo: 如果后续没有其他操作就合并为一行 不再占用一个变量
 	}
 	
 	
@@ -712,14 +765,14 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			$this->toCache();
 		}
 		
-		return $this->fromCache();
+		yield from $this->fromCache();
 	}
 	
 	/**
 	 * 从缓存读取
 	 */
 	public function fromCache() {
-		return [];
+		yield [];
 	}
 	
 	/**
@@ -958,17 +1011,35 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * @return string
 	 */
-	public function getClassName(): string {
-		return $this->_className;
+	public function getClassNameListener(): string {
+		return $this->_classNameListener;
 	}
 	
 	/**
-	 * @param string $className
+	 * @param string $classNameListener
 	 *
 	 * @return $this
 	 */
-	public function setClassName(string $className) {
-		$this->_className = $className;
+	public function setClassNameListener(string $classNameListener) {
+		$this->_classNameListener = $classNameListener;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getClassNameTrigger(): string {
+		return $this->_classNameTrigger;
+	}
+	
+	/**
+	 * @param string $classNameTrigger
+	 *
+	 * @return $this
+	 */
+	public function setClassNameTrigger(string $classNameTrigger) {
+		$this->_classNameTrigger = $classNameTrigger;
 		
 		return $this;
 	}
