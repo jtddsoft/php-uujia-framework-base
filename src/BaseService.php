@@ -8,6 +8,7 @@ use uujia\framework\base\common\ErrorConfig;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\Event\EventDispatcher;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\MQ\MQCollection;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
@@ -181,6 +182,13 @@ class BaseService {
 	 */
 	public function getCacheDataManager(): CacheDataManagerInterface {
 		return UU::C(CacheDataManagerInterface::class);
+	}
+	
+	/**
+	 * @return EventDispatcher
+	 */
+	public function getEventDispatcher(): EventDispatcher {
+		return UU::C(EventDispatcher::class);
 	}
 	
 	

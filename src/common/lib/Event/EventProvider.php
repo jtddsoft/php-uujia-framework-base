@@ -16,6 +16,7 @@ use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataProvider;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Event\Name\EventNameInterface;
+use uujia\framework\base\common\lib\Exception\ExceptionEvent;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
@@ -203,48 +204,47 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		$className = get_class($this->getEventHandle());
 		$cacheDataProviderObj->setClassNameTrigger($className);
 		
+		// 获取触发者标识
+		$k = $this->getTriggerEventName();
+		
 		foreach ($cacheDataProviderObj->fromCache() as $cacheData => $zScore) {
-		
+			yield from $this->makeCacheToServerParameter($k, $cacheData);
 		}
 		
-		
-		
-		
-		
-		// todo: 从触发的EventHandle中解出当前触发事件名
-		$_evtNameObj = $this->getEventNameObj();
-		
-		$_isParsed = $_evtNameObj->isParsed();
-		if (!$_isParsed) {
-			// todo: 异常
-			yield [];
-		}
-		
-		$k = $_evtNameObj->makeEventName();
-		
-		// $k = $this->getCacheKey('*');
-		
-		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
-		$redis = $this->getRedisObj();
-		
-		// $iterator = null;
-		// while(false !== ($keys = $redis->scan($iterator, $k, 1))) {
-		// 	foreach($keys as $key) {
-		// 		// echo $key . PHP_EOL;
+		// // todo: 从触发的EventHandle中解出当前触发事件名
+		// $_evtNameObj = $this->getEventNameObj();
 		//
+		// $_isParsed = $_evtNameObj->isParsed();
+		// if (!$_isParsed) {
+		// 	// todo: 异常
+		// 	yield [];
+		// }
+		//
+		// $k = $_evtNameObj->makeEventName();
+		//
+		// // $k = $this->getCacheKey('*');
+		//
+		// /** @var \Redis|\Swoole\Coroutine\Redis $redis */
+		// $redis = $this->getRedisObj();
+		//
+		// // $iterator = null;
+		// // while(false !== ($keys = $redis->scan($iterator, $k, 1))) {
+		// // 	foreach($keys as $key) {
+		// // 		// echo $key . PHP_EOL;
+		// //
+		// // 	}
+		// // }
+		//
+		// // $reData = $redis->zrange($k, 0, -1);
+		//
+		// foreach ($this->scanCacheKey($k) as $_key) {
+		// 	$i = 0;
+		// 	while (!empty($cacheData = $redis->zrange($_key, $i, 10))) {
+		// 		$i++;
+		//
+		// 		yield from $this->makeCacheToServerParameter($_key, $cacheData);
 		// 	}
 		// }
-		
-		// $reData = $redis->zrange($k, 0, -1);
-		
-		foreach ($this->scanCacheKey($k) as $_key) {
-			$i = 0;
-			while (!empty($cacheData = $redis->zrange($_key, $i, 10))) {
-				$i++;
-				
-				yield from $this->makeCacheToServerParameter($_key, $cacheData);
-			}
-		}
 	}
 	
 	/**
@@ -265,6 +265,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		//$this->getCacheDataProvider();
 		
 		// todo: 去调用事件缓存供应商EventCacheDataProvider的toCache
+		$this->getCacheDataProvider()->toCache();
 		
 		return $this;
 	}
@@ -273,6 +274,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * 缓存是否存在
 	 *
 	 * @return bool
+	 * @throws ExceptionEvent
 	 */
 	public function hasCache(): bool {
 		// $k = $this->getCacheKey('*');
@@ -289,12 +291,19 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// // }
 		// return !empty($reKeys);
 		
-		// todo: 去调用事件缓存供应商EventCacheDataProvider的hasCache
+		// return $this->getEventFilterObj()
+		//             ->setRedisObj($this->getRedisObj())
+		//             ->setPrefix($this->getCacheKeyListenPrefix())
+		//             ->keyExist();
 		
-		return $this->getEventFilterObj()
-		            ->setRedisObj($this->getRedisObj())
-		            ->setPrefix($this->getCacheKeyListenPrefix())
-		            ->keyExist();
+		// todo: 去调用事件缓存供应商EventCacheDataProvider的hasCache
+		$k = $this->getTriggerEventName();
+		
+		if ($this->getList()->has($k)) {
+			return true;
+		}
+		
+		return $this->getCacheDataProvider()->hasCache();
 	}
 	
 	/**
@@ -317,12 +326,13 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// return $this;
 		
 		// todo: 去调用事件缓存供应商EventCacheDataProvider来清空
+		$this->getCacheDataProvider()->clearCache();
 		
-		foreach ($this->getEventFilterObj()
-		              ->setPrefix($this->getCacheKeyListenPrefix())
-		              ->keyScan('*', 0) as $item) {
-			$this->getRedisObj()->del($item);
-		}
+		// foreach ($this->getEventFilterObj()
+		//               ->setPrefix($this->getCacheKeyListenPrefix())
+		//               ->keyScan('*', 0) as $item) {
+		// 	$this->getRedisObj()->del($item);
+		// }
 		
 		return $this;
 	}
@@ -482,6 +492,30 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// 		->getLastNewItemData()
 		// 		->get();
 		// }
+	}
+	
+	/**
+	 * 获取触发者事件短标识
+	 * app.test.event.add.before:{#uuid}
+	 *
+	 * @return string|EventName
+	 * @throws ExceptionEvent
+	 */
+	public function getTriggerEventName() {
+		$_evtNameObj = $this->getEventNameObj();
+		
+		$_isParsed = $_evtNameObj->isParsed();
+		if (!$_isParsed) {
+			// todo: 异常
+			throw new ExceptionEvent('事件标识解析异常', 1000);
+		}
+		
+		$k = $_evtNameObj
+			->setIgnoreTmp(true)
+			->switchLite()
+			->makeEventName();
+		
+		return $k;
 	}
 	
 	/**

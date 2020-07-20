@@ -14,7 +14,7 @@ use uujia\framework\base\common\lib\Event\Name\EventName;
  *
  * @package uujia\framework\base\test
  *
- * @EventTrigger
+ * @EventTrigger(namespace = "app.test.eventTest", uuid = "ea6f7e28-1fe4-df41-5535-5be1be9080cc")
  * @EventListener(
  *     namespace = "app.test.eventTest",
  *     uuid = "*",

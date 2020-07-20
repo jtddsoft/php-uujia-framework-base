@@ -211,7 +211,7 @@ class Demo extends BaseService {
 	
 	public function eventProviderReg() {
 		/** @var CacheDataManagerInterface $cacheDataMgr */
-		$cacheDataMgr = UU::C(CacheDataManagerInterface::class);
+		$cacheDataMgr = $this->getCacheDataManager();
 		
 		$cacheDataMgr->setCacheKeyPrefix(['app']);
 		
@@ -222,7 +222,11 @@ class Demo extends BaseService {
 	}
 	
 	public function tiggerEvent() {
-	
+		// $eventDispatcher = $this->getEventDispatcher();
+		// $eventDispatcher->dispatch(UU::C(EventTest::class));
+		/** @var EventTest $eventTest */
+		$eventTest = UU::C(EventTest::class);
+		$eventTest->addBefore();
 	}
 	
 }
