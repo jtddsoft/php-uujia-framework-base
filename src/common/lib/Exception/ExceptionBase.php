@@ -3,7 +3,9 @@
 namespace uujia\framework\base\common\lib\Exception;
 
 use Throwable;
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Log\Logger;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class ExceptionBase
@@ -11,6 +13,7 @@ use uujia\framework\base\common\lib\Log\Logger;
  * @package uujia\framework\base\common\lib\Exception
  */
 class ExceptionBase extends \Exception {
+	use ResultTrait;
 	
 	/**
 	 * @var Logger
@@ -23,15 +26,22 @@ class ExceptionBase extends \Exception {
 	 * @param string         $message
 	 * @param int            $code
 	 * @param Throwable|null $previous
-	 * @param Logger|null    $loggerObj
 	 */
-	public function __construct($message = "", $code = 0, Throwable $previous = null, Logger $loggerObj = null) {
-		$this->_loggerObj = $loggerObj;
+	public function __construct($message = "", $code = 0, Throwable $previous = null) {
+		$this->_loggerObj = Container::getInstance()->get(Logger::class);
+		
+		$this->initialize($message, $code);
 		
 		parent::__construct($message, $code, $previous);
 	}
 	
-	
+	// 初始化
+	protected function initialize($message = "", $code = 0) {
+		if (!empty($this->getLoggerObj())) {
+			$e = $this->error($message, $code);
+			$this->getLoggerObj()->errorEx($e);
+		}
+	}
 	
 	/**
 	 * @return Logger

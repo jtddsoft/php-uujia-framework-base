@@ -90,9 +90,10 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 		$cachePrefixs = $this->_cacheKeyPrefix;
 		$subItemFunc = function ($data, $it, $params) use ($itemProvider, $key, $cachePrefixs) {
 			$_params = $itemProvider->getParams();
-			$itemProvider->setParams(array_merge($_params, $_params));
+			$itemProvider->setParams(array_merge($_params, $params));
 			$itemProvider->setCacheKeyPrefix($cachePrefixs);
 			$itemProvider->setParent($this);
+			$itemProvider->setKey($key);
 			$res = $itemProvider->make();
 			
 			return $res;

@@ -13,6 +13,7 @@ use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheData;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
+use uujia\framework\base\common\lib\Event\Cache\EventCacheDataProvider;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Event\Name\EventNameInterface;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
@@ -192,6 +193,20 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function fromCache() {
 		// todo：去调用事件缓存供应商EventCacheDataProvider的fromCache
+		/** @var EventCacheDataProvider $cacheDataProviderObj */
+		$cacheDataProviderObj = $this->getCacheDataProvider();
+		
+		// 将事件名对象值克隆至缓存供应商
+		$cacheDataProviderObj->getEventNameObj()->assign($this->getEventNameObj());
+		
+		// 将触发者类名赋值到缓存供应商
+		$className = get_class($this->getEventHandle());
+		$cacheDataProviderObj->setClassNameTrigger($className);
+		
+		foreach ($cacheDataProviderObj->fromCache() as $cacheData => $zScore) {
+		
+		}
+		
 		
 		
 		
@@ -730,11 +745,11 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	/**
 	 * 获取事件缓存供应商对象
 	 *
-	 * @return TreeFunc|null
+	 * @return EventCacheDataProvider|null
 	 */
 	public function getCacheDataProvider() {
 		$cdMgr      = $this->getCacheDataManagerObj();
-		$cdProvider = $cdMgr->getProviderList()->get(CacheConstInterface::DATA_PROVIDER_KEY_EVENT);
+		$cdProvider = $cdMgr->getProviderList()->getKeyDataValue(CacheConstInterface::DATA_PROVIDER_KEY_EVENT);
 		
 		return $cdProvider;
 	}

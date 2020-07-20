@@ -16,9 +16,15 @@ namespace uujia\framework\base\common\lib\Cache;
 interface CacheDataProviderInterface {
 	
 	/**
+	 * 缓存标志位状态
+	 */
+	const CACHE_STATUS_NONE     = 0; // 未知
+	const CACHE_STATUS_CACHING  = 1; // 缓存中
+	const CACHE_STATUS_OK       = 2; // 完成
+	const CACHE_STATUS_ERROR    = 3; // 错误
+	
+	/**
 	 * 构建数据 写入缓存
-	 *
-	 * @return mixed
 	 */
 	public function make();
 	
@@ -42,6 +48,7 @@ interface CacheDataProviderInterface {
 	
 	/**
 	 * 是否存在缓存
+	 *
 	 * @return bool
 	 */
 	public function hasCache(): bool;
@@ -73,6 +80,7 @@ interface CacheDataProviderInterface {
 	 * 设置输入参数
 	 *
 	 * @param array $params
+	 *
 	 * @return $this
 	 */
 	public function setParams($params);
@@ -108,6 +116,30 @@ interface CacheDataProviderInterface {
 	 * @return $this
 	 */
 	public function setCacheKeyPrefix($cacheKeyPrefix);
+	
+	/**
+	 * @return string
+	 */
+	public function getKey(): string;
+	
+	/**
+	 * @param string $key
+	 *
+	 * @return CacheDataProvider
+	 */
+	public function setKey(string $key);
+	
+	/**
+	 * @return float|int
+	 */
+	public function getCacheExpiresTime();
+	
+	/**
+	 * @param float|int $cache_expires_time
+	 *
+	 * @return CacheDataProvider
+	 */
+	public function setCacheExpiresTime($cache_expires_time);
 	
 	/**
 	 * @return CacheDataManagerInterface

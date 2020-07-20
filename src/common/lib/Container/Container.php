@@ -28,7 +28,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	use NameTrait;
 	use ResultTrait;
 	
-	// use InstanceTrait;
+	use InstanceTrait;
 	
 	// private $c = [];
 	// // 每次实例化都会存入对象实例 如果已存在就覆盖
@@ -53,7 +53,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * @param Reflection    $reflectionObj
 	 */
 	public function __construct(TreeFunc $list = null) {
-		$this->_list          = $list ?? new TreeFunc();
+		$this->_list = $list ?? new TreeFunc();
 		
 		parent::__construct();
 	}
@@ -640,7 +640,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	/**
 	 * @return Reflection
 	 */
-	public function newReflectionObj():Reflection {
+	public function newReflectionObj(): Reflection {
 		return new Reflection();
 	}
 	

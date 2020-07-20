@@ -178,10 +178,12 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			$demo = UU::C(\uujia\framework\base\test\Demo::class);
 			$demo->eventProviderReg();
 			
-			/** @var \uujia\framework\base\test\EventCacheDataProviderTest $evtCDP */
-			$evtCDP = UU::C(\uujia\framework\base\test\EventCacheDataProviderTest::class);
+			// /** @var \uujia\framework\base\test\EventCacheDataProviderTest $evtCDP */
+			// $evtCDP = UU::C(\uujia\framework\base\test\EventCacheDataProviderTest::class);
+			//
+			// var_dump($evtCDP->make());
 			
-			var_dump($evtCDP->make());
+			
 			
 			break;
 	}

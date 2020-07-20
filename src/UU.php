@@ -32,7 +32,8 @@ class UU {
 		// self::$_container = new Container(new TreeFunc()); // $this
 		// self::$_container = $container ?? Container::getInstance(new TreeFunc());
 		// $this->_container = $container ?? Container::getInstance(new TreeFunc());
-		$this->_container = $container ?? new Container(new TreeFunc());
+		// $this->_container = $container ?? new Container(new TreeFunc());
+		$this->_container = $container ?? Container::getInstance();
 		
 		$this->init();
 	}

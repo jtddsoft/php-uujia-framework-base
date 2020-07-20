@@ -221,4 +221,8 @@ class Demo extends BaseService {
 		$cacheDataMgr->regProvider(CacheConstInterface::DATA_PROVIDER_KEY_EVENT, $eventCacheDataProvider);
 	}
 	
+	public function tiggerEvent() {
+	
+	}
+	
 }

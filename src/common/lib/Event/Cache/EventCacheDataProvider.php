@@ -15,6 +15,7 @@ use uujia\framework\base\common\lib\Event\EventHandle;
 use uujia\framework\base\common\lib\Event\EventHandleInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Event\Name\EventNameInterface;
+use uujia\framework\base\common\lib\Exception\ExceptionEvent;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Utils\Arr;
@@ -756,23 +757,29 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	
 	/**
 	 * 构建并获取数据 如果缓存没有就写入缓存
-	 *
-	 * @return mixed
 	 */
 	public function make() {
-		if (!$this->hasCache()) {
-			// 不存在缓存 调起缓存数据管理器 收集数据传来
-			$this->toCache();
-		}
-		
-		yield from $this->fromCache();
+		yield from parent::make();
 	}
 	
 	/**
 	 * 从缓存读取
 	 */
 	public function fromCache() {
-		yield [];
+		$_evtNameObj = $this->getEventNameObj();
+		
+		$_isParsed = $_evtNameObj->isParsed();
+		if (!$_isParsed) {
+			// todo: 异常
+			throw new ExceptionEvent('事件初始化异常', 1000);
+		}
+		
+		$eventName = $_evtNameObj
+			->setIgnoreTmp(true)
+			->switchLite()
+			->makeEventName();
+		
+		yield from $this->fromCacheTriggerKeyLocal($eventName, $this->getClassNameTrigger());
 	}
 	
 	/**
@@ -794,7 +801,10 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * @return bool
 	 */
 	public function hasCache(): bool {
-		return false;
+		// 获取
+		$keyListenList = $this->getKeyListenList();
+		
+		return $this->getRedisObj()->exists($keyListenList);
 	}
 	
 	/**
