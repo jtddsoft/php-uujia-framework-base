@@ -183,16 +183,17 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * @return string|false
 	 */
 	public function findClassNameSpace($className, $useImports = []) {
+		$_className = $className;
 		// 查找别名
-		$this->getList()->hasAlias($className) && $className = $this->getList()->getAlias($className);
+		$this->getList()->hasAlias($className) && $_className = $this->getList()->getAlias($className);
 		// 查找映射
-		$this->getList()->hasAs($className) && $className = $this->getList()->getAs($className);
+		$this->getList()->hasAs($className) && $_className = $this->getList()->getAs($className);
 		
-		if (class_exists($className)) {
-			return $className;
+		if (class_exists($_className)) {
+			return $_className;
 		}
 		
-		$loweredClassName = strtolower($className);
+		$loweredClassName = strtolower($_className);
 		
 		if (isset($useImports[$loweredClassName])) {
 			$namespace = $useImports[$loweredClassName];
@@ -203,7 +204,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		}
 		
 		if (isset($useImports['__NAMESPACE__'])) {
-			$namespace = $useImports['__NAMESPACE__'] . '\\' . $className;
+			$namespace = $useImports['__NAMESPACE__'] . '\\' . $_className;
 			
 			if (class_exists($namespace)) {
 				return $namespace;
@@ -233,8 +234,13 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 				if ($classFullName === false) {
 					return null;
 				}
+			
+				if ($className != $classFullName && !$this->getList()->hasAs($className)) {
+					$this->getList()->setAs($className, $classFullName);
+				}
 				
-				$_arg = $this->get($classFullName);
+				// $_arg = $this->get($classFullName);
+				$_arg = $this->get($className);
 				break;
 			
 			case 'cc':
@@ -243,8 +249,13 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 				if ($classFullName === false) {
 					return null;
 				}
+			
+				if ($className != $classFullName && !$this->getList()->hasAs($className)) {
+					$this->getList()->setAs($className, $classFullName);
+				}
 				
-				$_arg = $this->_get($classFullName, true);
+				// $_arg = $this->_get($classFullName, true);
+				$_arg = $this->_get($className, true);
 				break;
 			
 			case 'v':
@@ -303,7 +314,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			
 			// 注入
 			->injection(
-				function (Reflection $me, ReflectionParameter $param) {
+				function (Reflection $me, ReflectionParameter $param, $useImports = []) {
 					$_arg = null;
 					
 					/**
@@ -329,16 +340,37 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 					if ($found) {
 						$_arg = null;
 						
-						$_class = $autoInjectionItem->name ?? '';
-						if (empty($_class) && $param->hasType() && $param->getClass() !== null) {
+						// $_class = $autoInjectionItem->name ?? '';
+						// if (empty($_class) && $param->hasType() && $param->getClass() !== null) {
+						// 	// 如果有类型约束 并且是个类 就构建这个依赖
+						// 	$_class = $param->getClass()->getName();
+						// }
+						
+						// 容器id
+						$_id = $autoInjectionItem->id ?? '';
+						
+						// 如果没有指定容器id 就取参数定义的类型约束
+						if (empty($_id) && $param->hasType() && $param->getClass() !== null) {
 							// 如果有类型约束 并且是个类 就构建这个依赖
-							$_class = $param->getClass()->getName();
+							$_id = $param->getClass()->getName();
 						}
 						
-						if (!empty($_class)) {
-							$_arg = $this->_newClassAnnotation($_class,
+						// 如果定义了要实例化的其他类 就将其加入映射表
+						if (!empty($autoInjectionItem->name) && !$this->getList()->hasAs($_id)) {
+							$_class = $autoInjectionItem->name;
+							
+							$classFullName = $this->findClassNameSpace($_class, $useImports);
+							if ($classFullName !== false) {
+								$this->getList()->setAs($_id, $classFullName);
+							}
+						}
+						
+						empty($_id) && $_id = $autoInjectionItem->name ?? '';
+						
+						if (!empty($_id)) {
+							$_arg = $this->_newClassAnnotation($_id,
 							                                   $autoInjectionItem->type,
-							                                   $me->getClassUseImports(),
+							                                   $useImports, // $me->getClassUseImports(),
 							                                   $autoInjectionItem->value);
 						}
 					} elseif ($param->hasType() && $param->getClass() !== null) {
@@ -364,16 +396,35 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 					
 					// 遍历注解 取出AutoInjection注入部分 进行注入
 					foreach ($propertyAnno as $annot) {
-						$_class = $annot->name;
+						// $_id    = $annot->name;
 						$_type  = $annot->type;
 						$_value = $annot->value;
 						
-						if (empty($_class)) {
+						// if (empty($_id)) {
+						// 	continue;
+						// }
+						
+						// 容器id
+						$_id = $annot->id ?? '';
+						
+						// 如果定义了要实例化的其他类 就将其加入映射表
+						if (!empty($annot->name) && !$this->getList()->hasAs($_id)) {
+							$_class = $annot->name;
+							
+							$classFullName = $this->findClassNameSpace($_class, $useImports);
+							if ($classFullName !== false) {
+								$this->getList()->setAs($_id, $classFullName);
+							}
+						}
+						
+						empty($_id) && $_id = $annot->name ?? '';
+						
+						if (empty($_id)) {
 							continue;
 						}
 						
 						// new class 会处理依赖
-						$_arg = $this->_newClassAnnotation($_class,
+						$_arg = $this->_newClassAnnotation($_id,
 						                                   $_type,
 						                                   $useImports,
 						                                   $_value);
@@ -416,6 +467,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * @param bool $isNew 是否重新实例化一个新的对象 个别依赖对象不能单例 必须重新new
 	 *
 	 * @return mixed|object|null
+	 * @throws \ReflectionException
 	 */
 	public function _get($id, $isNew = false) {
 		$_list = $this->list();
@@ -429,6 +481,11 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		
 		if ($isNew) {
 			$className = $id;
+			
+			// 查找别名
+			$this->getList()->hasAlias($id) && $className = $this->getList()->getAlias($id);
+			// 查找映射
+			$this->getList()->hasAs($id) && $className = $this->getList()->getAs($id);
 			
 			return $this->_makeClass($id, $className);
 		} else {
@@ -459,6 +516,10 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 				$it->getParent()->hasAlias($id) && $className = $it->getParent()->getAlias($id);
 				// 查找映射
 				$it->getParent()->hasAs($id) && $className = $it->getParent()->getAs($id);
+				
+				// if ($id != $className && $this->getList()->has($className)) {
+				// 	return $this->getList()->get($className)->getDataValue();
+				// }
 				
 				return $this->_makeClass($id, $className);
 			};

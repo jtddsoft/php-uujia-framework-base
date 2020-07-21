@@ -131,6 +131,13 @@ class Reflection extends BaseClass {
 	 */
 	protected $_injectionInstance = null;
 	
+	/**
+	 * 引入的use集合
+	 *
+	 * @var array
+	 */
+	protected $_useImports = [];
+	
 	
 	/**
 	 * Reflection constructor.
@@ -224,6 +231,8 @@ class Reflection extends BaseClass {
 					$this->_setClassAnnotations($this->getReader()->getClassAnnotations($this->getRefClass()));
 					// var_dump($this->gsPrivateProperty($this->getRefReaderClass(), 'imports', null, $this->getReader()));
 					
+					$this->_setUseImports($this->getClassUseImports());
+				
 					// 将构造函数解析反射
 					// if ($this->getRefClass()->hasMethod('__construct')) {
 					// 	$this->_setRefMethod($this->getRefClass()->getMethod('__construct'));
@@ -366,7 +375,8 @@ class Reflection extends BaseClass {
 			return $this;
 		}
 		
-		$useImports = $this->getClassUseImports();
+		// $useImports = $this->getClassUseImports();
+		$useImports = $this->getUseImports();
 		
 		foreach ($this->getRefPropertys() as $property) {
 			if (!empty($filterProperty) && !in_array($property->getName(), $filterProperty)) {
@@ -413,7 +423,7 @@ class Reflection extends BaseClass {
 			$_args = [];
 			
 			foreach ($this->getRefParameters() as $key => $param) {
-				$_arg = call_user_func_array($callback, [$this, $param]);
+				$_arg = call_user_func_array($callback, [$this, $param, $this->getUseImports()]);
 				
 				$_args[$key] = $_arg;
 			}
@@ -922,6 +932,24 @@ class Reflection extends BaseClass {
 	 */
 	public function _setInjectionInstance($injectionInstance) {
 		$this->_injectionInstance = $injectionInstance;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getUseImports(): array {
+		return $this->_useImports;
+	}
+	
+	/**
+	 * @param array $useImports
+	 *
+	 * @return Reflection
+	 */
+	public function _setUseImports(array $useImports) {
+		$this->_useImports = $useImports;
 		
 		return $this;
 	}

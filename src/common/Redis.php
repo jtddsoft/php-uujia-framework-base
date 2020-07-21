@@ -16,10 +16,10 @@ class Redis extends BaseClass {
 	
 	// const KEY_CONTAINER_REDIS_ALIAS = 'redisProvider';
 	
-	/** @var RedisProviderInterface $_redisProviderObj */
+	/** @var RedisProviderInterface */
 	protected $_redisProviderObj;
 	
-	/** @var Config $_configObj */
+	/** @var Config */
 	protected $_configObj;
 	
 	

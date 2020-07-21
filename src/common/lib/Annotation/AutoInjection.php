@@ -26,6 +26,12 @@ class AutoInjection extends Annotation {
 	public $name = '';
 	
 	/**
+	 * 要注入的容器id
+	 * @var string
+	 */
+	public $id = '';
+	
+	/**
 	 * 类型（c-容器名称 v-赋值 cc-新建类实例 container=c value=v new=cc）
 	 * @Enum({"c", "v", "cc", "container", "value", "new"})
 	 * @var string

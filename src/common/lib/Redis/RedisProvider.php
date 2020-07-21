@@ -101,10 +101,10 @@ class RedisProvider extends BaseClass implements RedisProviderInterface {
 		if ($this->isEnabled()) {
 			// connect
 			$this->getRedisObj()->connect($this->getHost(), $this->getPort());
-			// select
-			$this->getRedisObj()->select($this->getSelect());
 			// password
 			!empty($this->getPassword()) && $this->getRedisObj()->auth($this->getPassword());
+			// select
+			$this->getRedisObj()->select($this->getSelect());
 			
 			if (!$this->getRedisObj()->isConnected()) {
 				$this->code(13001); // 连接Redis服务端失败
