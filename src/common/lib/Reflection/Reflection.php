@@ -225,12 +225,13 @@ class Reflection extends BaseClass {
 					// var_dump($this->gsPrivateProperty($this->getRefReaderClass(), 'imports', null, $this->getReader()));
 					
 					// 将构造函数解析反射
-					if ($this->getRefClass()->hasMethod('__construct')) {
-						$this->_setRefMethod($this->getRefClass()->getMethod('__construct'));
+					// if ($this->getRefClass()->hasMethod('__construct')) {
+					// 	$this->_setRefMethod($this->getRefClass()->getMethod('__construct'));
+						$this->_setRefMethod($this->getRefClass()->getConstructor());
 						$this->_setRefParameters($this->getRefMethod()->getParameters());
 						
 						$this->_setMethodAnnotations($this->getReader()->getMethodAnnotations($this->getRefMethod()));
-					}
+					// }
 					
 					break;
 				
@@ -639,6 +640,17 @@ class Reflection extends BaseClass {
 	}
 	
 	/**
+	 * @param \ReflectionMethod $refMethod
+	 *
+	 * @return Reflection
+	 */
+	public function _setRefMethod(\ReflectionMethod $refMethod) {
+		$this->_refMethod = $refMethod;
+		
+		return $this;
+	}
+	
+	/**
 	 * @return \ReflectionMethod
 	 */
 	public function getRefMethod() {
@@ -651,17 +663,6 @@ class Reflection extends BaseClass {
 		} catch (\ReflectionException $e) {
 			return null;
 		}
-	}
-	
-	/**
-	 * @param \ReflectionMethod $refMethod
-	 *
-	 * @return Reflection
-	 */
-	public function _setRefMethod(\ReflectionMethod $refMethod) {
-		$this->_refMethod = $refMethod;
-		
-		return $this;
 	}
 	
 	/**

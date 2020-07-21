@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Event;
 
 
 use uujia\framework\base\common\consts\EventConstInterface;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
@@ -46,6 +47,12 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 * @var ServerParameterInterface
 	 */
 	protected $_serverParameter;
+	
+	/**
+	 * @var EventRunStatus
+	 * @AutoInjection(name = "EventRunStatus")
+	 */
+	protected $_runStatus;
 	
 	
 	/**
@@ -117,7 +124,13 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 				$ret = $eventHandle->getLastReturn();
 				
 				// $serverParameter->_setRet($ret)
-				return $ret;
+				
+				$result = [
+					'last_return' => $ret,
+					'run_status'  => $eventHandle->assignToArray(),
+				];
+				
+				return $result;
 			});
 		
 		return $this;
@@ -134,7 +147,11 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 		           ->load(null, null, true)
 		           ->route();
 		
-		$this->assignLastReturn($re);
+		// 记录最后返回值
+		$this->assignLastReturn($re['last_return'] ?? $this->error('非法的返回值'));
+		
+		// 记录运行状态 是否终止向下执行
+		$this->getRunStatus()->assignFromArray($re['run_status'] ?? false);
 		
 		return $this;
 	}
@@ -309,6 +326,24 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 */
 	public function setServerRouteManagerObj($serverRouteManagerObj) {
 		$this->_serverRouteManagerObj = $serverRouteManagerObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return EventRunStatus
+	 */
+	public function getRunStatus(): EventRunStatus {
+		return $this->_runStatus;
+	}
+	
+	/**
+	 * @param EventRunStatus $runStatus
+	 *
+	 * @return $this
+	 */
+	public function _setRunStatus(EventRunStatus $runStatus) {
+		$this->_runStatus = $runStatus;
 		
 		return $this;
 	}

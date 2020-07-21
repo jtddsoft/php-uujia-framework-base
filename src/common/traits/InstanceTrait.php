@@ -10,6 +10,12 @@ trait InstanceTrait {
 	 */
 	protected static $instance;
 	
+	/**
+	 * 反射对象
+	 * @var \ReflectionClass
+	 */
+	protected static $reflection;
+	
 	protected function __clone() {
 	}
 	
@@ -23,8 +29,8 @@ trait InstanceTrait {
 			// static::$instance = new static;
 			
 			// 反射构建实例化
-			$reflection = new \ReflectionClass(static::class);
-			static::$instance = $reflection->newInstanceArgs(func_get_args());// 传入的是关联数组
+			static::$reflection = new \ReflectionClass(static::class);
+			static::$instance = static::$reflection->newInstanceArgs(func_get_args());// 传入的是关联数组
 		}
 		return static::$instance;
 	}

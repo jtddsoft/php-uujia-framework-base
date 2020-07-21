@@ -7,10 +7,12 @@ namespace uujia\framework\base\common\lib\Event;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\consts\EventConstInterface;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
+use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheData;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataProvider;
@@ -65,6 +67,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 *  尽可能按需加载 触发到哪个事件就从缓存加载到列表
 	 *
 	 * @var TreeFunc
+	 * @AutoInjection(name = "TreeFunc", type = "cc")
 	 */
 	protected $_list;
 	
@@ -119,17 +122,20 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	/**
 	 * EventProvider constructor.
 	 *
-	 * @param CacheDataManager|null       $cacheDataManagerObj
-	 * @param RedisProviderInterface|null $redisProviderObj
-	 * @param ServerRouteManager|null     $serverRouteManagerObj
-	 * @param EventCacheData|null         $eventCacheDataObj
-	 * @param EventFilter|null            $eventFilterObj
-	 * @param array                       $cacheKeyListenPrefix
+	 * @param CacheDataManagerInterface|null $cacheDataManagerObj
+	 * @param RedisProviderInterface|null    $redisProviderObj
+	 * @param ServerRouteManager|null        $serverRouteManagerObj
+	 * @param EventCacheDataInterface|null   $eventCacheDataObj
+	 * @param EventFilter|null               $eventFilterObj
+	 * @param array                          $cacheKeyListenPrefix
+	 *
+	 * @AutoInjection(arg = "cacheDataManagerObj", name = "CacheDataManager")
+	 * @AutoInjection(arg = "eventCacheDataObj", name = "EventCacheData")
 	 */
-	public function __construct(CacheDataManager $cacheDataManagerObj = null,
+	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null,
 	                            RedisProviderInterface $redisProviderObj = null,
 	                            ServerRouteManager $serverRouteManagerObj = null,
-	                            EventCacheData $eventCacheDataObj = null,
+	                            EventCacheDataInterface $eventCacheDataObj = null,
 	                            EventFilter $eventFilterObj = null,
 	                            $cacheKeyListenPrefix = []) {
 		$this->_cacheDataManagerObj   = $cacheDataManagerObj;
@@ -513,7 +519,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		$k = $_evtNameObj
 			->setIgnoreTmp(true)
 			->switchLite()
-			->makeEventName();
+			->makeEventName()
+			->getEventName();
 		
 		return $k;
 	}
@@ -657,7 +664,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function _setEventHandle(EventHandle $eventHandle) {
 		$this->_eventHandle = $eventHandle;
-	
+		
 		return $this;
 	}
 	

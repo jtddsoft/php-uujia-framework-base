@@ -1,6 +1,6 @@
 <?php
 
-namespace uujia\framework\base\common\lib\Event;
+namespace uujia\framework\base\common\lib\Server;
 
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
@@ -13,7 +13,7 @@ use uujia\framework\base\common\traits\ResultTrait;
 /**
  * Class ServerRouteLocal
  *
- * @package uujia\framework\base\common\lib\Event
+ * @package uujia\framework\base\common\lib\Server
  */
 class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 	use ResultTrait;

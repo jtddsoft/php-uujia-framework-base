@@ -83,8 +83,10 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 	/**
 	 * 设置（添加或修改）缓存数据供应商
 	 *
-	 * @param $key
+	 * @param                            $key
 	 * @param CacheDataProviderInterface $itemProvider
+	 *
+	 * @return $this
 	 */
 	public function regProvider($key, $itemProvider) {
 		$cachePrefixs = $this->_cacheKeyPrefix;
@@ -146,6 +148,8 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 			->getLastNewItemData()
 			// 配置禁用自动缓存（每次调用都要执行 因此不能缓存）
 			->setLoadCache(false);
+		
+		return $this;
 	}
 	
 	/**************************************************************

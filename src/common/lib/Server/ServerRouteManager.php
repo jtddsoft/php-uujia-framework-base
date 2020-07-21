@@ -66,7 +66,7 @@ class ServerRouteManager extends BaseClass {
 	 * @param ServerRouteInterface[]   $serverRoutes
 	 * @param array                    $config
 	 *
-	 * @AutoInjection(arg = "serverParameter", type = "v" value = null)
+	 * @AutoInjection(arg = "serverParameter", type = "v")
 	 */
 	public function __construct(ServerParameterInterface $serverParameter = null,
 	                            array $serverRoutes = [],

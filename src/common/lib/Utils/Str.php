@@ -37,4 +37,46 @@ class Str {
 		return substr_compare($str, $end, -strlen($end));
 	}
 	
+	/**
+	 * 驼峰转下划线
+	 *
+	 * @param  string $value
+	 * @param  string $delimiter
+	 * @return string
+	 */
+	public static function snake(string $value, string $delimiter = '_'): string
+	{
+		if (!ctype_lower($value)) {
+			$value = preg_replace('/\s+/u', '', $value);
+			
+			$value = mb_strtolower(preg_replace('/(.)(?=[A-Z])/u', '$1' . $delimiter, $value), 'UTF-8');
+		}
+		
+		return $value;
+	}
+	
+	/**
+	 * 下划线转驼峰(首字母小写)
+	 *
+	 * @param string $value
+	 *
+	 * @return string
+	 */
+	public static function camel(string $value): string {
+		return lcfirst(static::studly($value));
+	}
+	
+	/**
+	 * 下划线转驼峰(首字母大写)
+	 *
+	 * @param string $value
+	 *
+	 * @return string
+	 */
+	public static function studly(string $value): string {
+		$value = ucwords(str_replace(['-', '_'], ' ', $value));
+		
+		return str_replace(' ', '', $value);
+	}
+	
 }

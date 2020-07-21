@@ -5,9 +5,13 @@ namespace uujia\framework\base\common\lib\Event;
 use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
+use uujia\framework\base\common\lib\Annotation\EventTrigger;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use uujia\framework\base\common\lib\Exception\ExceptionEvent;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
+use uujia\framework\base\common\lib\Utils\Str;
+use uujia\framework\base\common\traits\ContainerTrait;
 use uujia\framework\base\common\traits\ResultTrait;
 
 /**
@@ -27,8 +31,9 @@ use uujia\framework\base\common\traits\ResultTrait;
  *
  * @package uujia\framework\base\common\lib\Event
  */
-abstract class EventHandle extends BaseClass implements EventHandleInterface, StoppableEventInterface {
+abstract class EventHandle extends EventRunStatus implements EventHandleInterface {
 	use ResultTrait;
+	use ContainerTrait;
 	
 	/**
 	 * 唯一标识
@@ -71,14 +76,6 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * @var array
 	 */
 	protected $_param = [];
-	
-	/**
-	 * 是否终止事件队列
-	 *  不再触发之后的事件
-	 *
-	 * @var bool
-	 */
-	protected $_stopped = false;
 	
 	// /**
 	//  * 事件名称
@@ -132,13 +129,6 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 **************************************************/
 	
 	/**
-	 * @inheritDoc
-	 */
-	public function isPropagationStopped(): bool {
-		return $this->_stopped;
-	}
-	
-	/**
 	 * 事件名称解析
 	 *
 	 * @param string $triggerName
@@ -152,7 +142,9 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 		$this->setTriggerName($tName);
 		
 		$_eventNameObj = $this->getEventNameObj();
-		$_eventNameObj->parse($tName);
+		$_eventNameObj->setIgnoreTmp(true)
+		              ->switchLite()
+		              ->parse($tName);
 		
 		if ($_eventNameObj->isErr()) {
 			$this->assignLastReturn($_eventNameObj->getLastReturn());
@@ -214,52 +206,149 @@ abstract class EventHandle extends BaseClass implements EventHandleInterface, St
 	 * @param array  $param       触发参数 ['data' => [1, 2, ...]]
 	 *
 	 * @return $this
+	 * @throws ExceptionEvent
 	 */
-	public function t($triggerName = '', $param = []) {
+	public function triggerEventName($triggerName = '', $param = []) {
 		// 如果都传空 需要事先预知对象内已存在必要属性 否则缺少参数而异常
 		$_triggerName = !empty($triggerName) ? $triggerName : $this->getTriggerName();
-		$_param = !empty($param) ? $param : $this->getParam();
+		
+		// 如果仍然为空 则报异常
+		if (empty($triggerName)) {
+			throw new ExceptionEvent('事件触发异常 未找到事件标识', 1000);
+		}
+		
+		$_param = !is_null($param) ? $param : $this->getParam();
 		
 		// todo:
 		$c = $this->parse($_triggerName)->setParam($_param)->getContainer();
 		
 		/** @var EventDispatcher $_evtDispatcher */
 		$_evtDispatcher = $c->get(EventDispatcher::class); // ->_trigger();
+		$_evtDispatcher->dispatch($this);
 		
+		$this->assignLastReturn($_evtDispatcher->getLastReturn());
 		
 		return $this;
 	}
 	
-	protected function _listen($params) {
-		// list ($data, $eventItem, $callParams, $name, $serverName, $serverConfig, $server) = $params;
-		[$fParams, $name, $serverName, $serverConfig, $server] = $params;
-		
-		// 根据类型 知道是本地还是远端
-		switch ($server['type']) {
-			case ServerConst::TYPE_LOCAL_NORMAL:
-				// 本地服务器
-				$_local = $this->getLocalObj();
-				
-				// 触发事件时执行回调
-				// $res = call_user_func_array($_listener, [$params, $_lastResult, $_results]);
-				$res = $_local->trigger($name, $fParams);
-				
-				// // Local返回值复制
-				// $this->setLastReturn($_local->getLastReturn());
-				//
-				// $it->getParent()->addKeyParam('result', $_local->getLastReturn());
-				break;
-			
-			default:
-				// 远程服务器
-				// todo：MQ通信 POST请求之类
-				break;
-		}
+	/**
+	 * triggerEventName的简写
+	 * date: 2020/7/21 15:10
+	 *
+	 * @param string $triggerName
+	 * @param array  $param
+	 *
+	 * @return $this
+	 * @throws ExceptionEvent
+	 */
+	public function ten($triggerName = '', $param = []) {
+		return $this->triggerEventName($triggerName = '', $param = []);
 	}
 	
-	public function on($params) {
-		return $this->_listen($params);
+	/**
+	 * 事件触发
+	 *  在需要触发的地方 启动一个事件
+	 *
+	 * @param string $method 触发的方法名
+	 * @param array  $param 触发参数 ['data' => [1, 2, ...]]
+	 *
+	 * @return $this
+	 * @throws ExceptionEvent
+	 */
+	public function triggerMethod($method = '', $param = []) {
+		// 方法名不能为空
+		if (empty($method)) {
+			throw new ExceptionEvent('事件触发失败 方法名为空', 1000);
+		}
+		
+		// 反射实例不能为空 必须从容器构建
+		if (empty($this->getReflection())) {
+			throw new ExceptionEvent('事件触发失败 请使用容器构建', 1000);
+		}
+		
+		// 获取类的注解
+		$classAnnot = $this->getReflection()->getClassAnnotations();
+		
+		// 找到EventTrigger注解
+		$eventTriggerObj = null;
+		foreach ($classAnnot as $item) {
+			if ($item instanceof EventTrigger) {
+				$eventTriggerObj = $item;
+				break;
+			}
+		}
+		
+		// 如果没找到EventTrigger 就报异常
+		if (empty($eventTriggerObj)) {
+			throw new ExceptionEvent('事件触发失败 未找到触发注解', 1000);
+		}
+		
+		// 获取事件名称空间
+		$eventNamespace = $eventTriggerObj->namespace;
+		$eventUuid = $eventTriggerObj->uuid;
+		
+		// 解析方法
+		$preg = preg_match_all(self::PCRE_FUNC_TRIGGER_NAME, $method, $m, PREG_SET_ORDER);
+		
+		if ($preg === false || count($m) == 0 || count($m[0]) < 3) {
+			throw new ExceptionEvent('事件触发失败 方法注解解析异常', 1000);
+		}
+		
+		// 组合触发标识
+		$triggerName = $eventNamespace . '.' . Str::camel($m[0][1]) . '.' . Str::camel($m[0][2]) . ':' . $eventUuid;
+		
+		// 触发
+		$this->triggerEventName($triggerName, $param);
+		
+		return $this;
 	}
+	
+	/**
+	 * triggerMethod的简写
+	 * date: 2020/7/21 15:10
+	 *
+	 * @param string $method
+	 * @param array  $param
+	 *
+	 * @return $this
+	 * @throws ExceptionEvent
+	 */
+	public function tm($method = '', $param = []) {
+		return $this->triggerMethod($method, $param);
+	}
+	
+	// protected function _listen($params) {
+	// 	// list ($data, $eventItem, $callParams, $name, $serverName, $serverConfig, $server) = $params;
+	// 	[$fParams, $name, $serverName, $serverConfig, $server] = $params;
+	//
+	// 	// 根据类型 知道是本地还是远端
+	// 	switch ($server['type']) {
+	// 		case ServerConst::TYPE_LOCAL_NORMAL:
+	// 			// 本地服务器
+	// 			$_local = $this->getLocalObj();
+	//
+	// 			// 触发事件时执行回调
+	// 			// $res = call_user_func_array($_listener, [$params, $_lastResult, $_results]);
+	// 			$res = $_local->trigger($name, $fParams);
+	//
+	// 			// // Local返回值复制
+	// 			// $this->setLastReturn($_local->getLastReturn());
+	// 			//
+	// 			// $it->getParent()->addKeyParam('result', $_local->getLastReturn());
+	// 			break;
+	//
+	// 		default:
+	// 			// 远程服务器
+	// 			// todo：MQ通信 POST请求之类
+	// 			break;
+	// 	}
+	// }
+	//
+	// public function on($params) {
+	// 	return $this->_listen($params);
+	// }
+	
+	
 	
 	/**************************************************
 	 * func

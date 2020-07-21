@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Exception;
 use Throwable;
 use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Log\Logger;
+use uujia\framework\base\common\lib\Utils\Ret;
 use uujia\framework\base\common\traits\ResultTrait;
 
 /**
@@ -13,7 +14,6 @@ use uujia\framework\base\common\traits\ResultTrait;
  * @package uujia\framework\base\common\lib\Exception
  */
 class ExceptionBase extends \Exception {
-	use ResultTrait;
 	
 	/**
 	 * @var Logger
@@ -38,8 +38,7 @@ class ExceptionBase extends \Exception {
 	// 初始化
 	protected function initialize($message = "", $code = 0) {
 		if (!empty($this->getLoggerObj())) {
-			$e = $this->error($message, $code);
-			$this->getLoggerObj()->errorEx($e);
+			$this->getLoggerObj()->errorEx(Ret::getInstance()->error($message, $code));
 		}
 	}
 	

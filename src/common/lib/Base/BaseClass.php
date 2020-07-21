@@ -4,6 +4,7 @@ namespace uujia\framework\base\common\lib\Base;
 
 
 use Psr\Container\ContainerInterface;
+use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\traits\NameTrait;
 
 class BaseClass implements BaseClassInterface {
@@ -15,6 +16,13 @@ class BaseClass implements BaseClassInterface {
 	 * @var ContainerInterface
 	 */
 	protected $_container = null;
+	
+	/**
+	 * 反射助手类
+	 * 自动注入时 由容器自主提供
+	 * @var Reflection
+	 */
+	protected $_reflection = null;
 	
 	/**
 	 * BaseClass constructor.
@@ -93,6 +101,22 @@ class BaseClass implements BaseClassInterface {
 	 */
 	public function _setContainer(ContainerInterface $container) {
 		$this->_container = $container;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return Reflection
+	 */
+	public function getReflection(): Reflection {
+		return $this->_reflection;
+	}
+	
+	/**
+	 * @param Reflection $reflection
+	 */
+	public function _setReflection(Reflection $reflection) {
+		$this->_reflection = $reflection;
 		
 		return $this;
 	}

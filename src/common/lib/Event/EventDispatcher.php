@@ -48,13 +48,14 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	/**
 	 * EventDispatcher constructor.
 	 *
-	 * @param CacheDataManager            $cacheDataManagerObj
+	 * @param CacheDataManagerInterface   $cacheDataManagerObj
 	 * @param RedisProviderInterface|null $redisProviderObj
 	 * @param ServerRouteManager|null     $serverRouteManagerObj
 	 *
+	 * @AutoInjection(arg = "cacheDataManagerObj", name = "CacheDataManager")
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
-	public function __construct(CacheDataManager $cacheDataManagerObj = null,
+	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null,
 	                            RedisProviderInterface $redisProviderObj = null,
 	                            ServerRouteManager $serverRouteManagerObj = null) {
 		$this->_cacheDataManagerObj   = $cacheDataManagerObj;
@@ -94,6 +95,11 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 			
 			$objPQ->insert($item->getLastReturn(),
 			               $reData['weight'] ?? ResultConstInterface::RESULT_WEIGHT_DEFAULT);
+			
+			// 是否终止向下执行
+			if ($item->getRunStatus()->isPropagationStopped()) {
+				break;
+			}
 		}
 		
 		// todo：排序返回值优先级

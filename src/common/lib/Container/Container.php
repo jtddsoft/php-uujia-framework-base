@@ -50,7 +50,6 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * ContainerProvider constructor.
 	 *
 	 * @param TreeFunc|null $list
-	 * @param Reflection    $reflectionObj
 	 */
 	public function __construct(TreeFunc $list = null) {
 		$this->_list = $list ?? new TreeFunc();
@@ -400,6 +399,11 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		// 如果存在容器接纳 将自身实例传入
 		if (is_callable([$ins, '_setContainer'])) {
 			call_user_func_array([$ins, '_setContainer'], [$this]);
+		}
+		
+		// 如果存在反射助手接纳 将反射助手实例传入
+		if (is_callable([$ins, '_setReflection'])) {
+			call_user_func_array([$ins, '_setReflection'], [$refObj]);
 		}
 		
 		return $ins;
