@@ -144,6 +144,8 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	 * 构建数据 写入缓存
 	 */
 	public function make() {
+		$this->resetResult();
+		
 		if (!$this->hasCache()) {
 			// 写状态标记为 正在缓存中
 			$this->setCacheStatus(self::CACHE_STATUS_CACHING);
@@ -195,7 +197,8 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 		}
 		
 		// 缓存状态 只有为缓存完成时才算存在 在缓存中报服务器繁忙异常 其他为不存在（0-未知 1-缓存中 2-缓存完成 3-缓存出错）
-		$cacheStatus = $this->getRedisObj()->hGet($keyStatus, $this->getKey());
+		// $cacheStatus = $this->getRedisObj()->hGet($keyStatus, $this->getKey());
+		$cacheStatus = $this->getRedisObj()->hGet($keyStatus, static::class);
 		
 		switch ($cacheStatus) {
 			case 1:
@@ -243,7 +246,8 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	public function setCacheStatus(int $status) {
 		$keyStatus = $this->getStatusKey();
 		
-		$this->getRedisObj()->hSet($keyStatus, $this->getKey(), $status);
+		// $this->getRedisObj()->hSet($keyStatus, $this->getKey(), $status);
+		$this->getRedisObj()->hSet($keyStatus, static::class, $status);
 		
 		return $this;
 	}
@@ -346,7 +350,7 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	public function getStatusKey(): string {
 		// 查找是否已配置 如果已配置就采用配置的值 如果未配置就采用默认的
 		if (empty($this->_statusKey)) {
-			$k = array_merge($this->getCacheKeyPrefix(), ['cache', 'status']);
+			$k = array_merge($this->getCacheKeyPrefix(), ['cache', 'status', $this->getKey()]);
 			
 			return implode(':', $k);
 		}

@@ -777,7 +777,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		$eventName = $_evtNameObj
 			->setIgnoreTmp(true)
 			->switchLite()
-			->makeEventName();
+			->makeEventName()
+			->getEventName();
 		
 		yield from $this->fromCacheTriggerKeyLocal($eventName, $this->getClassNameTrigger());
 	}
@@ -901,7 +902,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			$keys = array_merge($keys, $ks);
 			
 			// key的层级数组转成字符串key
-			empty($ks) && $this->_keyListenList = Arr::arrToStr($keys, ':');
+			if (empty($ks)) {
+				$this->_keyListenPrefix = Arr::arrToStr($keys, ':');
+			} else {
+				return Arr::arrToStr($keys, ':');
+			}
 		}
 		
 		return $this->_keyListenList;
@@ -935,7 +940,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			$keys = array_merge($keys, $ks);
 			
 			// key的层级数组转成字符串key
-			empty($ks) && $this->_keyTriggerList = Arr::arrToStr($keys, ':');
+			if (empty($ks)) {
+				$this->_keyTriggerPrefix = Arr::arrToStr($keys, ':');
+			} else {
+				return Arr::arrToStr($keys, ':');
+			}
 		}
 		
 		return $this->_keyTriggerList;
@@ -968,7 +977,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			$keys = array_merge($keys, $ks);
 			
 			// key的层级数组转成字符串key
-			empty($ks) && $this->_keyListenPrefix = Arr::arrToStr($keys, ':');
+			if (empty($ks)) {
+				$this->_keyListenPrefix = Arr::arrToStr($keys, ':');
+			} else {
+				return Arr::arrToStr($keys, ':');
+			}
 		}
 		
 		return $this->_keyListenPrefix;
@@ -1001,7 +1014,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			$keys = array_merge($keys, $ks);
 			
 			// key的层级数组转成字符串key
-			empty($ks) && $this->_keyTriggerPrefix = Arr::arrToStr($keys, ':');
+			if (empty($ks)) {
+				$this->_keyTriggerPrefix = Arr::arrToStr($keys, ':');
+			} else {
+				return Arr::arrToStr($keys, ':');
+			}
 		}
 		
 		return $this->_keyTriggerPrefix;

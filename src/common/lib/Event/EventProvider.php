@@ -13,6 +13,8 @@ use uujia\framework\base\common\lib\Cache\CacheClassInterface;
 use uujia\framework\base\common\lib\Cache\CacheClassTrait;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
+use uujia\framework\base\common\lib\Cache\CacheDataProvider;
+use uujia\framework\base\common\lib\Cache\CacheDataProviderInterface;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheData;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataProvider;
@@ -23,6 +25,7 @@ use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class EventProvider
@@ -33,6 +36,7 @@ use uujia\framework\base\common\lib\Tree\TreeFuncData;
  */
 class EventProvider extends BaseClass implements ListenerProviderInterface, CacheClassInterface {
 	use CacheClassTrait;
+	use ResultTrait;
 	
 	/**
 	 * CacheDataManager对象
@@ -182,9 +186,45 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 *        其中保存的就是server参数json（如果触发者列表未构建不存在 会自动构建匹配）
 	 */
 	public function _make() {
+		/**
+		 * EventCacheDataProvider中make原本会自行处理是否需要构建
+		 * 但我们需要手动处理 因为还有一些工作要做 不能让他自动进行
+		 * 其实手动处理就是维护一下状态
+		 */
+		
+		$this->resetResult();
+		
 		if (!$this->hasCache()) {
+			// 写状态标记为 正在缓存中
+			foreach ($this->getEventCacheDataProviders() as $item) {
+				/** @var EventCacheDataProvider $item */
+				
+				// 写状态标记为 正在缓存中
+				$item->setCacheStatus(CacheDataProviderInterface::CACHE_STATUS_CACHING);
+			}
+			
 			// 不存在缓存 调起缓存数据管理器 收集数据传来
 			$this->toCache();
+			
+			if ($this->isErr()) {
+				// 写状态标记为 错误
+				foreach ($this->getEventCacheDataProviders() as $item) {
+					/** @var EventCacheDataProvider $item */
+					
+					// 写状态标记为 错误
+					$item->setCacheStatus(CacheDataProviderInterface::CACHE_STATUS_ERROR);
+				}
+				
+				throw new ExceptionEvent('缓存构建失败', 1000);
+			}
+			
+			// 写状态标记为 完成
+			foreach ($this->getEventCacheDataProviders() as $item) {
+				/** @var EventCacheDataProvider $item */
+				
+				// 写状态标记为 完成
+				$item->setCacheStatus(CacheDataProviderInterface::CACHE_STATUS_OK);
+			}
 		}
 		
 		// 读取缓存
@@ -200,22 +240,41 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function fromCache() {
 		// todo：去调用事件缓存供应商EventCacheDataProvider的fromCache
-		/** @var EventCacheDataProvider $cacheDataProviderObj */
-		$cacheDataProviderObj = $this->getCacheDataProvider();
 		
-		// 将事件名对象值克隆至缓存供应商
-		$cacheDataProviderObj->getEventNameObj()->assign($this->getEventNameObj());
-		
-		// 将触发者类名赋值到缓存供应商
-		$className = get_class($this->getEventHandle());
-		$cacheDataProviderObj->setClassNameTrigger($className);
-		
-		// 获取触发者标识
-		$k = $this->getTriggerEventName();
-		
-		foreach ($cacheDataProviderObj->fromCache() as $cacheData => $zScore) {
-			yield from $this->makeCacheToServerParameter($k, $cacheData);
+		foreach ($this->getEventCacheDataProviders() as $item) {
+			/** @var EventCacheDataProvider $item */
+			
+			// 将事件名对象值克隆至缓存供应商
+			$item->getEventNameObj()->assign($this->getEventNameObj());
+			
+			// 将触发者类名赋值到缓存供应商
+			$className = get_class($this->getEventHandle());
+			$item->setClassNameTrigger($className);
+			
+			// 获取触发者标识
+			$k = $this->getTriggerEventName();
+			
+			foreach ($item->fromCache() as $cacheData => $zScore) {
+				yield from $this->makeCacheToServerParameter($k, $cacheData);
+			}
 		}
+		
+		// /** @var EventCacheDataProvider $cacheDataProviderObj */
+		// $cacheDataProviderObj = $this->getCacheDataProvider();
+		//
+		// // 将事件名对象值克隆至缓存供应商
+		// $cacheDataProviderObj->getEventNameObj()->assign($this->getEventNameObj());
+		//
+		// // 将触发者类名赋值到缓存供应商
+		// $className = get_class($this->getEventHandle());
+		// $cacheDataProviderObj->setClassNameTrigger($className);
+		//
+		// // 获取触发者标识
+		// $k = $this->getTriggerEventName();
+		//
+		// foreach ($cacheDataProviderObj->fromCache() as $cacheData => $zScore) {
+		// 	yield from $this->makeCacheToServerParameter($k, $cacheData);
+		// }
 		
 		// // todo: 从触发的EventHandle中解出当前触发事件名
 		// $_evtNameObj = $this->getEventNameObj();
@@ -268,10 +327,11 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		//      ->getProviderList()
 		//      ->getKeyDataValue(CacheConst::DATA_PROVIDER_KEY_EVENT);
 		
-		//$this->getCacheDataProvider();
-		
 		// todo: 去调用事件缓存供应商EventCacheDataProvider的toCache
-		$this->getCacheDataProvider()->toCache();
+		foreach ($this->getEventCacheDataProviders() as $item) {
+			/** @var EventCacheDataProvider $item */
+			$item->toCache();
+		}
 		
 		return $this;
 	}
@@ -309,7 +369,18 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 			return true;
 		}
 		
-		return $this->getCacheDataProvider()->hasCache();
+		$exist = true;
+		foreach ($this->getEventCacheDataProviders() as $item) {
+			/** @var EventCacheDataProvider $item */
+			if (!$item->hasCache()) {
+				$exist = false;
+				break;
+			}
+		}
+		
+		return $exist;
+		
+		// return $this->getCacheDataProvider()->hasCache();
 	}
 	
 	/**
@@ -332,7 +403,13 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		// return $this;
 		
 		// todo: 去调用事件缓存供应商EventCacheDataProvider来清空
-		$this->getCacheDataProvider()->clearCache();
+		
+		foreach ($this->getEventCacheDataProviders() as $item) {
+			/** @var EventCacheDataProvider $item */
+			$item->clearCache();
+		}
+		
+		// $this->getCacheDataProvider()->clearCache();
 		
 		// foreach ($this->getEventFilterObj()
 		//               ->setPrefix($this->getCacheKeyListenPrefix())
@@ -784,15 +861,47 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	}
 	
 	/**
+	 * 获取事件缓存供应商对象集合
+	 * 我只提供一个 但您可以增加多个
+	 * 这里返回的是个数组 具体看CacheDataManager中的定义
+	 *
+	 * @return CacheDataProvider[]|null
+	 */
+	public function getCacheDataProviders() {
+		$cdMgr       = $this->getCacheDataManagerObj();
+		$cdProviders = $cdMgr->getProviderList()->getKeyDataValue(CacheConstInterface::DATA_PROVIDER_KEY_EVENT);
+		
+		return $cdProviders;
+	}
+	
+	/**
 	 * 获取事件缓存供应商对象
 	 *
-	 * @return EventCacheDataProvider|null
+	 * @return \Generator
+	 * @throws ExceptionEvent
 	 */
-	public function getCacheDataProvider() {
-		$cdMgr      = $this->getCacheDataManagerObj();
-		$cdProvider = $cdMgr->getProviderList()->getKeyDataValue(CacheConstInterface::DATA_PROVIDER_KEY_EVENT);
+	public function getEventCacheDataProviders() {
+		$cdProviders = $this->getCacheDataProviders();
 		
-		return $cdProvider;
+		/** @var TreeFunc $it */
+		$it = $cdProviders['it'];
+		if ($it->count() == 0) {
+			throw new ExceptionEvent('未找到事件缓存供应商', 1000);
+		}
+		
+		// 遍历寻找事件缓存供应商 EventCacheDataProvider 事件供应商我只提供一个 但您可以自行增加
+		$found = false;
+		foreach ($it->wForEachIK() as $i => $item) {
+			$data = $item->getDataValue();
+			if ($data instanceof EventCacheDataProvider) {
+				$found = true;
+				yield $data;
+			}
+		}
+		
+		if (!$found) {
+			throw new ExceptionEvent('未找到事件缓存供应商', 1000);
+		}
 	}
 	
 	/**

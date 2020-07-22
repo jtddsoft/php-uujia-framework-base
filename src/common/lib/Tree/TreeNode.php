@@ -828,9 +828,7 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 		$this->_weightIndex === null && $this->weight();
 		
 		foreach ($this->_weightIndex as $i => $index) {
-			$item = $this->_children[$index];
-			
-			yield [$i => $item];
+			yield $i => $this->_children[$index];
 		}
 	}
 	
