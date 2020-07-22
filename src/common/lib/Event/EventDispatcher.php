@@ -107,6 +107,11 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 		//mode of extraction
 		$objPQ->setExtractFlags(\SplPriorityQueue::EXTR_DATA);
 		
+		if ($objPQ->count() == 0) {
+			$this->ok();
+			return $this;
+		}
+		
 		//Go to TOP
 		$objPQ->top();
 		

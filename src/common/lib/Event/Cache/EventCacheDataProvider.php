@@ -666,7 +666,9 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 2-2-2 获取监听者列表
 		$listenList = $this->getRedisObj()->hKeys($keyListenList);
 		
-		yield $listenList;
+		foreach ($listenList as $item) {
+			yield $item;
+		}
 	}
 	
 	/**
@@ -684,11 +686,13 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			}
 			
 			// 读取监听者有序集合列表
-			$zListenList = $this->getRedisObj()->zRange($hKey, 0, -1);
+			$k = $this->getKeyListenPrefix([$hKey]);
+			$zListenList = $this->getRedisObj()->zRange($k, 0, -1, true);
 			
 			// 抄入触发者有序集合列表
 			foreach ($zListenList as $zValue => $zScore) {
-				$this->getRedisObj()->zAdd($eventName, $zScore, $zValue);
+				$keyTrigger = $this->getKeyTriggerPrefix([$eventName]);
+				$this->getRedisObj()->zAdd($keyTrigger, $zScore, $zValue);
 			}
 		}
 		
@@ -733,7 +737,9 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 如果存在 读取监听列表（key是触发者的标识名 value是有序集合存储的是从监听列表中匹配的服务配置json）
 		$zListenList = $this->getRedisObj()->zRange($k, 0, -1, true);
 		
-		yield $zListenList; // todo: 如果后续没有其他操作就合并为一行 不再占用一个变量
+		foreach ($zListenList as $zValue => $zScore) {
+			yield $zValue => $zScore; // todo: 如果后续没有其他操作就合并为一行 不再占用一个变量
+		}
 	}
 	
 	
@@ -903,7 +909,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			
 			// key的层级数组转成字符串key
 			if (empty($ks)) {
-				$this->_keyListenPrefix = Arr::arrToStr($keys, ':');
+				$this->_keyListenList = Arr::arrToStr($keys, ':');
 			} else {
 				return Arr::arrToStr($keys, ':');
 			}
@@ -941,7 +947,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			
 			// key的层级数组转成字符串key
 			if (empty($ks)) {
-				$this->_keyTriggerPrefix = Arr::arrToStr($keys, ':');
+				$this->_keyTriggerList = Arr::arrToStr($keys, ':');
 			} else {
 				return Arr::arrToStr($keys, ':');
 			}

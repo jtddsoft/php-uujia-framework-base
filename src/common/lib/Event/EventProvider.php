@@ -254,9 +254,12 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 			// 获取触发者标识
 			$k = $this->getTriggerEventName();
 			
+			$cacheDatas = [];
 			foreach ($item->fromCache() as $cacheData => $zScore) {
-				yield from $this->makeCacheToServerParameter($k, $cacheData);
+				$cacheDatas[] = $cacheData;
 			}
+			
+			yield from $this->makeCacheToServerParameter($k, $cacheDatas);
 		}
 		
 		// /** @var EventCacheDataProvider $cacheDataProviderObj */
