@@ -88,7 +88,7 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 			if ($item->isErr()) {
 				$this->assignLastReturn($item->getLastReturn());
 				
-				return $this;
+				//return $this;
 			}
 			
 			$reData = $item->getData();

@@ -233,7 +233,7 @@ class Demo extends BaseService {
 		// $eventDispatcher->dispatch(UU::C(EventTest::class));
 		/** @var EventTest $eventTest */
 		$eventTest = UU::C(EventTest::class);
-		$re = $eventTest->addBefore();
+		$re = $eventTest->addAfter();
 		return $re;
 	}
 	

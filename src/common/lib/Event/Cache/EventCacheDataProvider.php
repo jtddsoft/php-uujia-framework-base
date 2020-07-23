@@ -385,7 +385,15 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			
 			// 写入监听列表到缓存
 			// $this->getRedisObj()->zAdd($keyListenList, $_weight, $_name);
-			$this->getRedisObj()->hSet($keyListenList, $_name, $className);
+			$classNames = $this->getRedisObj()->hGet($keyListenList, $_name);
+			if (!empty($classNames)) {
+				$classNames = Json::jd($classNames);
+			} else {
+				$classNames = [];
+			}
+			
+			$classNames[] = $className;
+			$this->getRedisObj()->hSet($keyListenList, $_name, Json::je($classNames));
 			
 			// 构建缓存数据 并转json 【本地】
 			$jsonData = $this->getEventCacheDataObj()
@@ -637,7 +645,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	}
 	
 	/**
-	 * 构建监听者列表
+	 * 构建触发者的监听列表
 	 *
 	 * @param string $eventName
 	 * @param string $className

@@ -32,8 +32,13 @@ class EventTest extends EventHandle {
 		return $this->tm(__FUNCTION__)->getLastReturn();
 	}
 	
+	public function addAfter() {
+		return $this->tm(__FUNCTION__)->getLastReturn();
+	}
+	
 	public function onAddBefore() {
-		return $this->error('11111111');
+		var_dump($this->error(__METHOD__));
+		return $this->error(__METHOD__);
 	}
 	
 }

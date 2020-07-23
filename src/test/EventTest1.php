@@ -25,7 +25,13 @@ use uujia\framework\base\common\lib\Event\Name\EventName;
 class EventTest1 extends EventHandle {
 	
 	public function onAddBefore() {
-		return $this->error('2222222');
+		var_dump($this->error(__METHOD__));
+		return $this->error(__METHOD__);
+	}
+	
+	public function onAddAfter() {
+		var_dump($this->error(__METHOD__));
+		return $this->error(__METHOD__);
 	}
 	
 }
