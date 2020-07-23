@@ -11,6 +11,7 @@ use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Event\EventDispatcher;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\MQ\MQCollection;
+use uujia\framework\base\common\lib\Server\ServerRouteManager;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\Log;
@@ -189,6 +190,13 @@ class BaseService {
 	 */
 	public function getEventDispatcher(): EventDispatcher {
 		return UU::C(EventDispatcher::class);
+	}
+	
+	/**
+	 * @return EventDispatcher
+	 */
+	public function getServerRouteManager(): ServerRouteManager {
+		return UU::C(ServerRouteManager::class);
 	}
 	
 	

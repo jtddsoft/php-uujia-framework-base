@@ -9,6 +9,7 @@ use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use uujia\framework\base\common\lib\Event\EventRunStatus;
 use uujia\framework\base\common\lib\Server\ServerParameter;
 use uujia\framework\base\common\lib\Server\ServerParameterInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteInterface;
@@ -147,6 +148,16 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 		           ->load(null, null, true)
 		           ->route();
 		
+		if ($re === false) {
+			// 记录最后返回值
+			$this->assignLastReturn($this->error('非法的返回值'));
+			
+			// 记录运行状态 是否终止向下执行
+			$this->getRunStatus()->assignFromArray(false);
+			
+			return $this;
+		}
+		
 		// 记录最后返回值
 		$this->assignLastReturn($re['last_return'] ?? $this->error('非法的返回值'));
 		
@@ -168,11 +179,18 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 * @return $this
 	 */
 	public function loadCache(EventCacheDataInterface $cacheDataObj) {
+		// $this->resetSP()
+		//      ->setSPServerName($cacheData[EventConstInterface::CACHE_SP_SERVERNAME] ?? '')
+		//      ->setSPServerType($cacheData[EventConstInterface::CACHE_SP_SERVERTYPE] ?? '')
+		//      ->setSPClassNameSpace($cacheData[EventConstInterface::CACHE_SP_CLASSNAMESPACE] ?? '')
+		//      ->setSPParam($cacheData[EventConstInterface::CACHE_SP__PARAM] ?? [])
+		//      ->make();
+		
 		$this->resetSP()
-		     ->setSPServerName($cacheData[EventConstInterface::CACHE_SP_SERVERNAME] ?? '')
-		     ->setSPServerType($cacheData[EventConstInterface::CACHE_SP_SERVERTYPE] ?? '')
-		     ->setSPClassNameSpace($cacheData[EventConstInterface::CACHE_SP_CLASSNAMESPACE] ?? '')
-		     ->setSPParam($cacheData[EventConstInterface::CACHE_SP__PARAM] ?? [])
+		     ->setSPServerName($cacheDataObj->getServerName())
+		     ->setSPServerType($cacheDataObj->getServerType())
+		     ->setSPClassNameSpace($cacheDataObj->getClassNameSpace())
+		     ->setSPParam($cacheDataObj->getParam())
 		     ->make();
 		
 		return $this;
@@ -334,6 +352,10 @@ class EventListenerProxy extends BaseClass implements EventListenerProxyInterfac
 	 * @return EventRunStatus
 	 */
 	public function getRunStatus(): EventRunStatus {
+		if (empty($this->_runStatus)) {
+			$this->_runStatus = new EventRunStatus();
+		}
+		
 		return $this->_runStatus;
 	}
 	

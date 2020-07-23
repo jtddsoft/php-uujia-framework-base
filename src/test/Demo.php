@@ -126,6 +126,13 @@ class Demo extends BaseService {
 			     ->setAs($_containerAs);
 		}
 		
+		// server_config
+		$_serverConfig = $configObj->loadValue('server');
+		if (!empty($_serverConfig)) {
+			$this->getServerRouteManager()
+			     ->config($_serverConfig);
+		}
+		
 		$this->getRedis()
 			// ->setRedisProviderObj(new RedisProvider())
 			 ->loadConfig();

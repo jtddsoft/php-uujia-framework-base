@@ -117,12 +117,13 @@ class ServerRouteLocal extends BaseClass implements ServerRouteInterface {
 		
 		if ($callback && is_callable($callback)) {
 			$re = call_user_func_array($callback, [$this, $this->getServerParameter(), $this->getParent()]);
-			// todo: 返回值
-			$this->assignLastReturn($re);
-			return $this;
+			// todo: 返回值 还有运行状态需要处理
+			
+			// $this->assignLastReturn($re['last_return'] ?? $this->code(1000));
+			return $re;
 		}
 		
-		return $this;
+		return false;
 	}
 	
 	// /**

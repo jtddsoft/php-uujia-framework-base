@@ -5,7 +5,6 @@ namespace uujia\framework\base\common\lib\Server;
 use uujia\framework\base\common\consts\ServerConst;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\lib\Event\ServerRouteLocal;
 use uujia\framework\base\common\lib\Utils\Network;
 use uujia\framework\base\common\traits\InstanceTrait;
 use uujia\framework\base\common\traits\NameTrait;
@@ -131,8 +130,8 @@ class ServerRouteManager extends BaseClass {
 	 * @return ServerRouteManager
 	 */
 	public function load($name = null, $type = null, $notEmptyIgnore = false) {
-		!empty($name) && $name = $this->getServerParameter()->serverName();
-		!empty($type) && $type = $this->getServerParameter()->serverType();
+		empty($name) && $name = $this->getServerParameter()->serverName();
+		empty($type) && $type = $this->getServerParameter()->serverType();
 		// !empty($requestType) && $requestType = $this->requestType();
 		
 		$_config = $this->getConfig();
@@ -173,20 +172,22 @@ class ServerRouteManager extends BaseClass {
 	
 	/**
 	 * 路由
-	 *
-	 * @return $this
 	 */
 	public function route() {
 		$this->resetResult();
 		
 		if ($this->isLocal()) {
-			$re = $this->getServerRouteLocal()->route();
-			$this->assignLastReturn($re);
+			$re = $this->getServerRouteLocal()
+			           ->setServerParameter($this->getServerParameter())
+			           ->route();
+			// $this->assignLastReturn($re);
 			
-			return $this;
+			return $re;
 		} else {
 			// todo: 远程或有协议（post之类）
 		}
+		
+		return false;
 	}
 	
 	/**************************************************
@@ -230,11 +231,11 @@ class ServerRouteManager extends BaseClass {
 	}
 	
 	/**
-	 * @return ServerRouteInterface
+	 * @return ServerRouteLocal|ServerRouteInterface
 	 */
 	public function getServerRouteLocal() {
 		if (empty($this->_serverRoutes[ServerConst::SERVER_ROUTE_NAME_LOCAL])) {
-			$this->_serverRoutes[ServerConst::SERVER_ROUTE_NAME_LOCAL] = new ServerRouteLocal($this, $this->getServerParameter());
+			$this->_serverRoutes[ServerConst::SERVER_ROUTE_NAME_LOCAL] = new ServerRouteLocal($this);
 		}
 		return $this->_serverRoutes[ServerConst::SERVER_ROUTE_NAME_LOCAL];
 	}

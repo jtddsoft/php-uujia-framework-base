@@ -20,7 +20,7 @@ interface ServerRouteInterface {
 	 * 路由
 	 *  自主将请求路由出去 并接收返回值 传给回调
 	 *
-	 * @return $this
+	 * @return array|false
 	 */
 	public function route();
 	
