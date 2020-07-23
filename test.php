@@ -49,9 +49,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			$demo->testYield();
 		
-			$t2 = microtime(true);
-			$t0 = $t2 - $t1;
-			echo "startTime: {$t1}, endTime: {$t2}. t: {$t0}\n";
+			
 			break;
 		
 		case 'mqs':
@@ -190,3 +188,6 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	
 }
 
+$t2 = microtime(true);
+$t0 = $t2 - $t1;
+echo "startTime: {$t1}, endTime: {$t2}. t: {$t0}\n";

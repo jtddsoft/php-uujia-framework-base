@@ -14,7 +14,10 @@ use uujia\framework\base\common\lib\Event\Cache\EventCacheDataProvider;
 class EventCacheDataProviderTest extends EventCacheDataProvider {
 	
 	public function getEventClassNames(): Generator {
-		yield EventTest::class;
+		foreach ([EventTest::class, EventTest1::class] as $item) {
+			yield $item;
+		}
+		
 	}
 	
 }

@@ -10,11 +10,10 @@ use uujia\framework\base\common\lib\Event\EventHandleInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 
 /**
- * Class EventTest
+ * Class EventTest1
  *
  * @package uujia\framework\base\test
  *
- * @EventTrigger(namespace = "app.test.eventTest", uuid = "ea6f7e28-1fe4-df41-5535-5be1be9080cc")
  * @EventListener(
  *     namespace = "app.test.eventTest",
  *     uuid = "*",
@@ -23,17 +22,10 @@ use uujia\framework\base\common\lib\Event\Name\EventName;
  *     }
  * )
  */
-class EventTest extends EventHandle {
-	
-	/**
-	 * @EventName(evt = "app.test.eventTest.add.before")
-	 */
-	public function addBefore() {
-		return $this->tm(__FUNCTION__)->getLastReturn();
-	}
+class EventTest1 extends EventHandle {
 	
 	public function onAddBefore() {
-		return $this->error('11111111');
+		return $this->error('2222222');
 	}
 	
 }
