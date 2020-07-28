@@ -182,7 +182,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			// var_dump($evtCDP->make());
 			
 			// var_dump($demo->tiggerEvent());
-			$demo->tiggerEvent();
+			// for($i = 0; $i < 1000; $i++) {
+				$demo->tiggerEvent();
+			// }
+			
 			
 			break;
 	}

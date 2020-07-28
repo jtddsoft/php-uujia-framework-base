@@ -95,6 +95,39 @@ class BaseService {
 	}
 	
 	/**
+	 * 引导
+	 */
+	public function boot() {
+		/** @var $configObj ConfigManager */
+		$configObj = $this->getConfig()->getConfigManagerObj();
+		
+		// 获取容器配置container_config
+		$_containerConfig = $configObj->loadValue('container.container');
+		$_containerAlias  = $_containerConfig['alias'] ?? [];
+		$_containerAs     = $_containerConfig['as'] ?? [];
+		
+		if (!empty($_containerAlias) || !empty($_containerAs)) {
+			// $_containerObj = $this->getContainer();
+			// $_containerObj->list()->setAlias($_containerAlias);
+			$this->getContainer()
+			     ->list()
+			     ->setAlias($_containerAlias)
+			     ->setAs($_containerAs);
+		}
+		
+		// server_config
+		$_serverConfig = $configObj->loadValue('server');
+		if (!empty($_serverConfig)) {
+			$this->getServerRouteManager()
+			     ->config($_serverConfig);
+		}
+		
+		$this->getRedis()
+			// ->setRedisProviderObj(new RedisProvider())
+			 ->loadConfig();
+	}
+	
+	/**
 	 * @return Container
 	 */
 	public function getContainer(): Container {
