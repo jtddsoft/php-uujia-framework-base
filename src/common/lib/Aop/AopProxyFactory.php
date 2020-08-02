@@ -70,6 +70,15 @@ class AopProxyFactory extends BaseClass {
 	}
 	
 	
+	public function aopProcess() {
+		foreach ($this->aopClass() as $aop) {
+		
+		}
+	}
+	
+	public function __call($name, $arguments) {
+		// TODO: Implement __call() method.
+	}
 	
 	//private $target;
 	//function __construct($tar){
