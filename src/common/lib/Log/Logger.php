@@ -7,7 +7,7 @@ namespace uujia\framework\base\common\lib\Log;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\MQ\MQCollection;
 use uujia\framework\base\common\lib\MQ\MQTT;
 use uujia\framework\base\common\lib\MQ\RabbitMQ;
@@ -74,7 +74,7 @@ class Logger extends BaseClass implements LoggerInterface {
 	// 	'logs' => [], // log_info的集合
 	// ];
 	
-	/** @var ConfigManager $_configObj */
+	/** @var ConfigManagerInterface $_configObj */
 	protected $_configObj;
 	
 	/** @var $mqObj MQCollection */
@@ -90,10 +90,10 @@ class Logger extends BaseClass implements LoggerInterface {
 	/**
 	 * AbstractLog constructor.
 	 *
-	 * @param ConfigManager $configObj
-	 * @param MQCollection  $mqObj MQCollection对象依赖
+	 * @param ConfigManagerInterface $configObj
+	 * @param MQCollection           $mqObj MQCollection对象依赖
 	 */
-	public function __construct(ConfigManager $configObj, MQCollection $mqObj) {
+	public function __construct(ConfigManagerInterface $configObj, MQCollection $mqObj) {
 		$this->log = '';
 		$this->logs = [];
 		
@@ -634,16 +634,16 @@ class Logger extends BaseClass implements LoggerInterface {
 	}
 	
 	/**
-	 * @return ConfigManager
+	 * @return ConfigManagerInterface
 	 */
-	public function getConfigObj(): ConfigManager {
+	public function getConfigObj(): ConfigManagerInterface {
 		return $this->_configObj;
 	}
 	
 	/**
-	 * @param ConfigManager $configObj
+	 * @param ConfigManagerInterface $configObj
 	 */
-	public function _setConfigObj(ConfigManager $configObj) {
+	public function _setConfigObj(ConfigManagerInterface $configObj) {
 		$this->_configObj = $configObj;
 	}
 	

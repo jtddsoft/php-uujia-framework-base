@@ -3,7 +3,7 @@
 
 namespace uujia\framework\base\common\lib\MQ;
 
-use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 
 /**
@@ -22,16 +22,19 @@ class MQCollection extends TreeFunc {
 	
 	public static $_MQ_CONFIG_NAME = 'mq_config';
 	
-	// 配置对象
+	/**
+	 * 配置对象
+	 * @var ConfigManagerInterface
+	 */
 	protected $_configObj;
 	
 	/**
 	 * MQCollection constructor.
 	 *
-	 * @param ConfigManager $configObj
-	 * @param               $parent
+	 * @param ConfigManagerInterface $configObj
+	 * @param                        $parent
 	 */
-	public function __construct(ConfigManager $configObj, $parent = null) {
+	public function __construct(ConfigManagerInterface $configObj, $parent = null) {
 		$this->_configObj = $configObj;
 		
 		parent::__construct($parent);
@@ -176,14 +179,14 @@ class MQCollection extends TreeFunc {
 	}
 	
 	/**
-	 * @return ConfigManager
+	 * @return ConfigManagerInterface
 	 */
 	public function getConfigObj() {
 		return $this->_configObj;
 	}
 	
 	/**
-	 * @param ConfigManager $configObj
+	 * @param ConfigManagerInterface $configObj
 	 *
 	 * @return $this
 	 */

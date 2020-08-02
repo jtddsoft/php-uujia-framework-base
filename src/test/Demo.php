@@ -10,7 +10,7 @@ use uujia\framework\base\common\Config;
 use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
-use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
@@ -105,7 +105,7 @@ class Demo extends BaseService {
 		// 	      Event::class,
 		//       ]);
 		
-		/** @var $configObj ConfigManager */
+		/** @var $configObj ConfigManagerInterface */
 		$configObj = $this->getConfig()->getConfigManagerObj(); //UU::C(Config::class);
 		$configObj->path(__DIR__ . '/config/error_code.php', '', 99);
 		

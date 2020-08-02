@@ -5,7 +5,7 @@ namespace uujia\framework\base\common\lib\Error;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 
 /**
@@ -18,7 +18,7 @@ class ErrorCodeConfig extends BaseClass {
 	const ERROR_CODE_NAME = 'error_code';
 	
 	/**
-	 * @var ConfigManager
+	 * @var ConfigManagerInterface
 	 */
 	protected $_configObj;
 	
@@ -37,10 +37,10 @@ class ErrorCodeConfig extends BaseClass {
 	 * ErrorCodeList constructor.
 	 *  依赖Config
 	 *
-	 * @param ConfigManager $configObj
+	 * @param ConfigManagerInterface $configObj
 	 * @param array|string  $err
 	 */
-	public function __construct(ConfigManager $configObj, $err = '') {
+	public function __construct(ConfigManagerInterface $configObj, $err = '') {
 		$this->_configObj = $configObj;
 		
 		parent::__construct();
@@ -180,14 +180,14 @@ class ErrorCodeConfig extends BaseClass {
 	}
 	
 	/**
-	 * @return ConfigManager
+	 * @return ConfigManagerInterface
 	 */
 	public function getConfigObj() {
 		return $this->_configObj;
 	}
 	
 	/**
-	 * @param ConfigManager $configObj
+	 * @param ConfigManagerInterface $configObj
 	 */
 	public function _setConfigObj($configObj) {
 		$this->_configObj = $configObj;

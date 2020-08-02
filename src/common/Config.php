@@ -4,7 +4,9 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\Result;
 
 /**
@@ -15,16 +17,18 @@ use uujia\framework\base\common\Result;
 class Config {
 	
 	/**
-	 * @var ConfigManager
+	 * @var ConfigManagerInterface
 	 */
 	protected $_configManagerObj;
 	
 	/**
 	 * Config constructor.
 	 *
-	 * @param ConfigManager $configManagerObj
+	 * @param ConfigManagerInterface $configManagerObj
+	 *
+	 * @AutoInjection(arg = "configManagerObj", name = "ConfigManager")
 	 */
-	public function __construct(ConfigManager $configManagerObj) {
+	public function __construct(ConfigManagerInterface $configManagerObj) {
 		$this->_configManagerObj = $configManagerObj;
 		
 		$this->initConfig();
@@ -63,14 +67,14 @@ class Config {
 	}
 	
 	/**
-	 * @return ConfigManager
+	 * @return ConfigManagerInterface
 	 */
 	public function configObj() {
 		return $this->getConfigManagerObj();
 	}
 	
 	/**
-	 * @return ConfigManager
+	 * @return ConfigManagerInterface
 	 */
 	public function getConfigManagerObj() {
 		return $this->_configManagerObj;

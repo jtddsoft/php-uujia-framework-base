@@ -16,7 +16,7 @@ use uujia\framework\base\common\traits\ResultTrait;
  *
  * @package uujia\framework\base\common\lib\Config
  */
-class ConfigManager extends BaseClass {
+class ConfigManager extends BaseClass implements ConfigManagerInterface {
 	use ResultTrait;
 	
 	// 配置构建工厂 只是文件路径的方法集合

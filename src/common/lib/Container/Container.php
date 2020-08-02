@@ -270,13 +270,14 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	/**
 	 * 创建类实例
 	 *
-	 * @param $id
-	 * @param $className
+	 * @param      $id
+	 * @param      $className
+	 * @param bool $isNew
 	 *
 	 * @return null|object
 	 * @throws \ReflectionException
 	 */
-	public function _makeClass($id, $className) {
+	public function _makeClass($id, $className, $isNew = false) {
 		// todo: 动态代理实现AOP 全部按接口来实现
 		
 		if (!is_string($className)) {
@@ -487,7 +488,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			// 查找映射
 			$this->getList()->hasAs($id) && $className = $this->getList()->getAs($id);
 			
-			return $this->_makeClass($id, $className);
+			return $this->_makeClass($id, $className, $isNew);
 		} else {
 			$item = $_list->get($id);
 		}
@@ -501,7 +502,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		// 工厂函数$c为空 自动注入
 		if ($data->_getFactoryFunc() === null) {
 			// 构建工厂
-			$_factoryFunc = function (TreeFuncData $data, TreeFunc $it, Container $c) use ($id) {
+			$_factoryFunc = function (TreeFuncData $data, TreeFunc $it, Container $c) use ($id, $isNew) {
 				/**
 				 * 别名和映射的区别在于 key键名不同
 				 * 设a为真实类的完整名称 b为a的昵称
@@ -521,7 +522,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 				// 	return $this->getList()->get($className)->getDataValue();
 				// }
 				
-				return $this->_makeClass($id, $className);
+				return $this->_makeClass($id, $className, $isNew);
 			};
 			
 			// 将工厂加入到Data

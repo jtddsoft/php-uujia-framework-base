@@ -4,7 +4,6 @@ namespace uujia\framework\base\common\lib\Runner;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
-use uujia\framework\base\common\lib\Config\ConfigManager;
 
 /**
  * Class RunnerManager

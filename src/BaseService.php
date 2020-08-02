@@ -7,7 +7,7 @@ use uujia\framework\base\common\Config;
 use uujia\framework\base\common\ErrorConfig;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
-use uujia\framework\base\common\lib\Config\ConfigManager;
+use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Event\EventDispatcher;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\MQ\MQCollection;
@@ -98,7 +98,7 @@ class BaseService {
 	 * 引导
 	 */
 	public function boot() {
-		/** @var $configObj ConfigManager */
+		/** @var $configObj ConfigManagerInterface */
 		$configObj = $this->getConfig()->getConfigManagerObj();
 		
 		// 获取容器配置container_config
@@ -177,10 +177,10 @@ class BaseService {
 	}
 	
 	/**
-	 * @return ConfigManager
+	 * @return ConfigManagerInterface
 	 */
-	public function getConfigManager(): ConfigManager {
-		return UU::C(ConfigManager::class);
+	public function getConfigManager(): ConfigManagerInterface {
+		return UU::C(ConfigManagerInterface::class);
 	}
 	
 	/**
