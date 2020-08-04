@@ -5,7 +5,9 @@ namespace uujia\framework\base\common\lib\Aop;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Exception\ExceptionAop;
 use uujia\framework\base\common\lib\Reflection\Reflection;
+use uujia\framework\base\common\traits\ResultTrait;
 
 /**
  * Class AopProxyFactory
@@ -14,6 +16,7 @@ use uujia\framework\base\common\lib\Reflection\Reflection;
  * @package uujia\framework\base\common\lib\Aop
  */
 class AopProxyFactory extends BaseClass {
+	use ResultTrait;
 	
 	/**
 	 * 代理的类名（全名）
@@ -23,7 +26,7 @@ class AopProxyFactory extends BaseClass {
 	
 	/**
 	 * 代理的类实例
-	 * @var object
+	 * @var BaseClass
 	 */
 	protected $_classInstance;
 	
@@ -69,15 +72,141 @@ class AopProxyFactory extends BaseClass {
 		yield null;
 	}
 	
-	
-	public function aopProcess() {
-		foreach ($this->aopClass() as $aop) {
+	/**
+	 * Date: 2020/8/4 14:25
+	 *
+	 * @param \Generator $generator
+	 * @param string     $method
+	 * @param array      $args
+	 * @param            $result
+	 *
+	 * @return mixed
+	 * @throws ExceptionAop
+	 */
+	public function aopProcess($generator, $method, $args, $result) {
+		$aopCurr = $generator->current();
 		
+		/**
+		 * 实例化aop
+		 * @var AopAdviceInterface $aop
+		 */
+		$aop = $this->getContainer()->get($aopCurr);
+		if (empty($aop)) {
+			$generator->next();
+			if ($generator->valid()) {
+				return $this->aopProcess($generator, $method, $args, $result);
+			}
+			
+			return $result;
 		}
+		
+		// 调用process
+		if (method_exists($aop, 'process')) {
+			/**
+			 * function process($aopProxy, $method, $args, $lastResult, \Closure $callMethod, \Closure $next) {
+			 *
+			 *      return $next($callMethod());
+			 * }
+			 */
+			$result = call_user_func_array([$aop, 'process'], [$this, $method, $args, $result, function () use ($method, $args) {
+				if (method_exists($this->getClassInstance(), $method)) {
+					$result = call_user_func_array([$this->getClassInstance(), $method], $args);
+				} else {
+					throw new ExceptionAop('方法不存在', 1000);
+				}
+				
+				return $result;
+			}, function ($result) use ($generator, $method, $args) {
+				$generator->next();
+				return $this->aopProcess($generator, $method, $args, $result);
+			}]);
+		} else {
+			throw new ExceptionAop('AOP方法不存在', 1000);
+		}
+		
+		return $result;
 	}
 	
+	/**
+	 * date: 2020/8/4 16:31
+	 *
+	 * @param $name
+	 * @param $arguments
+	 *
+	 * @return mixed
+	 * @throws ExceptionAop
+	 */
 	public function __call($name, $arguments) {
-		// TODO: Implement __call() method.
+		$generator = $this->aopClass();
+		$generator->rewind();
+		
+		$result = false;
+		
+		if ($generator->valid()) {
+			$result = $this->aopProcess($generator, $name, $arguments, $this->ok());
+		} else {
+			if (method_exists($this->getClassInstance(), $name)) {
+				$result = call_user_func_array([$this->getClassInstance(), $name], $arguments);
+			} else {
+				throw new ExceptionAop('方法不存在', 1000);
+			}
+		}
+		
+		return $result;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getClassName(): string {
+		return $this->_className;
+	}
+	
+	/**
+	 * @param string $className
+	 *
+	 * @return AopProxyFactory
+	 */
+	public function setClassName(string $className) {
+		$this->_className = $className;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return object
+	 */
+	public function getClassInstance() {
+		return $this->_classInstance;
+	}
+	
+	/**
+	 * @param object $classInstance
+	 *
+	 * @return AopProxyFactory
+	 */
+	public function setClassInstance($classInstance) {
+		$this->_classInstance = $classInstance;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return Reflection
+	 */
+	public function getReflectionClass(): Reflection {
+		return $this->_reflectionClass;
+	}
+	
+	/**
+	 * @param Reflection $reflectionClass
+	 *
+	 * @return AopProxyFactory
+	 */
+	public function setReflectionClass(Reflection $reflectionClass) {
+		$this->_reflectionClass = $reflectionClass;
+		
+		return $this;
 	}
 	
 	//private $target;
