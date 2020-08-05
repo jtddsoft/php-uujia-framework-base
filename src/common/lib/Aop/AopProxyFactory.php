@@ -4,9 +4,16 @@
 namespace uujia\framework\base\common\lib\Aop;
 
 
+use uujia\framework\base\common\consts\CacheConstInterface;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
+use uujia\framework\base\common\lib\Aop\cache\AopCacheDataProvider;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Cache\CacheDataManager;
+use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
+use uujia\framework\base\common\lib\Cache\CacheDataProvider;
 use uujia\framework\base\common\lib\Exception\ExceptionAop;
 use uujia\framework\base\common\lib\Reflection\Reflection;
+use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\traits\ResultTrait;
 
 /**
@@ -17,6 +24,13 @@ use uujia\framework\base\common\traits\ResultTrait;
  */
 class AopProxyFactory extends BaseClass {
 	use ResultTrait;
+	
+	/**
+	 * CacheDataManager对象
+	 *
+	 * @var CacheDataManager
+	 */
+	protected $_cacheDataManagerObj;
 	
 	/**
 	 * 代理的类名（全名）
@@ -38,8 +52,12 @@ class AopProxyFactory extends BaseClass {
 	
 	/**
 	 * AopProxyFactory constructor.
+	 *
+	 * @param CacheDataManagerInterface|null $cacheDataManagerObj
+	 *
+	 * @AutoInjection(arg = "cacheDataManagerObj", name = "CacheDataManager")
 	 */
-	public function __construct() {
+	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null) {
 		
 		parent::__construct();
 	}
@@ -209,6 +227,70 @@ class AopProxyFactory extends BaseClass {
 		return $this;
 	}
 	
+	/**
+	 * @return CacheDataManager
+	 */
+	public function getCacheDataManagerObj(): CacheDataManager {
+		return $this->_cacheDataManagerObj;
+	}
+	
+	/**
+	 * @param CacheDataManager $cacheDataManagerObj
+	 *
+	 * @return AopProxyFactory
+	 */
+	public function setCacheDataManagerObj(CacheDataManager $cacheDataManagerObj) {
+		$this->_cacheDataManagerObj = $cacheDataManagerObj;
+		
+		return $this;
+	}
+	
+	
+	/**
+	 * 获取AOP缓存供应商对象集合
+	 * 我只提供一个 但您可以增加多个
+	 * 这里返回的是个数组 具体看CacheDataManager中的定义
+	 *
+	 * @return CacheDataProvider[]|null
+	 */
+	public function getCacheDataProviders() {
+		$cdMgr       = $this->getCacheDataManagerObj();
+		$cdProviders = $cdMgr->getProviderList()->getKeyDataValue(CacheConstInterface::DATA_PROVIDER_KEY_AOP);
+		
+		return $cdProviders;
+	}
+	
+	/**
+	 * 获取事件缓存供应商对象
+	 *
+	 * @return \Generator
+	 * @throws ExceptionAop
+	 */
+	public function getAopCacheDataProviders() {
+		$cdProviders = $this->getCacheDataProviders();
+		
+		/** @var TreeFunc $it */
+		$it = $cdProviders['it'];
+		if ($it->count() == 0) {
+			throw new ExceptionAop('未找到AOP缓存供应商', 1000);
+		}
+		
+		// 遍历寻找AOP缓存供应商 AopCacheDataProvider AOP供应商我只提供一个 但您可以自行增加
+		$found = false;
+		foreach ($it->wForEachIK() as $i => $item) {
+			$data = $item->getDataValue();
+			if ($data instanceof AopCacheDataProvider) {
+				$found = true;
+				yield $data;
+			}
+		}
+		
+		if (!$found) {
+			throw new ExceptionAop('未找到AOP缓存供应商', 1000);
+		}
+	}
+	
+	
 	//private $target;
 	//function __construct($tar){
 	//	$this->target[] = new $tar();
@@ -224,4 +306,5 @@ class AopProxyFactory extends BaseClass {
 	//		}
 	//	}
 	//}
+	
 }

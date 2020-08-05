@@ -25,6 +25,9 @@ interface CacheConstInterface {
 	// 事件
 	const DATA_PROVIDER_KEY_EVENT = 'event';
 	
+	// AOP
+	const DATA_PROVIDER_KEY_AOP = 'aop';
+	
 	
 	
 }
