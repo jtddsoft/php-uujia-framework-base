@@ -58,6 +58,7 @@ class AopProxyFactory extends BaseClass {
 	 * @AutoInjection(arg = "cacheDataManagerObj", name = "CacheDataManager")
 	 */
 	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null) {
+		$this->_cacheDataManagerObj = $cacheDataManagerObj;
 		
 		parent::__construct();
 	}
@@ -85,9 +86,13 @@ class AopProxyFactory extends BaseClass {
 	 * Date: 2020/8/2 19:35
 	 *
 	 * @return \Generator
+	 * @throws ExceptionAop
 	 */
 	public function aopClass() {
-		yield null;
+		foreach ($this->getAopCacheDataProviders() as $item) {
+			/** @var AopCacheDataProvider $item */
+			yield from $item->setAopTargetClass($this->getClassName())->fromCache();
+		}
 	}
 	
 	/**
@@ -268,11 +273,16 @@ class AopProxyFactory extends BaseClass {
 	 */
 	public function getAopCacheDataProviders() {
 		$cdProviders = $this->getCacheDataProviders();
+		if (empty($cdProviders)) {
+			// throw new ExceptionAop('未找到AOP缓存供应商', 1000);
+			return [];
+		}
 		
 		/** @var TreeFunc $it */
 		$it = $cdProviders['it'];
 		if ($it->count() == 0) {
-			throw new ExceptionAop('未找到AOP缓存供应商', 1000);
+			// throw new ExceptionAop('未找到AOP缓存供应商', 1000);
+			return [];
 		}
 		
 		// 遍历寻找AOP缓存供应商 AopCacheDataProvider AOP供应商我只提供一个 但您可以自行增加

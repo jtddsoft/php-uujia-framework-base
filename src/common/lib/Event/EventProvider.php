@@ -171,7 +171,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		
 		$this->_setEventNameObj($event->getEventNameObj());
 		
-		yield from $this->_make();
+		// yield from $this->_make();
+		yield from $this->fromCache();
 	}
 	
 	/**
@@ -228,7 +229,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		}
 		
 		// 读取缓存
-		yield from $this->fromCache();
+		// yield from $this->fromCache();
 	}
 	
 	/**
@@ -239,6 +240,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @inheritDoc
 	 */
 	public function fromCache() {
+		$this->_make();
+		
 		// todo：去调用事件缓存供应商EventCacheDataProvider的fromCache
 		
 		foreach ($this->getEventCacheDataProviders() as $item) {

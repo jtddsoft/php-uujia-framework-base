@@ -6,10 +6,12 @@ namespace uujia\framework\base\common\lib\Cache;
 
 use uujia\framework\base\common\consts\CacheConst;
 use uujia\framework\base\common\consts\CacheConstInterface;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Exception\ExceptionCache;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
+use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
 use uujia\framework\base\common\traits\ResultTrait;
 
 /**
@@ -35,7 +37,7 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	/**
 	 * RunnerManager对象
 	 *
-	 * @var RunnerManager
+	 * @var RunnerManagerInterface
 	 */
 	protected $_runnerManagerObj;
 	
@@ -123,6 +125,8 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	public function init() {
 		parent::init();
 		
+		$this->_writeCache = true;
+		
 		return $this;
 	}
 	
@@ -151,7 +155,9 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 			$this->setCacheStatus(self::CACHE_STATUS_CACHING);
 			
 			// 不存在缓存 调起缓存数据管理器 收集数据传来
-			$this->toCache();
+			if ($this->isWriteCache()) {
+				$this->toCache();
+			}
 			
 			if ($this->isErr()) {
 				// 写状态标记为 错误
@@ -164,13 +170,15 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 			$this->setCacheStatus(self::CACHE_STATUS_OK);
 		}
 		
-		yield from $this->fromCache();
+		// yield from $this->fromCache();
 	}
 	
 	/**
 	 * 从缓存读取
 	 */
 	public function fromCache() {
+		$this->make();
+		
 		yield [];
 	}
 	
@@ -448,18 +456,18 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	}
 	
 	/**
-	 * @return RunnerManager
+	 * @return RunnerManagerInterface
 	 */
-	public function getRunnerManagerObj(): RunnerManager {
+	public function getRunnerManagerObj() {
 		return $this->_runnerManagerObj;
 	}
 	
 	/**
-	 * @param RunnerManager $runnerManagerObj
+	 * @param RunnerManagerInterface $runnerManagerObj
 	 *
 	 * @return $this
 	 */
-	public function setRunnerManagerObj(RunnerManager $runnerManagerObj) {
+	public function setRunnerManagerObj(RunnerManagerInterface $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
 		
 		return $this;

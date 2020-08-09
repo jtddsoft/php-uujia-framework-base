@@ -3,13 +3,14 @@
 namespace uujia\framework\base\common\lib\Base;
 
 use Psr\Container\ContainerInterface;
+use uujia\framework\base\common\interfaces\BaseInterface;
 
 /**
  * Interface BaseClassInterface
  *
  * @package uujia\framework\base\common\lib\Base
  */
-interface BaseClassInterface {
+interface BaseClassInterface extends BaseInterface {
 	
 	/**
 	 * 初始化

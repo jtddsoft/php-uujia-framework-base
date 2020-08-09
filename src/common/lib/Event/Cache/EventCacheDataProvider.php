@@ -179,7 +179,6 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 */
 	public function loadEventHandles() {
 		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
-		// $refObj = new UUReflection('', '', UUReflection::ANNOTATION_OF_CLASS);
 		
 		foreach ($this->getEventClassNames() as $itemClassName) {
 			$this->parseEventHandle($itemClassName)
@@ -392,7 +391,10 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 				$classNames = [];
 			}
 			
-			$classNames[] = $className;
+			if (!in_array($className, $classNames)) {
+				$classNames[] = $className;
+			}
+			
 			$this->getRedisObj()->hSet($keyListenList, $_name, Json::je($classNames));
 			
 			// 构建缓存数据 并转json 【本地】
@@ -652,10 +654,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * @return Generator
 	 */
 	public function makeCacheTriggerKeyLocal(string $eventName, $className = '') {
-		$keyTriggerList = $this->getKeyTriggerList();
+		// $keyTriggerList = $this->getKeyTriggerList();
 		
 		// 1、构建哈希表记录
-		$this->getRedisObj()->hSet($keyTriggerList, $eventName, $className);
+		// $this->getRedisObj()->hSet($keyTriggerList, $eventName, $className);
+		$this->writeCacheTriggerKey($eventName, $className);
 		
 		// 2、构建key app:evtt:app.test.event.add.before:{#uuid}
 		$k = $this->getKeyTriggerPrefix([$eventName]);
@@ -773,13 +776,16 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * 构建并获取数据 如果缓存没有就写入缓存
 	 */
 	public function make() {
-		yield from parent::make();
+		// yield from parent::make();
+		parent::make();
 	}
 	
 	/**
 	 * 从缓存读取
 	 */
 	public function fromCache() {
+		$this->make();
+		
 		$_evtNameObj = $this->getEventNameObj();
 		
 		$_isParsed = $_evtNameObj->isParsed();

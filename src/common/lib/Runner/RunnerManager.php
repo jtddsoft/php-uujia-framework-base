@@ -10,7 +10,7 @@ use uujia\framework\base\common\lib\Base\BaseClass;
  *
  * @package uujia\framework\base\common
  */
-class RunnerManager extends BaseClass {
+class RunnerManager extends BaseClass implements RunnerManagerInterface {
 	
 	/**
 	 * 应用名称

@@ -7,6 +7,7 @@ namespace uujia\framework\base\common\lib\Event\Name;
 use uujia\framework\base\common\consts\EventConstInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
+use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
 use uujia\framework\base\common\lib\Utils\Arr;
 use uujia\framework\base\common\traits\ResultTrait;
 
@@ -33,7 +34,7 @@ class EventName extends BaseClass implements EventNameInterface {
 	 * 运行时管理对象
 	 *  要取app_name
 	 *
-	 * @var RunnerManager
+	 * @var RunnerManagerInterface
 	 */
 	protected $_runnerManagerObj;
 	
@@ -156,9 +157,9 @@ class EventName extends BaseClass implements EventNameInterface {
 	/**
 	 * EventName constructor.
 	 *
-	 * @param RunnerManager $runnerManagerObj
+	 * @param RunnerManagerInterface $runnerManagerObj
 	 */
-	public function __construct(RunnerManager $runnerManagerObj) {
+	public function __construct(RunnerManagerInterface $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
 		
 		$this->reset();
@@ -507,17 +508,17 @@ class EventName extends BaseClass implements EventNameInterface {
 	 **************************************************************/
 	
 	/**
-	 * @return RunnerManager
+	 * @return RunnerManagerInterface
 	 */
-	public function getRunnerManagerObj(): RunnerManager {
+	public function getRunnerManagerObj() {
 		return $this->_runnerManagerObj;
 	}
 	
 	/**
-	 * @param RunnerManager $runnerManagerObj
+	 * @param RunnerManagerInterface $runnerManagerObj
 	 * @return $this
 	 */
-	public function setRunnerManagerObj(RunnerManager $runnerManagerObj) {
+	public function setRunnerManagerObj(RunnerManagerInterface $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
 		
 		return $this;

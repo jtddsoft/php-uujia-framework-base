@@ -3,7 +3,9 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
+use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
 
 /**
  * Class Runner
@@ -13,42 +15,40 @@ use uujia\framework\base\common\lib\Runner\RunnerManager;
 class Runner {
 	
 	/**
-	 * @var RunnerManager
+	 * @var RunnerManagerInterface
 	 */
 	protected $_runnerManagerObj;
 	
 	/**
 	 * Runner constructor.
 	 *
-	 * @param Result $ret
-	 * @param Config $configObj
-	 * @param string $app_name
+	 * @param RunnerManagerInterface $runnerManagerObj
 	 */
-	public function __construct(RunnerManager $runnerManagerObj) {
+	public function __construct(RunnerManagerInterface $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
 	}
 	
 	/**
 	 * 获取运行时管理对象
 	 *
-	 * @return RunnerManager
+	 * @return RunnerManagerInterface
 	 */
 	public function runnerObj() {
 		return $this->getRunnerManagerObj();
 	}
 	
 	/**
-	 * @return RunnerManager
+	 * @return RunnerManagerInterface
 	 */
-	public function getRunnerManagerObj(): RunnerManager {
+	public function getRunnerManagerObj() {
 		return $this->_runnerManagerObj;
 	}
 	
 	/**
-	 * @param RunnerManager $runnerManagerObj
+	 * @param RunnerManagerInterface $runnerManagerObj
 	 * @return $this
 	 */
-	public function _setRunnerManagerObj(RunnerManager $runnerManagerObj) {
+	public function _setRunnerManagerObj(RunnerManagerInterface $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
 		
 		return $this;

@@ -4,12 +4,14 @@
 namespace uujia\framework\base\common\lib\Container;
 
 
+use phpDocumentor\Reflection\Types\True_;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use ReflectionMethod;
 use ReflectionParameter;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
+use uujia\framework\base\common\lib\Aop\AopProxyFactory;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
@@ -45,6 +47,20 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * @var bool
 	 */
 	protected $_keyNotExistAutoCreate = true;
+	
+	/**
+	 * Aop是否启用
+	 *
+	 * @var bool
+	 */
+	protected $_aopEnabled = false;
+	
+	/**
+	 * Aop需要忽略的类
+	 *
+	 * @var string[]
+	 */
+	protected $_aopIgnore = [];
 	
 	/**
 	 * ContainerProvider constructor.
@@ -458,7 +474,19 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			call_user_func_array([$ins, '_setReflection'], [$refObj]);
 		}
 		
-		return $ins;
+		if ($isNew || !$this->isAopEnabled() || in_array($className, $this->getAopIgnore())) {
+			return $ins;
+		}
+		
+		// Aop实现
+		
+		/** @var AopProxyFactory $aopProxyFactory */
+		$aopProxyFactory = $this->invoke(AopProxyFactory::class);
+		$aopProxyFactory->setClassName($className)
+		                ->setClassInstance($ins)
+		                ->setReflectionClass($refObj);
+		
+		return $aopProxyFactory;
 	}
 	
 	/**
@@ -472,13 +500,6 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 */
 	public function _get($id, $isNew = false) {
 		$_list = $this->list();
-		if (!$_list->has($id)) {
-			if ($this->isKeyNotExistAutoCreate()) {
-				$this->set($id);
-			} else {
-				return null;
-			}
-		}
 		
 		if ($isNew) {
 			$className = $id;
@@ -490,6 +511,14 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			
 			return $this->_makeClass($id, $className, $isNew);
 		} else {
+			if (!$_list->has($id)) {
+				if ($this->isKeyNotExistAutoCreate()) {
+					$this->set($id);
+				} else {
+					return null;
+				}
+			}
+			
 			$item = $_list->get($id);
 		}
 		
@@ -606,6 +635,19 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	}
 	
 	/**
+	 * 实例化一个类 可支持依赖注入
+	 * Date: 2020/8/9 22:17
+	 *
+	 * @param $className
+	 *
+	 * @return mixed|object|null
+	 * @throws \ReflectionException
+	 */
+	public function invoke($className) {
+		return $this->_get($className, true);
+	}
+	
+	/**
 	 * @return bool
 	 */
 	public function isKeyNotExistAutoCreate(): bool {
@@ -619,6 +661,40 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 */
 	public function setKeyNotExistAutoCreate(bool $keyNotExistAutoCreate) {
 		$this->_keyNotExistAutoCreate = $keyNotExistAutoCreate;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isAopEnabled(): bool {
+		return $this->_aopEnabled;
+	}
+	
+	/**
+	 * @param bool $aopEnabled
+	 * @return Container
+	 */
+	public function setAopEnabled(bool $aopEnabled) {
+		$this->_aopEnabled = $aopEnabled;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string[]
+	 */
+	public function &getAopIgnore(): array {
+		return $this->_aopIgnore;
+	}
+	
+	/**
+	 * @param string[] $aopIgnore
+	 * @return Container
+	 */
+	public function setAopIgnore(array $aopIgnore) {
+		$this->_aopIgnore = $aopIgnore;
 		
 		return $this;
 	}

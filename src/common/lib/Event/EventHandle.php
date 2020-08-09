@@ -10,6 +10,7 @@ use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Exception\ExceptionEvent;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
+use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
 use uujia\framework\base\common\lib\Utils\Str;
 use uujia\framework\base\common\traits\ContainerTrait;
 use uujia\framework\base\common\traits\ResultTrait;
@@ -53,7 +54,7 @@ abstract class EventHandle extends EventRunStatus implements EventHandleInterfac
 	/**
 	 * 运行时管理对象
 	 *
-	 * @var RunnerManager
+	 * @var RunnerManagerInterface
 	 */
 	protected $_runnerManagerObj = null;
 	
@@ -93,12 +94,12 @@ abstract class EventHandle extends EventRunStatus implements EventHandleInterfac
 	/**
 	 * EventHandle constructor.
 	 *
-	 * @param RunnerManager $runnerManagerObj
-	 * @param EventName     $eventNameObj
+	 * @param RunnerManagerInterface $runnerManagerObj
+	 * @param EventName              $eventNameObj
 	 *
 	 * @AutoInjection(arg = "eventNameObj", type = "cc")
 	 */
-	public function __construct(RunnerManager $runnerManagerObj, EventName $eventNameObj) {
+	public function __construct(RunnerManagerInterface $runnerManagerObj, EventName $eventNameObj) {
 		parent::__construct();
 		
 		$this->_runnerManagerObj = $runnerManagerObj;
@@ -411,6 +412,24 @@ abstract class EventHandle extends EventRunStatus implements EventHandleInterfac
 	 */
 	public function setTriggerName(string $triggerName) {
 		$this->_triggerName = $triggerName;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return RunnerManagerInterface
+	 */
+	public function getRunnerManagerObj() {
+		return $this->_runnerManagerObj;
+	}
+	
+	/**
+	 * @param RunnerManagerInterface $runnerManagerObj
+	 *
+	 * @return $this
+	 */
+	public function setRunnerManagerObj(RunnerManagerInterface $runnerManagerObj) {
+		$this->_runnerManagerObj = $runnerManagerObj;
 		
 		return $this;
 	}

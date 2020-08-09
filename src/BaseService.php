@@ -30,6 +30,7 @@ class BaseService {
 	
 	/**
 	 * 初始化
+	 *
 	 * @return $this
 	 */
 	public function init() {
@@ -90,7 +91,7 @@ class BaseService {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name']  = self::class;
 		$this->name_info['intro'] = '基础服务类';
 	}
 	
@@ -102,18 +103,28 @@ class BaseService {
 		$configObj = $this->getConfig()->getConfigManagerObj();
 		
 		// 获取容器配置container_config
-		$_containerConfig = $configObj->loadValue('container.container');
-		$_containerAlias  = $_containerConfig['alias'] ?? [];
-		$_containerAs     = $_containerConfig['as'] ?? [];
+		$_containerConfig = $configObj->loadValue('container');
 		
-		if (!empty($_containerAlias) || !empty($_containerAs)) {
-			// $_containerObj = $this->getContainer();
-			// $_containerObj->list()->setAlias($_containerAlias);
-			$this->getContainer()
-			     ->list()
-			     ->setAlias($_containerAlias)
-			     ->setAs($_containerAs);
-		}
+		// container.container
+		$_configContainer = $_containerConfig['container'];
+		$_containerAlias  = $_configContainer['alias'] ?? [];
+		$_containerAs     = $_configContainer['as'] ?? [];
+		
+		// container.aop
+		$_configAop  = $_containerConfig['aop'];
+		$_aopEnabled = $_configAop['enabled'] ?? false;
+		$_aopIgnore  = $_configAop['ignore'] ?? [];
+		
+		// if (!empty($_containerAlias) || !empty($_containerAs)) {
+		// $_containerObj = $this->getContainer();
+		// $_containerObj->list()->setAlias($_containerAlias);
+		$this->getContainer()
+		     ->setAopEnabled($_aopEnabled)
+		     ->setAopIgnore($_aopIgnore)
+		     ->list()
+		     ->setAlias($_containerAlias)
+		     ->setAs($_containerAs);
+		// }
 		
 		// server_config
 		$_serverConfig = $configObj->loadValue('server');
@@ -137,98 +148,98 @@ class BaseService {
 	/**
 	 * @return ErrorConfig
 	 */
-	public function getErrorCodeList(): ErrorConfig {
+	public function getErrorCodeList() {
 		return UU::C(ErrorConfig::class);
 	}
 	
 	/**
 	 * @return MQCollection
 	 */
-	public function getMQCollection(): MQCollection {
+	public function getMQCollection() {
 		return UU::C(MQCollection::class);
 	}
 	
 	/**
 	 * @return MQ
 	 */
-	public function getMQ(): MQ {
+	public function getMQ() {
 		return UU::C(MQ::class);
 	}
 	
 	/**
 	 * @return Logger
 	 */
-	public function getLogger(): Logger {
+	public function getLogger() {
 		return UU::C(Logger::class);
 	}
 	
 	/**
 	 * @return Log
 	 */
-	public function getLog(): Log {
+	public function getLog() {
 		return UU::C(Log::class);
 	}
 	
 	/**
 	 * @return Result
 	 */
-	public function getResult(): Result {
+	public function getResult() {
 		return UU::C(Result::class);
 	}
 	
 	/**
 	 * @return ConfigManagerInterface
 	 */
-	public function getConfigManager(): ConfigManagerInterface {
+	public function getConfigManager() {
 		return UU::C(ConfigManagerInterface::class);
 	}
 	
 	/**
 	 * @return Config
 	 */
-	public function getConfig(): Config {
+	public function getConfig() {
 		return UU::C(Config::class);
 	}
 	
 	/**
 	 * @return Base
 	 */
-	public function getBase(): Base {
+	public function getBase() {
 		return UU::C(Base::class);
 	}
 	
 	/**
 	 * @return Event
 	 */
-	public function getEvent(): Event {
+	public function getEvent() {
 		return UU::C(Event::class);
 	}
 	
 	/**
 	 * @return Redis
 	 */
-	public function getRedis(): Redis {
+	public function getRedis() {
 		return UU::C(Redis::class);
 	}
 	
 	/**
 	 * @return CacheDataManagerInterface
 	 */
-	public function getCacheDataManager(): CacheDataManagerInterface {
+	public function getCacheDataManager() {
 		return UU::C(CacheDataManagerInterface::class);
 	}
 	
 	/**
 	 * @return EventDispatcher
 	 */
-	public function getEventDispatcher(): EventDispatcher {
+	public function getEventDispatcher() {
 		return UU::C(EventDispatcher::class);
 	}
 	
 	/**
-	 * @return EventDispatcher
+	 * @return ServerRouteManager
 	 */
-	public function getServerRouteManager(): ServerRouteManager {
+	public function getServerRouteManager() {
 		return UU::C(ServerRouteManager::class);
 	}
 	
