@@ -30,6 +30,7 @@ trait AopProxy {
 	
 	/**
 	 * 代理的类名（全名）
+	 *
 	 * @var string
 	 */
 	protected $_className;
@@ -42,7 +43,7 @@ trait AopProxy {
 	 * @return \Generator
 	 * @throws ExceptionAop
 	 */
-	public function aopClass() {
+	public function _aopClass() {
 		foreach ($this->getAopCacheDataProviders() as $item) {
 			/** @var AopCacheDataProvider $item */
 			yield from $item->setAopTargetClass($this->getClassName())->fromCache();
@@ -60,18 +61,19 @@ trait AopProxy {
 	 * @return mixed
 	 * @throws ExceptionAop
 	 */
-	public function aopProcess($generator, $method, $args, $result) {
+	public function _aopProcess($generator, $method, $args, $result) {
 		$aopCurr = $generator->current();
 		
 		/**
 		 * 实例化aop
+		 *
 		 * @var AopAdviceInterface $aop
 		 */
 		$aop = Container::getInstance()->get($aopCurr);
 		if (empty($aop)) {
 			$generator->next();
 			if ($generator->valid()) {
-				return $this->aopProcess($generator, $method, $args, $result);
+				return $this->_aopProcess($generator, $method, $args, $result);
 			}
 			
 			return $result;
@@ -85,20 +87,49 @@ trait AopProxy {
 			 *      return $next($callMethod());
 			 * }
 			 */
-			$result = call_user_func_array([$aop, 'process'], [$this, $method, $args, $result, function () use ($method, $args) {
+			$callMethod = function () use ($method, $args) {
 				if (method_exists($this, $method)) {
-					$result = call_user_func_array([$this, $method], $args);
+					// $result = call_user_func_array([$this, $method], $args);
+					$result = parent::$method(...$args);
 				} else {
 					throw new ExceptionAop('方法不存在', 1000);
 				}
 				
 				return $result;
-			}, function ($result) use ($generator, $method, $args) {
+			};
+			
+			$next = function ($result) use ($generator, $method, $args) {
 				$generator->next();
-				return $this->aopProcess($generator, $method, $args, $result);
-			}]);
+				return $this->_aopProcess($generator, $method, $args, $result);
+			};
+			
+			$result = call_user_func_array([$aop, 'process'], [$this, $method, $args, $result, $callMethod, $next]);
 		} else {
 			throw new ExceptionAop('AOP方法不存在', 1000);
+		}
+		
+		return $result;
+	}
+	
+	/**
+	 * 通用方法
+	 *
+	 * Date: 2020/8/12
+	 * Time: 0:01
+	 *
+	 * @param $method
+	 * @param $args
+	 * @return bool|mixed
+	 * @throws ExceptionAop
+	 */
+	public function _aopCall($method, $args) {
+		$generator = $this->_aopClass();
+		$generator->rewind();
+		
+		$result = false;
+		
+		if ($generator->valid()) {
+			$result = $this->_aopProcess($generator, $method, $args, Ret::me()->ok());
 		}
 		
 		return $result;
@@ -114,13 +145,13 @@ trait AopProxy {
 	 * @throws ExceptionAop
 	 */
 	public function __call($name, $arguments) {
-		$generator = $this->aopClass();
+		$generator = $this->_aopClass();
 		$generator->rewind();
 		
 		$result = false;
 		
 		if ($generator->valid()) {
-			$result = $this->aopProcess($generator, $name, $arguments, Ret::me()->ok());
+			$result = $this->_aopProcess($generator, $name, $arguments, Ret::me()->ok());
 		} else {
 			if (method_exists($this, $name)) {
 				$result = call_user_func_array([$this, $name], $arguments);

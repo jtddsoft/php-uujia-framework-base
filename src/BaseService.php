@@ -243,5 +243,7 @@ class BaseService {
 		return UU::C(ServerRouteManager::class);
 	}
 	
-	
+	public function t(){
+		return 112233;
+	}
 }

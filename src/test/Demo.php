@@ -22,6 +22,7 @@ use uujia\framework\base\common\lib\Annotation\AutoInjection;
 
 class Demo extends BaseService {
 	use InstanceTrait;
+	use TT;
 	
 	/**
 	 * @var Ru
@@ -125,7 +126,7 @@ class Demo extends BaseService {
 			$this->getResult()->setLastReturn($this->getRedis()->getRedisProviderObj()->getLastReturn());
 			return $this->getResult()->rt()->return_error();
 		}
-		
+		echo $this->tt('t') . "\n";
 		$redis->set('aaa', 'cccc');
 		return UU::C(Base::class)->ok();
 	}
@@ -214,4 +215,12 @@ class Demo extends BaseService {
 		return $re;
 	}
 	
+}
+trait TT {
+	public function tt($ttt) {
+		$x = function () use ($ttt) {
+			return parent::$ttt();
+		};
+		return $x();
+	}
 }
