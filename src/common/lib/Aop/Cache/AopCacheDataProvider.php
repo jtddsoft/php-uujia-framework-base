@@ -6,7 +6,7 @@
  * Time: 14:38
  */
 
-namespace uujia\framework\base\common\lib\Aop\cache;
+namespace uujia\framework\base\common\lib\Aop\Cache;
 
 
 use Generator;

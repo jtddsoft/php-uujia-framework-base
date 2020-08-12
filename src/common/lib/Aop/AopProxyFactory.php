@@ -6,7 +6,7 @@ namespace uujia\framework\base\common\lib\Aop;
 
 use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
-use uujia\framework\base\common\lib\Aop\cache\AopCacheDataProvider;
+use uujia\framework\base\common\lib\Aop\Cache\AopCacheDataProvider;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
