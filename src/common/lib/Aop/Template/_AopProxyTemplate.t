@@ -10,7 +10,7 @@ namespace %namespace%;
 
 
 class %class% extends %extendsClass% {
-	use uujia\framework\base\common\lib\Aop\AopProxy;
+	use \uujia\framework\base\common\lib\Aop\AopProxy;
 
-	%methods%
+%methods%
 }

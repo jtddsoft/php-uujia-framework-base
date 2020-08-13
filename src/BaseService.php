@@ -6,6 +6,7 @@ use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
 use uujia\framework\base\common\ErrorConfig;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Aop\AopProxyFactory;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Event\EventDispatcher;
@@ -241,6 +242,16 @@ class BaseService {
 	 */
 	public function getServerRouteManager() {
 		return UU::C(ServerRouteManager::class);
+	}
+	
+	/**
+	 * Date: 2020/8/13
+	 * Time: 23:58
+	 *
+	 * @return mixed|Container
+	 */
+	public function getAopProxyFactory() {
+		return UU::C(AopProxyFactory::class);
 	}
 	
 	public function t(){

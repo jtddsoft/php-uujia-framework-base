@@ -147,6 +147,8 @@ class Reflection extends BaseClass {
 	 * @param int    $of        类型所属（1-Class、2-Method、3-Property）
 	 */
 	public function __construct($className = '', $name = '', $of = self::ANNOTATION_OF_CLASS) {
+		parent::__construct();
+		
 		$this->setClassName($className);
 		$this->setAnnotationOf($of);
 		
@@ -159,8 +161,6 @@ class Reflection extends BaseClass {
 				$this->setPropertyName($name);
 				break;
 		}
-		
-		parent::__construct();
 	}
 	
 	/**

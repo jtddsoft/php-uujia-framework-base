@@ -295,6 +295,10 @@ trait AopProxy {
 	 * @return ProceedingJoinPoint
 	 */
 	public function getProceedingJoinPointObj(): ProceedingJoinPoint {
+		if (empty($this->_proceedingJoinPointObj)) {
+			$this->_proceedingJoinPointObj = new ProceedingJoinPoint();
+		}
+		
 		return $this->_proceedingJoinPointObj;
 	}
 	

@@ -39,7 +39,7 @@ class AopProxyFactory extends BaseClass {
 	 * 代理的类名（全名）
 	 * @var string
 	 */
-	protected $_className;
+	protected $_className = '';
 	
 	/**
 	 * 代理的类实例
@@ -57,13 +57,25 @@ class AopProxyFactory extends BaseClass {
 	 * 生成的代理类保存路径定义
 	 * @var string
 	 */
-	protected $_proxyClassFilePath;
+	protected $_proxyClassFilePath = '';
 	
 	/**
 	 * 生成的代理类命名空间定义
 	 * @var string
 	 */
-	protected $_proxyClassNameSpace;
+	protected $_proxyClassNameSpace = '';
+	
+	/**
+	 * 代理模板路径 用于生成代理类
+	 * @var string
+	 */
+	protected $_proxyTemplatePath = '';
+	
+	/**
+	 * 代理模板内容
+	 * @var string
+	 */
+	protected $_proxyTemplateText = '';
 	
 	/**
 	 * AopProxyFactory constructor.
@@ -74,6 +86,7 @@ class AopProxyFactory extends BaseClass {
 	 */
 	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null) {
 		$this->_cacheDataManagerObj = $cacheDataManagerObj;
+		$this->_proxyTemplatePath = __DIR__ . '/Template/_AopProxyTemplate.t';
 		
 		parent::__construct();
 	}
@@ -111,12 +124,22 @@ class AopProxyFactory extends BaseClass {
 	 */
 	public function buildProxyClassCacheFile() {
 		$filePath = $this->getProxyClassFilePath();
+		$_namespace = $this->getProxyClassNameSpace();
+		if (empty($filePath) || empty($_namespace)) {
+			return false;
+		}
+		
 		if (!file_exists($filePath)) {
 			// throw new ExceptionAop('路径不存在');
 		}
 		
+		// 读模板文件内容
+		$_templateText = $this->getProxyTemplateText();
+		if (empty($_templateText)) {
+			return false;
+		}
+		
 		// namespace
-		$_namespace = $this->getProxyClassNameSpace();
 		$_namespaceVar = $_namespace;
 		
 		// class
@@ -125,7 +148,7 @@ class AopProxyFactory extends BaseClass {
 		$_classVar = str_replace('\\', '_', $_class);
 		
 		// filename
-		$_fileName = $filePath . '\\' . $_classVar . '.php';
+		$_fileName = $filePath . '/' . $_classVar . '.php';
 		
 		// extendsClass
 		$_extendsClass = $this->getClassName();
@@ -138,7 +161,7 @@ class AopProxyFactory extends BaseClass {
 		
 		foreach ($_refMethods as $_refMethodItem) {
 			/** @var ReflectionMethod $_refMethodItem */
-			if (!$_refMethodItem->isPublic() || $_refMethodItem->isAbstract()) {
+			if (!$_refMethodItem->isPublic() || $_refMethodItem->isAbstract() || $_refMethodItem->isConstructor()) {
 				continue;
 			}
 			
@@ -147,10 +170,13 @@ class AopProxyFactory extends BaseClass {
 			
 			$_paramsText = [];
 			foreach ($_refParams as $_refParamItem) {
+				/** @var \ReflectionParameter $_refParamItem */
+				
 				$_p = [
 					'typeName' => '',
 					'paramName' => $_refParamItem->getName(),
-					'defaultValue' => $_refParamItem->getDefaultValue() ?? '',
+					'isDefaultValue' => $_refParamItem->isDefaultValueAvailable(),
+					'defaultValue' => $_refParamItem->isDefaultValueAvailable() ? $_refParamItem->getDefaultValue() : '',
 				];
 				
 				$_pText = '';
@@ -159,27 +185,35 @@ class AopProxyFactory extends BaseClass {
 					if ($_refParamItem instanceof ReflectionNamedType) {
 						$_p['typeName'] = $_refParamItem->getType() . '' ?? '';
 					} elseif ($_refParamItem->getClass() !== null) {
-						$_p['typeName'] = $_refParamItem->getClass()->getName();
+						$_p['typeName'] = '\\' . $_refParamItem->getClass()->getName();
 					}
 				}
 				
 				!empty($_p['typeName']) && $_pText .= "{$_p['typeName']} ";
-				$_pText .= "{$_p['paramName']}";
-				!empty($_p['defaultValue']) && $_pText .= " = {$_p['defaultValue']}";
+				$_pText .= "\${$_p['paramName']}";
+				if ($_p['isDefaultValue']) {
+					if (is_string($_p['defaultValue'])) {
+						$_pText .= " = '{$_p['defaultValue']}'";
+					} elseif (is_array($_p['defaultValue'])) {
+						// todo: 数组重排
+					} else {
+						$_pText .= " = {$_p['defaultValue']}";
+					}
+				}
 				
 				$_paramsText[] = $_pText;
 			}
 			
 			$_paramsVar = implode(', ', $_paramsText);
 			
-			$_methodsVar = "public function {$_methodName}({$_paramsVar}) {\n";
-			$_methodsVar .= "\treturn call_user_func_array([\$this, '{$_methodName}'], func_get_args());\n";
-			$_methodsVar .= "}\n";
+			$_methodsVar .= "\tpublic function {$_methodName}({$_paramsVar}) {\n";
+			$_methodsVar .= "\t\treturn call_user_func_array([\$this, '_aopCall'], ['{$_methodName}', func_get_args()]);\n";
+			$_methodsVar .= "\t}\n";
 			
 			$_methodsVar .= "\n";
 		}
 		
-		$text = File::readToText($_fileName);
+		$text = $_templateText;
 		$text = str_replace('%namespace%', $_namespaceVar, $text);
 		$text = str_replace('%class%', $_classVar, $text);
 		$text = str_replace('%extendsClass%', $_extendsClassVar, $text);
@@ -270,7 +304,7 @@ class AopProxyFactory extends BaseClass {
 	 * @return string
 	 */
 	public function getProxyClassFilePath(): string {
-		return $this->_proxyClassFilePath;
+		return $this->_proxyClassFilePath ?? '';
 	}
 	
 	/**
@@ -288,7 +322,7 @@ class AopProxyFactory extends BaseClass {
 	 * @return string
 	 */
 	public function getProxyClassNameSpace(): string {
-		return $this->_proxyClassNameSpace;
+		return $this->_proxyClassNameSpace ?? '';
 	}
 	
 	/**
@@ -298,6 +332,46 @@ class AopProxyFactory extends BaseClass {
 	 */
 	public function setProxyClassNameSpace(string $proxyClassNameSpace) {
 		$this->_proxyClassNameSpace = $proxyClassNameSpace;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getProxyTemplatePath(): string {
+		return $this->_proxyTemplatePath ?? '';
+	}
+	
+	/**
+	 * @param string $proxyTemplatePath
+	 *
+	 * @return AopProxyFactory
+	 */
+	public function setProxyTemplatePath(string $proxyTemplatePath) {
+		$this->_proxyTemplatePath = $proxyTemplatePath;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getProxyTemplateText(): string {
+		if (empty($this->_proxyTemplateText) && file_exists($this->getProxyTemplatePath())) {
+			$this->_proxyTemplateText = File::readToText($this->getProxyTemplatePath());
+		}
+		
+		return $this->_proxyTemplateText ?? '';
+	}
+	
+	/**
+	 * @param string $proxyTemplateText
+	 *
+	 * @return AopProxyFactory
+	 */
+	public function setProxyTemplateText(string $proxyTemplateText) {
+		$this->_proxyTemplateText = $proxyTemplateText;
 		
 		return $this;
 	}

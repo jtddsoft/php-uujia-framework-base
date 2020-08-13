@@ -9,9 +9,11 @@ use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
 use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\Event;
+use uujia\framework\base\common\lib\Aop\AopProxyFactory;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
+use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
 use uujia\framework\base\common\Redis;
@@ -19,6 +21,7 @@ use uujia\framework\base\common\Runner as Ru;
 use uujia\framework\base\common\traits\InstanceTrait;
 use uujia\framework\base\UU;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
+use uujia\framework\base\test\EventTest;
 
 class Demo extends BaseService {
 	use InstanceTrait;
@@ -113,7 +116,22 @@ class Demo extends BaseService {
 		$paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
 		$configObj->path($paths);
 		
+		/** @var AopProxyFactory $aopProxyFactoryObj */
+		$aopProxyFactoryObj = $this->getAopProxyFactory();
+		
+		$aopConfig = $configObj->loadValue('aop.aop');
+		if (!empty($aopConfig['cache_path']) && !empty($aopConfig['cache_namespace'])) {
+			$aopProxyFactoryObj->setProxyClassFilePath($aopConfig['cache_path']);
+			$aopProxyFactoryObj->setProxyClassNameSpace($aopConfig['cache_namespace']);
+		}
+		
 		$this->boot();
+		
+		$aopProxyFactoryObj->setClassName(EventTest::class);
+		$refClass = new Reflection($aopProxyFactoryObj->getClassName());
+		$aopProxyFactoryObj->setReflectionClass($refClass);
+		$aopProxyFactoryObj->getReflectionClass()->load();
+		$aopProxyFactoryObj->buildProxyClassCacheFile();
 	}
 	
 	public function test() {
