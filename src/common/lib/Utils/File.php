@@ -9,6 +9,51 @@ namespace uujia\framework\base\common\lib\Utils;
  */
 class File {
 	
+	/**
+	 * 文件内容读取 读取为字符串
+	 *
+	 * Date: 2020/8/13
+	 * Time: 17:26
+	 *
+	 * @param $file
+	 *
+	 * @return bool|false|string
+	 */
+	public static function readToText($file) {
+		if (!file_exists($file)) {
+			return '';
+		}
+		
+		return file_get_contents($file);
+	}
+	
+	/**
+	 * 文件内容写入 将字符串写入文件
+	 *
+	 * Date: 2020/8/13
+	 * Time: 17:26
+	 *
+	 * @param $file
+	 * @param $text
+	 *
+	 * @return bool|false|string
+	 */
+	public static function writeFromText($file, $text) {
+		if ($fp = @fopen($file, 'wb')) {
+			if (PHP_VERSION >= '4.3.0' && function_exists('file_put_contents')) {
+				return @file_put_contents($file, $text);
+			} else {
+				flock($fp, LOCK_EX);
+				$bytes = fwrite($fp, $text);
+				flock($fp, LOCK_UN);
+				fclose($fp);
+				return $bytes;
+			}
+		} else {
+			return false;
+		}
+	}
+	
 	public static function getClassName($path_to_file) {
 		//Grab the contents of the file
 		$contents = file_get_contents($path_to_file);

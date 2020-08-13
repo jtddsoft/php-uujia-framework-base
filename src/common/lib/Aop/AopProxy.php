@@ -67,7 +67,6 @@ trait AopProxy {
 	 * @param \Generator $generator
 	 * @param string     $method
 	 * @param array      $args
-	 * @param            $result
 	 *
 	 * @return mixed
 	 * @throws ExceptionAop
@@ -109,44 +108,44 @@ trait AopProxy {
 		
 		
 		
-		// 调用process
-		if (method_exists($aop, 'process')) {
-			
-			$result = call_user_func_array([$aop, 'process'], [$this->getProceedingJoinPointObj()]);
-			
-			
-			
-			
-			
-			
-			/**
-			 * function process($aopProxy, $method, $args, $lastResult, \Closure $callMethod, \Closure $next) {
-			 *
-			 *      return $next($callMethod());
-			 * }
-			 */
-			$callMethod = function () use ($method, $args) {
-				if (method_exists($this, $method)) {
-					// $result = call_user_func_array([$this, $method], $args);
-					$result = parent::$method(...$args);
-				} else {
-					throw new ExceptionAop('方法不存在', 1000);
-				}
-				
-				return $result;
-			};
-			
-			$next = function ($result) use ($generator, $method, $args) {
-				$generator->next();
-				return $this->_aopProcess($generator, $method, $args, $result);
-			};
-			
-			$result = call_user_func_array([$aop, 'process'], [$this, $method, $args, $result, $callMethod, $next]);
-		} else {
-			throw new ExceptionAop('AOP方法不存在', 1000);
-		}
-		
-		return $result;
+		// // 调用process
+		// if (method_exists($aop, 'process')) {
+		//
+		// 	$result = call_user_func_array([$aop, 'process'], [$this->getProceedingJoinPointObj()]);
+		//
+		//
+		//
+		//
+		//
+		//
+		// 	/**
+		// 	 * function process($aopProxy, $method, $args, $lastResult, \Closure $callMethod, \Closure $next) {
+		// 	 *
+		// 	 *      return $next($callMethod());
+		// 	 * }
+		// 	 */
+		// 	$callMethod = function () use ($method, $args) {
+		// 		if (method_exists($this, $method)) {
+		// 			// $result = call_user_func_array([$this, $method], $args);
+		// 			$result = parent::$method(...$args);
+		// 		} else {
+		// 			throw new ExceptionAop('方法不存在', 1000);
+		// 		}
+		//
+		// 		return $result;
+		// 	};
+		//
+		// 	$next = function ($result) use ($generator, $method, $args) {
+		// 		$generator->next();
+		// 		return $this->_aopProcess($generator, $method, $args, $result);
+		// 	};
+		//
+		// 	$result = call_user_func_array([$aop, 'process'], [$this, $method, $args, $result, $callMethod, $next]);
+		// } else {
+		// 	throw new ExceptionAop('AOP方法不存在', 1000);
+		// }
+		//
+		// return $result;
 	}
 	
 	/**
@@ -167,39 +166,39 @@ trait AopProxy {
 		$result = false;
 		
 		if ($generator->valid()) {
-			$result = $this->_aopProcess($generator, $method, $args, Ret::me()->ok());
+			$result = $this->_aopProcess($generator, $method, $args);
 		}
 		
 		return $result;
 	}
 	
-	/**
-	 * date: 2020/8/4 16:31
-	 *
-	 * @param $name
-	 * @param $arguments
-	 *
-	 * @return mixed
-	 * @throws ExceptionAop
-	 */
-	public function __call($name, $arguments) {
-		$generator = $this->_aopClass();
-		$generator->rewind();
-		
-		$result = false;
-		
-		if ($generator->valid()) {
-			$result = $this->_aopProcess($generator, $name, $arguments, Ret::me()->ok());
-		} else {
-			if (method_exists($this, $name)) {
-				$result = call_user_func_array([$this, $name], $arguments);
-			} else {
-				throw new ExceptionAop('方法不存在', 1000);
-			}
-		}
-		
-		return $result;
-	}
+	// /**
+	//  * date: 2020/8/4 16:31
+	//  *
+	//  * @param $name
+	//  * @param $arguments
+	//  *
+	//  * @return mixed
+	//  * @throws ExceptionAop
+	//  */
+	// public function __call($name, $arguments) {
+	// 	$generator = $this->_aopClass();
+	// 	$generator->rewind();
+	//
+	// 	$result = false;
+	//
+	// 	if ($generator->valid()) {
+	// 		$result = $this->_aopProcess($generator, $name, $arguments, Ret::me()->ok());
+	// 	} else {
+	// 		if (method_exists($this, $name)) {
+	// 			$result = call_user_func_array([$this, $name], $arguments);
+	// 		} else {
+	// 			throw new ExceptionAop('方法不存在', 1000);
+	// 		}
+	// 	}
+	//
+	// 	return $result;
+	// }
 	
 	
 	/**
