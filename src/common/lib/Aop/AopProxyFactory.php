@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common\lib\Aop;
 
 
+use PhpParser\ParserFactory;
 use ReflectionMethod;
 use ReflectionNamedType;
 use uujia\framework\base\common\consts\CacheConstInterface;
@@ -158,6 +159,20 @@ class AopProxyFactory extends BaseClass {
 		$_ref = $this->getReflectionClass();
 		$_refMethods = $_ref->getRefMethods();
 		$_methodsVar = '';
+		
+		// 通过类名反射出文件名
+		$_sourceFileName = $_ref->getRefClass()->getFileName();
+		if (!file_exists($_sourceFileName)) {
+			return false;
+		}
+		
+		$_sourceCodeText = File::readToText($_sourceFileName);
+		if (empty($_sourceCodeText)) {
+			return false;
+		}
+		
+		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		$ast = $parser->parse($_sourceCodeText);
 		
 		foreach ($_refMethods as $_refMethodItem) {
 			/** @var ReflectionMethod $_refMethodItem */

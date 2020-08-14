@@ -18,7 +18,8 @@
     "doctrine/annotations": "^1.10.2",
     "karpy47/php-mqtt-client": "^1.0.4",
     "oliverlorenz/php-mqtt-client": "^0.5.0",
-    "ramsey/uuid": "^4.1"
+    "ramsey/uuid": "^4.1",
+    "nikic/php-parser": "^4.8"
   },
   "autoload": {
     "psr-4": {

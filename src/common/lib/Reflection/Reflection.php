@@ -189,6 +189,7 @@ class Reflection extends BaseClass {
 		(!in_array('annotationOf', $exclude)) && $this->_annotationOf = self::ANNOTATION_OF_CLASS;
 		(!in_array('annotationObjs', $exclude)) && $this->_annotationObjs = [];
 		(!in_array('injectionInstance', $exclude)) && $this->_injectionInstance = null;
+		(!in_array('useImports', $exclude)) && $this->_useImports = [];
 		
 		return parent::reset($exclude);
 	}
