@@ -15,6 +15,7 @@ use uujia\framework\base\common\lib\Cache\CacheDataManager;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Cache\CacheDataProvider;
 use uujia\framework\base\common\lib\Exception\ExceptionAop;
+use uujia\framework\base\common\lib\Reflection\CodeParser;
 use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\File;
@@ -38,42 +39,49 @@ class AopProxyFactory extends BaseClass {
 	
 	/**
 	 * 代理的类名（全名）
+	 *
 	 * @var string
 	 */
 	protected $_className = '';
 	
 	/**
 	 * 代理的类实例
+	 *
 	 * @var BaseClass
 	 */
 	protected $_classInstance;
 	
 	/**
 	 * 反射类
+	 *
 	 * @var Reflection
 	 */
 	protected $_reflectionClass;
 	
 	/**
 	 * 生成的代理类保存路径定义
+	 *
 	 * @var string
 	 */
 	protected $_proxyClassFilePath = '';
 	
 	/**
 	 * 生成的代理类命名空间定义
+	 *
 	 * @var string
 	 */
 	protected $_proxyClassNameSpace = '';
 	
 	/**
 	 * 代理模板路径 用于生成代理类
+	 *
 	 * @var string
 	 */
 	protected $_proxyTemplatePath = '';
 	
 	/**
 	 * 代理模板内容
+	 *
 	 * @var string
 	 */
 	protected $_proxyTemplateText = '';
@@ -87,13 +95,14 @@ class AopProxyFactory extends BaseClass {
 	 */
 	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null) {
 		$this->_cacheDataManagerObj = $cacheDataManagerObj;
-		$this->_proxyTemplatePath = __DIR__ . '/Template/_AopProxyTemplate.t';
+		$this->_proxyTemplatePath   = __DIR__ . '/Template/_AopProxyTemplate.t';
 		
 		parent::__construct();
 	}
 	
 	/**
 	 * 初始化
+	 *
 	 * @return $this
 	 */
 	public function init() {
@@ -106,7 +115,7 @@ class AopProxyFactory extends BaseClass {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name']  = self::class;
 		$this->name_info['intro'] = '代理类';
 	}
 	
@@ -124,7 +133,7 @@ class AopProxyFactory extends BaseClass {
 	 * @throws \ReflectionException
 	 */
 	public function buildProxyClassCacheFile() {
-		$filePath = $this->getProxyClassFilePath();
+		$filePath   = $this->getProxyClassFilePath();
 		$_namespace = $this->getProxyClassNameSpace();
 		if (empty($filePath) || empty($_namespace)) {
 			return false;
@@ -152,11 +161,11 @@ class AopProxyFactory extends BaseClass {
 		$_fileName = $filePath . '/' . $_classVar . '.php';
 		
 		// extendsClass
-		$_extendsClass = $this->getClassName();
+		$_extendsClass    = $this->getClassName();
 		$_extendsClassVar = '\\' . $_extendsClass;
 		
 		// method
-		$_ref = $this->getReflectionClass();
+		$_ref        = $this->getReflectionClass();
 		$_refMethods = $_ref->getRefMethods();
 		$_methodsVar = '';
 		
@@ -172,7 +181,13 @@ class AopProxyFactory extends BaseClass {
 		}
 		
 		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
-		$ast = $parser->parse($_sourceCodeText);
+		$ast    = $parser->parse($_sourceCodeText);
+		
+		$codeParserObj = CodeParser::getInstance();
+		$codeParserObj->reset()
+		              ->setClassFileName($_sourceFileName)
+		              ->loadFile()
+		              ->parse();
 		
 		foreach ($_refMethods as $_refMethodItem) {
 			/** @var ReflectionMethod $_refMethodItem */
@@ -181,17 +196,17 @@ class AopProxyFactory extends BaseClass {
 			}
 			
 			$_methodName = $_refMethodItem->getName();
-			$_refParams = $_refMethodItem->getParameters();
+			$_refParams  = $_refMethodItem->getParameters();
 			
 			$_paramsText = [];
 			foreach ($_refParams as $_refParamItem) {
 				/** @var \ReflectionParameter $_refParamItem */
 				
 				$_p = [
-					'typeName' => '',
-					'paramName' => $_refParamItem->getName(),
+					'typeName'       => '',
+					'paramName'      => $_refParamItem->getName(),
 					'isDefaultValue' => $_refParamItem->isDefaultValueAvailable(),
-					'defaultValue' => $_refParamItem->isDefaultValueAvailable() ? $_refParamItem->getDefaultValue() : '',
+					'defaultValue'   => $_refParamItem->isDefaultValueAvailable() ? $_refParamItem->getDefaultValue() : '',
 				];
 				
 				$_pText = '';
@@ -210,7 +225,16 @@ class AopProxyFactory extends BaseClass {
 					if (is_string($_p['defaultValue'])) {
 						$_pText .= " = '{$_p['defaultValue']}'";
 					} elseif (is_array($_p['defaultValue'])) {
-						// todo: 数组重排
+						$_arr = [];
+						foreach ($_p['defaultValue'] as $item) {
+							if (is_string($item)) {
+								$_arr[] = "'{$item}'";
+							} else {
+								$_arr[] = "{$item}";
+							}
+						}
+						$_arrText = implode(',', $_arr);
+						$_pText .= " = [{$_arrText}]";
 					} else {
 						$_pText .= " = {$_p['defaultValue']}";
 					}

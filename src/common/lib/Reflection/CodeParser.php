@@ -9,6 +9,7 @@
 namespace uujia\framework\base\common\lib\Reflection;
 
 
+use PhpParser\NodeTraverser;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use uujia\framework\base\common\lib\Base\BaseClass;
@@ -130,11 +131,7 @@ class CodeParser extends BaseClass {
 		}
 		
 		foreach ($data as $item) {
-			if (empty($item['nodeType'])) {
-				continue;
-			}
-			
-			switch ($item['nodeType']) {
+			switch ($item->getType()) {
 				case 'Stmt_Namespace':
 					if (!isset($tree['namespace'])) {
 						$tree['namespace'] = [];
@@ -145,36 +142,126 @@ class CodeParser extends BaseClass {
 						'children' => [],
 					];
 					
-					$namespace['data']['var'] = $item['name']['parts'] ?? [];
-					$namespace['data']['text'] = implode('\\', $item['name']['parts'] ?? []);
+					$namespace['data']['arr'] = $item->name->parts ?? [];
+					$namespace['data']['text'] = implode('\\', $item->name->parts ?? []);
 					
-					if (empty($item['stmts'])) {
-						continue;
+					if (empty($item->stmts)) {
+						continue 2;
 					}
 					
 					$tree['namespace'][] = $namespace;
 					
-					$this->parseDataTree($item['stmts'], $tree['namespace'][count($tree['namespace']) - 1]['children']);
+					$this->parseDataTree($item->stmts, $tree['namespace'][count($tree['namespace']) - 1]['children']);
 					break;
 				
 				case 'Stmt_Use':
-					if (empty($item['users'])) {
-						continue;
+					if (empty($item->uses)) {
+						continue 2;
 					}
 					
 					if (!isset($tree['use'])) {
 						$tree['use'] = [];
 					}
 					
-					$this->parseDataTree($item['users'], $tree['use']['children']);
+					//$use = [];
+					
+					//$tree['use'][] = $use;
+					
+					$this->parseDataTree($item->uses, $tree['use']);
+					break;
+					
+				case 'Stmt_UseUse':
+					$use = [];
+					
+					$use['arr'] = $item->name->parts ?? [];
+					$use['text'] = implode('\\', $item->name->parts ?? []);
+					
+					$tree[] = $use;
 					break;
 				
 				case 'Stmt_Class':
+					if (!isset($tree['class'])) {
+						$tree['class'] = [];
+					}
 					
+					$class = [
+						'data' => [],
+						'children' => [],
+					];
+					
+					$class['data']['extands_arr'] = $item->extends->parts ?? [];
+					$class['data']['extands_text'] = implode('\\', $item->extends->parts ?? []);
+					$class['data']['name'] = $item->name->name;
+					
+					if (empty($item->stmts)) {
+						continue 2;
+					}
+					
+					$tree['class'] = $class;
+					
+					$this->parseDataTree($item->stmts, $tree['class']['children']);
 					break;
 				
 				case 'Stmt_ClassMethod':
+					$method = [
+						'name' => '',
+						'params' => [],
+						'returnType' => null,
+					];
 					
+					$method['name'] = $item->name->__toString();
+					$method['returnType'] = $item->returnType->__toString();
+					
+					$tree[] = $method;
+					
+					$this->parseDataTree($item->params, $tree[count($tree) - 1]['params']);
+					break;
+					
+				case 'Param':
+					$param = [
+						'name' => '',
+						'byRef' => false,
+						'default' => [
+							'type' => '',
+							'value' => [],
+						],
+					];
+					
+					$param['name'] = $item->var->name;
+					$param['byRef'] = $item->byRef;
+					
+					switch ($item->default->getType()) {
+						case 'Expr_Array':
+							$param['default']['type'] = 'array';
+							$this->parseDataTree($item->default->items, $param['default']['value']);
+							$tree[] = $param;
+							break;
+							
+						case 'Scalar_String':
+							$param['default']['type'] = 'string';
+							$param['default']['value'] = $item->default->value;
+							break;
+						
+						case 'Scalar_LNumber':
+							$param['default']['type'] = 'number';
+							$param['default']['value'] = $item->default->value;
+							break;
+						
+						case 'Expr_ConstFetch':
+							if (!empty($item->default->name->parts) && in_array($item->default->name->parts[0], ['true', 'false'])) {
+								$param['default']['type'] = 'bool';
+								$param['default']['value'] = $item->default->name->parts[0];
+							} else {
+								// todo: 其他类型 常量
+							}
+							
+							$tree[] = $param;
+							break;
+					}
+					break;
+					
+				case 'Expr_ArrayItem':
+					$tree[] = $item->value->value;
 					break;
 			}
 		}

@@ -13,15 +13,16 @@ use uujia\framework\base\common\lib\Aop\AopProxyFactory;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
+use uujia\framework\base\common\lib\Reflection\CodeParser;
 use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
 use uujia\framework\base\common\Redis;
 use uujia\framework\base\common\Runner as Ru;
 use uujia\framework\base\common\traits\InstanceTrait;
+use uujia\framework\base\test\EventTest;
 use uujia\framework\base\UU;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
-use uujia\framework\base\test\EventTest;
 
 class Demo extends BaseService {
 	use InstanceTrait;
@@ -132,6 +133,8 @@ class Demo extends BaseService {
 		$aopProxyFactoryObj->setReflectionClass($refClass);
 		$aopProxyFactoryObj->getReflectionClass()->load();
 		$aopProxyFactoryObj->buildProxyClassCacheFile();
+		
+		
 	}
 	
 	public function test() {
