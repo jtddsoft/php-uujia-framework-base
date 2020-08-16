@@ -150,7 +150,7 @@ class AopProxyFactory extends BaseClass {
 		}
 		
 		// namespace
-		$_namespaceVar = $_namespace;
+		// $_namespaceVar = $_namespace;
 		
 		// class
 		$_class = $this->getProxyClassNameSpace() . '\\' . basename($this->getClassName());
@@ -166,8 +166,8 @@ class AopProxyFactory extends BaseClass {
 		
 		// method
 		$_ref        = $this->getReflectionClass();
-		$_refMethods = $_ref->getRefMethods();
-		$_methodsVar = '';
+		// $_refMethods = $_ref->getRefMethods();
+		// $_methodsVar = '';
 		
 		// 通过类名反射出文件名
 		$_sourceFileName = $_ref->getRefClass()->getFileName();
@@ -183,82 +183,82 @@ class AopProxyFactory extends BaseClass {
 		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 		$ast    = $parser->parse($_sourceCodeText);
 		
-		$codeParserObj = CodeParser::getInstance();
-		$codeParserObj->reset()
-		              ->setClassFileName($_sourceFileName)
-		              ->loadFile()
-		              ->parse();
-		
-		foreach ($_refMethods as $_refMethodItem) {
-			/** @var ReflectionMethod $_refMethodItem */
-			if (!$_refMethodItem->isPublic() || $_refMethodItem->isAbstract() || $_refMethodItem->isConstructor()) {
-				continue;
-			}
-			
-			$_methodName = $_refMethodItem->getName();
-			$_refParams  = $_refMethodItem->getParameters();
-			
-			$_paramsText = [];
-			foreach ($_refParams as $_refParamItem) {
-				/** @var \ReflectionParameter $_refParamItem */
-				
-				$_p = [
-					'typeName'       => '',
-					'paramName'      => $_refParamItem->getName(),
-					'isDefaultValue' => $_refParamItem->isDefaultValueAvailable(),
-					'defaultValue'   => $_refParamItem->isDefaultValueAvailable() ? $_refParamItem->getDefaultValue() : '',
-				];
-				
-				$_pText = '';
-				
-				if ($_refParamItem->hasType()) {
-					if ($_refParamItem instanceof ReflectionNamedType) {
-						$_p['typeName'] = $_refParamItem->getType() . '' ?? '';
-					} elseif ($_refParamItem->getClass() !== null) {
-						$_p['typeName'] = '\\' . $_refParamItem->getClass()->getName();
-					}
-				}
-				
-				!empty($_p['typeName']) && $_pText .= "{$_p['typeName']} ";
-				$_pText .= "\${$_p['paramName']}";
-				if ($_p['isDefaultValue']) {
-					if (is_string($_p['defaultValue'])) {
-						$_pText .= " = '{$_p['defaultValue']}'";
-					} elseif (is_array($_p['defaultValue'])) {
-						$_arr = [];
-						foreach ($_p['defaultValue'] as $item) {
-							if (is_string($item)) {
-								$_arr[] = "'{$item}'";
-							} else {
-								$_arr[] = "{$item}";
-							}
-						}
-						$_arrText = implode(',', $_arr);
-						$_pText .= " = [{$_arrText}]";
-					} else {
-						$_pText .= " = {$_p['defaultValue']}";
-					}
-				}
-				
-				$_paramsText[] = $_pText;
-			}
-			
-			$_paramsVar = implode(', ', $_paramsText);
-			
-			$_methodsVar .= "\tpublic function {$_methodName}({$_paramsVar}) {\n";
-			$_methodsVar .= "\t\treturn call_user_func_array([\$this, '_aopCall'], ['{$_methodName}', func_get_args()]);\n";
-			$_methodsVar .= "\t}\n";
-			
-			$_methodsVar .= "\n";
-		}
-		
-		$text = $_templateText;
-		$text = str_replace('%namespace%', $_namespaceVar, $text);
-		$text = str_replace('%class%', $_classVar, $text);
-		$text = str_replace('%extendsClass%', $_extendsClassVar, $text);
-		$text = str_replace('%methods%', $_methodsVar, $text);
-		
-		$res = File::writeFromText($_fileName, $text);
+		// $codeParserObj = CodeParser::getInstance();
+		// $codeParserObj->reset()
+		//               ->setClassFileName($_sourceFileName)
+		//               ->loadFile()
+		//               ->parse();
+		//
+		// foreach ($_refMethods as $_refMethodItem) {
+		// 	/** @var ReflectionMethod $_refMethodItem */
+		// 	if (!$_refMethodItem->isPublic() || $_refMethodItem->isAbstract() || $_refMethodItem->isConstructor()) {
+		// 		continue;
+		// 	}
+		//
+		// 	$_methodName = $_refMethodItem->getName();
+		// 	$_refParams  = $_refMethodItem->getParameters();
+		//
+		// 	$_paramsText = [];
+		// 	foreach ($_refParams as $_refParamItem) {
+		// 		/** @var \ReflectionParameter $_refParamItem */
+		//
+		// 		$_p = [
+		// 			'typeName'       => '',
+		// 			'paramName'      => $_refParamItem->getName(),
+		// 			'isDefaultValue' => $_refParamItem->isDefaultValueAvailable(),
+		// 			'defaultValue'   => $_refParamItem->isDefaultValueAvailable() ? $_refParamItem->getDefaultValue() : '',
+		// 		];
+		//
+		// 		$_pText = '';
+		//
+		// 		if ($_refParamItem->hasType()) {
+		// 			if ($_refParamItem instanceof ReflectionNamedType) {
+		// 				$_p['typeName'] = $_refParamItem->getType() . '' ?? '';
+		// 			} elseif ($_refParamItem->getClass() !== null) {
+		// 				$_p['typeName'] = '\\' . $_refParamItem->getClass()->getName();
+		// 			}
+		// 		}
+		//
+		// 		!empty($_p['typeName']) && $_pText .= "{$_p['typeName']} ";
+		// 		$_pText .= "\${$_p['paramName']}";
+		// 		if ($_p['isDefaultValue']) {
+		// 			if (is_string($_p['defaultValue'])) {
+		// 				$_pText .= " = '{$_p['defaultValue']}'";
+		// 			} elseif (is_array($_p['defaultValue'])) {
+		// 				$_arr = [];
+		// 				foreach ($_p['defaultValue'] as $item) {
+		// 					if (is_string($item)) {
+		// 						$_arr[] = "'{$item}'";
+		// 					} else {
+		// 						$_arr[] = "{$item}";
+		// 					}
+		// 				}
+		// 				$_arrText = implode(',', $_arr);
+		// 				$_pText .= " = [{$_arrText}]";
+		// 			} else {
+		// 				$_pText .= " = {$_p['defaultValue']}";
+		// 			}
+		// 		}
+		//
+		// 		$_paramsText[] = $_pText;
+		// 	}
+		//
+		// 	$_paramsVar = implode(', ', $_paramsText);
+		//
+		// 	$_methodsVar .= "\tpublic function {$_methodName}({$_paramsVar}) {\n";
+		// 	$_methodsVar .= "\t\treturn call_user_func_array([\$this, '_aopCall'], ['{$_methodName}', func_get_args()]);\n";
+		// 	$_methodsVar .= "\t}\n";
+		//
+		// 	$_methodsVar .= "\n";
+		// }
+		//
+		// $text = $_templateText;
+		// $text = str_replace('%namespace%', $_namespaceVar, $text);
+		// $text = str_replace('%class%', $_classVar, $text);
+		// $text = str_replace('%extendsClass%', $_extendsClassVar, $text);
+		// $text = str_replace('%methods%', $_methodsVar, $text);
+		//
+		// $res = File::writeFromText($_fileName, $text);
 		
 		return $res;
 	}

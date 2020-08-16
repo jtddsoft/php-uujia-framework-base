@@ -10,6 +10,7 @@ use uujia\framework\base\common\Config;
 use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Aop\AopProxyFactory;
+use uujia\framework\base\common\lib\Aop\ProxyVisitor;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
@@ -23,6 +24,9 @@ use uujia\framework\base\common\traits\InstanceTrait;
 use uujia\framework\base\test\EventTest;
 use uujia\framework\base\UU;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
+use PhpParser\ParserFactory;
+use PhpParser\NodeTraverser;
+use PhpParser\PrettyPrinter\Standard;
 
 class Demo extends BaseService {
 	use InstanceTrait;
@@ -128,12 +132,34 @@ class Demo extends BaseService {
 		
 		$this->boot();
 		
-		$aopProxyFactoryObj->setClassName(EventTest::class);
-		$refClass = new Reflection($aopProxyFactoryObj->getClassName());
-		$aopProxyFactoryObj->setReflectionClass($refClass);
-		$aopProxyFactoryObj->getReflectionClass()->load();
-		$aopProxyFactoryObj->buildProxyClassCacheFile();
+		// $aopProxyFactoryObj->setClassName(EventTest::class);
+		// $refClass = new Reflection($aopProxyFactoryObj->getClassName());
+		// $aopProxyFactoryObj->setReflectionClass($refClass);
+		// $aopProxyFactoryObj->getReflectionClass()->load();
+		// $aopProxyFactoryObj->buildProxyClassCacheFile();
+	
 		
+		
+		// $file = APP_PATH . '/Test.php';
+		$file = __DIR__ . '/EventTest.php';
+		$code = file_get_contents($file);
+		
+		$parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
+		$ast = $parser->parse($code);
+		
+		$traverser = new NodeTraverser();
+		$className = EventTest::class;
+		$proxyId = uniqid();
+		$visitor = new ProxyVisitor($className, $proxyId);
+		$traverser->addVisitor($visitor);
+		$proxyAst = $traverser->traverse($ast);
+		if (!$proxyAst) {
+			throw new \Exception(sprintf('Class %s AST optimize failure', $className));
+		}
+		$printer = new Standard();
+		$proxyCode = $printer->prettyPrint($proxyAst);
+		
+		echo $proxyCode;
 		
 	}
 	
@@ -237,6 +263,7 @@ class Demo extends BaseService {
 	}
 	
 }
+
 trait TT {
 	public function tt($ttt) {
 		$x = function () use ($ttt) {
