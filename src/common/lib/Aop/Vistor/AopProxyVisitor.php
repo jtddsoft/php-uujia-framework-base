@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common\lib\Aop\Vistor;
 
 
+use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
@@ -18,6 +19,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\TraitUse;
 use PhpParser\NodeFinder;
+use uujia\framework\base\common\lib\Aop\AopProxy;
 
 class AopProxyVisitor extends NodeVisitorAbstract {
 	
@@ -34,48 +36,66 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 		return \basename(str_replace('\\', '/', $this->proxyClassName));
 	}
 	
+	public function getProxyClassNameDir(): string {
+		return \dirname($this->proxyClassName);
+	}
+	
 	/**
 	 * @return \PhpParser\Node\Stmt\TraitUse
 	 */
 	private function getAopTraitUseNode(): TraitUse {
 		// Use AopTrait trait use node
-		return new TraitUse([new Name(AopProxyVisitor::class)]);
+		return new TraitUse([new Name('\\' . AopProxy::class)]);
 	}
 	
 	public function leaveNode(Node $node) {
-		// Proxy Class
+		// 替换命名空间定义
+		if ($node instanceof Namespace_) {
+			return new Namespace_(new Name($this->getProxyClassNameDir()),
+			                      $node->stmts,
+			                      $node->getAttributes());
+		}
+		
+		// 替换类定义
 		if ($node instanceof Class_) {
-			// Create proxy class base on parent class
+			// 创建一个代理类 基于目标类
 			return new Class_($this->getProxyClassNameBaseName(), [
 				'flags'   => $node->flags,
 				'stmts'   => $node->stmts,
 				'extends' => new Name('\\' . $this->className),
 			]);
 		}
-		// Rewrite public and protected methods, without static methods
+		
+		// 重写 public 和 protected 方法，不包括静态方法
 		if ($node instanceof ClassMethod && !$node->isStatic() && ($node->isPublic() || $node->isProtected())) {
 			$methodName = $node->name->toString();
 			// Rebuild closure uses, only variable
 			$uses = [];
+			$args = [];
 			foreach ($node->params as $key => $param) {
 				if ($param instanceof Param) {
 					$uses[$key] = new Param($param->var, null, null, true);
+					$args[$key] = new Param($param->var, null, null, $param->byRef);
 				}
 			}
-			$params     = [
+			$params = [
 				// Add method to an closure
 				new Closure([
 					            'static' => $node->isStatic(),
 					            'uses'   => $uses,
-					            'stmts'  => $node->stmts,
+					            // 'stmts'  => $node->stmts,
+					            'stmts'  => [new Return_(new Node\Expr\StaticCall(new Name('parent'), $methodName, $args))],
 				            ]),
 				new String_($methodName),
 				new FuncCall(new Name('func_get_args')),
 			];
-			$stmts      = [
+			
+			$stmts = [
 				new Return_(new MethodCall(new Variable('this'), '_aopCall', $params)),
 			];
+			
 			$returnType = $node->getReturnType();
+			
 			if ($returnType instanceof Name && $returnType->toString() === 'self') {
 				$returnType = new Name('\\' . $this->className);
 			}
@@ -101,7 +121,7 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 			if ($node instanceof TraitUse) {
 				foreach ($node->traits as $trait) {
 					// Did AopTrait trait use ?
-					if ($trait instanceof Name && $trait->toString() === AopProxyVisitor::class) {
+					if ($trait instanceof Name && $trait->toString() === AopProxy::class) {
 						$addEnhancementMethods = false;
 						break;
 					}

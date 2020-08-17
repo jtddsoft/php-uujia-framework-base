@@ -29,7 +29,8 @@ class EventTest extends EventHandle {
 	 * @EventName(evt = "app.test.eventTest.add.before")
 	 */
 	public function addBefore($a = [1, 2], $b = 's', $c = 1, $d = true): EventHandle {
-		return $this->tm(__FUNCTION__)->getLastReturn();
+		return parent::addBefore();
+		// return $this->tm(__FUNCTION__)->getLastReturn();
 	}
 	
 	public function addAfter() {

@@ -169,11 +169,12 @@ class AopProxyFactory extends BaseClass {
 		$_fileName = $filePath . '/' . basename($_class) . '.php';
 		
 		// extendsClass
-		$_extendsClass    = $this->getClassName();
-		$_extendsClassVar = '\\' . $_extendsClass;
+		// $_extendsClass = $this->getClassName();
+		// $_extendsClassVar = '\\' . $_extendsClass;
 		
 		// method
-		$_ref        = $this->getReflectionClass();
+		$_ref = $this->getReflectionClass();
+		$_refParentClass = $_ref->getRefClass()->getParentClass();
 		// $_refMethods = $_ref->getRefMethods();
 		// $_methodsVar = '';
 		
@@ -192,14 +193,16 @@ class AopProxyFactory extends BaseClass {
 		$ast    = $parser->parse($_sourceCodeText);
 		
 		$traverser = new NodeTraverser();
-		$visitor = new AopProxyVisitor($this->getClassName(), $_class);
+		$visitor   = new AopProxyVisitor($this->getClassName(), $_class);
 		$traverser->addVisitor($visitor);
 		$proxyAst = $traverser->traverse($ast);
 		if (!$proxyAst) {
-			throw new \Exception(sprintf('Class %s AST optimize failure', $_class));
+			return false;
 		}
-		$printer = new Standard();
+		$printer   = new Standard();
 		$proxyCode = $printer->prettyPrint($proxyAst);
+		
+		$res = File::writeFromText($_fileName, "<?php \n" . $proxyCode);
 		
 		// $codeParserObj = CodeParser::getInstance();
 		// $codeParserObj->reset()
@@ -278,7 +281,7 @@ class AopProxyFactory extends BaseClass {
 		//
 		// $res = File::writeFromText($_fileName, $text);
 		
-		return $proxyCode;
+		return $res;
 	}
 	
 	/**
@@ -294,6 +297,7 @@ class AopProxyFactory extends BaseClass {
 	public function getProxyClassFromCache(string $className) {
 		/**
 		 * 获取AopProxyClass缓存提供商集合
+		 *
 		 * @var CacheDataProvider[] $cdProviders
 		 */
 		$cdProviders = $this->getCacheDataProviderAopProxyClass();
@@ -309,6 +313,7 @@ class AopProxyFactory extends BaseClass {
 		
 		/**
 		 * 只取第一个缓存提供商（获取aop代理类属一对一获取 更多的供应商没有意义 暂时只取我提供的）
+		 *
 		 * @var AopProxyCacheDataProvider $aopProvider
 		 */
 		$aopProvider = $it[0]->getDataValue();
