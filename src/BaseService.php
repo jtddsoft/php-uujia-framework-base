@@ -4,9 +4,11 @@ namespace uujia\framework\base;
 
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
+use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\ErrorConfig;
 use uujia\framework\base\common\Event;
 use uujia\framework\base\common\lib\Aop\AopProxyFactory;
+use uujia\framework\base\common\lib\Aop\Cache\AopProxyCacheDataProvider;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Event\EventDispatcher;
@@ -137,6 +139,16 @@ class BaseService {
 		$this->getRedis()
 			// ->setRedisProviderObj(new RedisProvider())
 			 ->loadConfig();
+		
+		/** @var CacheDataManagerInterface $cacheDataMgr */
+		$cacheDataMgr = $this->getCacheDataManager();
+		
+		// $cacheDataMgr->setCacheKeyPrefix(['app']);
+		
+		/** @var AopProxyCacheDataProvider $aopProxyCacheDataProvider */
+		$aopProxyCacheDataProvider = UU::C(AopProxyCacheDataProvider::class);
+		
+		$cacheDataMgr->regProvider(CacheConstInterface::DATA_PROVIDER_KEY_AOP_PROXY_CLASS, $aopProxyCacheDataProvider);
 	}
 	
 	/**

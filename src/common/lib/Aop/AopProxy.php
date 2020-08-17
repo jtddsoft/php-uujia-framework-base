@@ -65,22 +65,26 @@ trait AopProxy {
 	 * Date: 2020/8/4 14:25
 	 *
 	 * @param \Generator $generator
+	 * @param \Closure   $closure
 	 * @param string     $method
 	 * @param array      $args
 	 *
 	 * @return mixed
-	 * @throws ExceptionAop
 	 */
-	public function _aopProcess($generator, $method, $args) {
-		$callMethod = function () use ($method, $args) {
-			if (method_exists($this, $method)) {
-				// $result = call_user_func_array([$this, $method], $args);
-				$result = parent::$method(...$args);
-			} else {
-				throw new ExceptionAop('方法不存在', 1000);
-			}
-			
-			return $result;
+	public function _aopProcess(\Generator $generator, \Closure $closure, string $method, array $args) {
+		// $callMethod = function () use ($method, $args) {
+		// 	if (method_exists($this, $method)) {
+		// 		// $result = call_user_func_array([$this, $method], $args);
+		// 		$result = parent::$method(...$args);
+		// 	} else {
+		// 		throw new ExceptionAop('方法不存在', 1000);
+		// 	}
+		//
+		// 	return $result;
+		// };
+		
+		$callMethod = function () use ($closure, $args) {
+			return $closure(...$args);
 		};
 		
 		$this->getProceedingJoinPointObj()->className = $this->getClassName();
@@ -154,12 +158,14 @@ trait AopProxy {
 	 * Date: 2020/8/12
 	 * Time: 0:01
 	 *
-	 * @param $method
-	 * @param $args
+	 * @param \Closure $closure
+	 * @param string   $method
+	 * @param array    $args
+	 *
 	 * @return bool|mixed
 	 * @throws ExceptionAop
 	 */
-	public function _aopCall($method, $args) {
+	public function _aopCall(\Closure $closure, string $method, array $args) {
 		$generator = $this->_aopClass();
 		$generator->rewind();
 		

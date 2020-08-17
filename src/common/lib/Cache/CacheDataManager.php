@@ -23,7 +23,7 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 	 *
 	 * @var array $_cacheKeyPrefix
 	 */
-	protected $_cacheKeyPrefix = [];
+	protected $_cacheKeyPrefix = ['app'];
 
 	/** @var TreeFunc $_providerList */
 	protected $_providerList = null;

@@ -4,12 +4,16 @@
 namespace uujia\framework\base\common\lib\Aop;
 
 
+use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
+use PhpParser\PrettyPrinter\Standard;
 use ReflectionMethod;
 use ReflectionNamedType;
 use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Aop\Cache\AopCacheDataProvider;
+use uujia\framework\base\common\lib\Aop\Cache\AopProxyCacheDataProvider;
+use uujia\framework\base\common\lib\Aop\Vistor\AopProxyVisitor;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
@@ -153,12 +157,16 @@ class AopProxyFactory extends BaseClass {
 		// $_namespaceVar = $_namespace;
 		
 		// class
-		$_class = $this->getProxyClassNameSpace() . '\\' . basename($this->getClassName());
-		// class变量替换
-		$_classVar = str_replace('\\', '_', $_class);
+		// $_class = $this->getProxyClassNameSpace() . '\\' . basename($this->getClassName());
+		$_class = $this->getProxyClassFromCache($this->getClassName());
+		if (empty($_class)) {
+			return false;
+		}
+		// // class变量替换
+		// $_classVar = str_replace('\\', '_', $_class);
 		
 		// filename
-		$_fileName = $filePath . '/' . $_classVar . '.php';
+		$_fileName = $filePath . '/' . basename($_class) . '.php';
 		
 		// extendsClass
 		$_extendsClass    = $this->getClassName();
@@ -182,6 +190,16 @@ class AopProxyFactory extends BaseClass {
 		
 		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 		$ast    = $parser->parse($_sourceCodeText);
+		
+		$traverser = new NodeTraverser();
+		$visitor = new AopProxyVisitor($this->getClassName(), $_class);
+		$traverser->addVisitor($visitor);
+		$proxyAst = $traverser->traverse($ast);
+		if (!$proxyAst) {
+			throw new \Exception(sprintf('Class %s AST optimize failure', $_class));
+		}
+		$printer = new Standard();
+		$proxyCode = $printer->prettyPrint($proxyAst);
 		
 		// $codeParserObj = CodeParser::getInstance();
 		// $codeParserObj->reset()
@@ -260,8 +278,70 @@ class AopProxyFactory extends BaseClass {
 		//
 		// $res = File::writeFromText($_fileName, $text);
 		
-		return $res;
+		return $proxyCode;
 	}
+	
+	/**
+	 * 通过目标类获取代理类类名
+	 *
+	 * Date: 2020/8/17
+	 * Time: 16:39
+	 *
+	 * @param string $className
+	 *
+	 * @return mixed|string
+	 */
+	public function getProxyClassFromCache(string $className) {
+		/**
+		 * 获取AopProxyClass缓存提供商集合
+		 * @var CacheDataProvider[] $cdProviders
+		 */
+		$cdProviders = $this->getCacheDataProviderAopProxyClass();
+		if (empty($cdProviders)) {
+			return '';
+		}
+		
+		/** @var TreeFunc $it */
+		$it = $cdProviders['it'];
+		if ($it->count() == 0) {
+			throw new ExceptionAop('未找到AopProxyClass缓存供应商', 1000);
+		}
+		
+		/**
+		 * 只取第一个缓存提供商（获取aop代理类属一对一获取 更多的供应商没有意义 暂时只取我提供的）
+		 * @var AopProxyCacheDataProvider $aopProvider
+		 */
+		$aopProvider = $it[0]->getDataValue();
+		
+		$result = '';
+		// 跑循环其实只是搞生成器 由于是复用缓存供应商 而缓存供应商默认是返回生成器 所以虽然只取一个 也跑一下生成器
+		// 当然也可以单独写个缓存处理 也可以单独处理生成器 只是循环一下省事 有兴趣可以帮我优化
+		foreach ($aopProvider->setClassName($className)
+		                     ->setProxyClassNameSpace($this->getProxyClassNameSpace())
+		                     ->fromCache() as $item) {
+			if (!empty($item)) {
+				$result = $item;
+				break;
+			}
+		}
+		
+		return $result;
+	}
+	
+	/**
+	 * 获取AOPProxyClass缓存供应商对象集合
+	 * 我只提供一个 但您可以增加多个
+	 * 这里返回的是个数组 具体看CacheDataManager中的定义
+	 *
+	 * @return CacheDataProvider[]|null
+	 */
+	public function getCacheDataProviderAopProxyClass() {
+		$cdMgr       = $this->getCacheDataManagerObj();
+		$cdProviders = $cdMgr->getProviderList()->getKeyDataValue(CacheConstInterface::DATA_PROVIDER_KEY_AOP_PROXY_CLASS);
+		
+		return $cdProviders;
+	}
+	
 	
 	/**************************************************************
 	 * get set

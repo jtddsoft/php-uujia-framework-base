@@ -23,19 +23,15 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	
 	protected $className;
 	
-	protected $proxyId;
+	protected $proxyClassName;
 	
-	public function __construct($className, $proxyId) {
-		$this->className = $className;
-		$this->proxyId   = $proxyId;
+	public function __construct($className, $proxyClassName) {
+		$this->className      = $className;
+		$this->proxyClassName = $proxyClassName;
 	}
 	
-	public function getProxyClassName(): string {
-		return \basename(str_replace('\\', '/', $this->className)) . '_' . $this->proxyId;
-	}
-	
-	public function getClassName() {
-		return '\\' . $this->className . '_' . $this->proxyId;
+	public function getProxyClassNameBaseName(): string {
+		return \basename(str_replace('\\', '/', $this->proxyClassName));
 	}
 	
 	/**
@@ -43,14 +39,14 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	 */
 	private function getAopTraitUseNode(): TraitUse {
 		// Use AopTrait trait use node
-		return new TraitUse([new Name('\App\Aop\AopTrait')]);
+		return new TraitUse([new Name(AopProxyVisitor::class)]);
 	}
 	
 	public function leaveNode(Node $node) {
 		// Proxy Class
 		if ($node instanceof Class_) {
 			// Create proxy class base on parent class
-			return new Class_($this->getProxyClassName(), [
+			return new Class_($this->getProxyClassNameBaseName(), [
 				'flags'   => $node->flags,
 				'stmts'   => $node->stmts,
 				'extends' => new Name('\\' . $this->className),
@@ -77,7 +73,7 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 				new FuncCall(new Name('func_get_args')),
 			];
 			$stmts      = [
-				new Return_(new MethodCall(new Variable('this'), '__proxyCall', $params)),
+				new Return_(new MethodCall(new Variable('this'), '_aopCall', $params)),
 			];
 			$returnType = $node->getReturnType();
 			if ($returnType instanceof Name && $returnType->toString() === 'self') {
@@ -105,7 +101,7 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 			if ($node instanceof TraitUse) {
 				foreach ($node->traits as $trait) {
 					// Did AopTrait trait use ?
-					if ($trait instanceof Name && $trait->toString() === '\App\Aop\AopTrait') {
+					if ($trait instanceof Name && $trait->toString() === AopProxyVisitor::class) {
 						$addEnhancementMethods = false;
 						break;
 					}
@@ -120,17 +116,17 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	}
 }
 
-trait AopTrait {
-	/**
-	 * AOP proxy call method
-	 *
-	 * @param \Closure $closure
-	 * @param string   $method
-	 * @param array    $params
-	 * @return mixed|null
-	 * @throws \Throwable
-	 */
-	public function __proxyCall(\Closure $closure, string $method, array $params) {
-		return $closure(...$params);
-	}
-}
+// trait AopTrait {
+// 	/**
+// 	 * AOP proxy call method
+// 	 *
+// 	 * @param \Closure $closure
+// 	 * @param string   $method
+// 	 * @param array    $params
+// 	 * @return mixed|null
+// 	 * @throws \Throwable
+// 	 */
+// 	public function __proxyCall(\Closure $closure, string $method, array $params) {
+// 		return $closure(...$params);
+// 	}
+// }

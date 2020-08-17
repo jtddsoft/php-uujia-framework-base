@@ -28,7 +28,7 @@ use uujia\framework\base\common\lib\Utils\Json;
  *
  * @package uujia\framework\base\common\lib\Aop\cache
  */
-abstract class AopProxyCacheDataProvider extends CacheDataProvider {
+class AopProxyCacheDataProvider extends CacheDataProvider {
 	
 	/**
 	 * 反射对象
@@ -43,39 +43,21 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	 *
 	 * @var string
 	 */
-	protected $_keyPrefixAop = '';
-	
-	/*******************************
-	 * 解析Aop 临时存储
-	 *******************************/
+	protected $_keyPrefixAopProxyClass = '';
 	
 	/**
 	 * 类名
 	 *
 	 * @var string
 	 */
-	protected $_classNameBuf = '';
+	protected $_className = '';
 	
 	/**
-	 * 反射得到所有public方法
-	 *
-	 * @var ReflectionMethod[]
-	 */
-	protected $_refMethods = [];
-	
-	/**
-	 * 反射得到注解 AopTarget 集合
-	 *
-	 * @var AopTarget[]
-	 */
-	protected $_aopTargets = [];
-	
-	/**
-	 * 需要触发的 AopTarget类名
+	 * 生成的代理类命名空间定义
 	 *
 	 * @var string
 	 */
-	protected $_aopTargetClass = '';
+	protected $_proxyClassNameSpace = '';
 	
 	/**
 	 * AopProxyCacheDataProvider constructor.
@@ -98,141 +80,25 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	 **************************************************************/
 	
 	/**
-	 * 获取收集Aop类名集合
-	 *  yield [];
-	 *
-	 * @return Generator
-	 */
-	abstract public function getAops(): Generator;
-	
-	/**
-	 * 加载收集的Aop类集合
-	 *
-	 * @return $this
-	 */
-	public function loadAops() {
-		foreach ($this->getAops() as $itemAop) {
-			$this->parseAop($itemAop)
-			     ->toCacheAop();
-		}
-		
-		return $this;
-	}
-	
-	/**
-	 * 解析Aop类
-	 *
-	 * @param $className
-	 *
-	 * @return $this
-	 */
-	public function parseAop($className) {
-		$refObj = $this->getReflectionObj()
-		               ->reset()
-		               ->setClassName($className)
-		               ->load();
-		
-		$this->setClassNameBuf($className);
-		
-		$this->setRefMethods($refObj->methods(Reflection::METHOD_OF_PUBLIC)
-		                            ->getMethodObjs());
-		
-		$this->setAopTargets($refObj->annotation(AopTarget::class)
-		                            ->getAnnotationObjs());
-		
-		return $this;
-	}
-	
-	/**
-	 * 写Aop拦截者之后到缓存
-	 *
-	 * @return Generator
-	 */
-	public function makeCacheAop() {
-		/********************************
-		 * 分两部分
-		 *  1、只是个列表 方便遍历
-		 *  2、String类型的key value。其中key就是监听者要监听的事件名称（可能有通配符模糊匹配）
-		 ********************************/
-		
-		/********************************
-		 * 解析class
-		 ********************************/
-		
-		$_aopTargets   = $this->getAopTargets();
-		$_methods      = $this->getRefMethods();
-		$_aopClassName = $this->getClassNameBuf();
-		
-		if (empty($_aopTargets)) {
-			yield [];
-		}
-		
-		// 遍历每一个Aop注解
-		foreach ($_aopTargets as $aopTarget) {
-			// 要切入的类 目标类
-			$aopTargetClassName = $aopTarget->value;
-			
-			// weight
-			$weight = $aopTarget->weight;
-			
-			if (empty($aopTargetClassName)) {
-				continue;
-			}
-			
-			$name = str_replace('\\', '.', $aopTargetClassName);
-			
-			yield [
-				'weight'       => $weight,
-				'name'         => $name,
-				'aopClassName' => $_aopClassName,
-				'aopTarget'    => $aopTargetClassName,
-			];
-		}
-	}
-	
-	/**
 	 * 写Aop到缓存
 	 *
 	 * @return $this
 	 */
 	public function toCacheAop() {
 		// Aop类名
-		$className = $this->getClassNameBuf();
+		$className = $this->getClassName();
 		
-		// Aop列表缓存中的key
-		$keyAop = $this->makeKeyPrefixAop();
+		// Aop缓存中的key
+		$keyAop = $this->getKeyPrefixAopProxyClass();
 		
-		foreach ($this->makeCacheAop() as $item) {
-			$_weight    = $item['weight'] ?? 100;
-			$_name      = $item['name'] ?? '';
-			$_aopTarget = $item['aopTarget'] ?? '';
-			
-			if (empty($_name)) {
-				continue;
-			}
-			
-			// 写入Aop类列表到缓存
-			// 格式：app:aop -> hash表 app\hello\X -> '["app\hello\AopXA", "app\hello\AopXB"]'
-			$classNames = $this->getRedisObj()->hGet($keyAop, $_aopTarget);
-			if (!empty($classNames)) {
-				$classNames = Json::jd($classNames);
-			} else {
-				$classNames = [];
-			}
-			
-			if (!in_array($className, $classNames)) {
-				$classNames[] = $className;
-			}
-			
-			$this->getRedisObj()->hSet($keyAop, $_aopTarget, Json::je($classNames));
-			
-			// 写AopTarget对应Aop有序集合
-			// 格式：app:aopc:app.hello.X -> zset表 app\hello\AopXA -> 100
-			//                                     app\hello\AopXB -> 100
-			$keyAopC = $this->makeKeyPrefixAopClass([$_name]);
-			
-			$this->getRedisObj()->zAdd($keyAopC, $_weight, $_aopTarget);
-		}
+		// 代理ID 随机码
+		$proxyId = uniqid();
+		
+		// 需要生成的代理类类名
+		$aopProxyClassName = $this->getProxyClassNameSpace() . '\\' . str_replace('\\', '_', $className . '_' . $proxyId);
+		
+		// 写入缓存
+		$this->getRedisObj()->hSet($keyAop, $className, $aopProxyClassName);
 		
 		return $this;
 	}
@@ -240,39 +106,19 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	/**
 	 * 获取缓存中与AopTarget匹配的Aop有序集合列表
 	 *
-	 * @param string $aopTargetClass Aop目标类
 	 * @return Generator
 	 */
-	public function fromCacheAop($aopTargetClass) {
-		$keyAop = $this->makeKeyPrefixAop();
+	public function fromCacheAop() {
+		// Aop类名
+		$className = $this->getClassName();
+		
+		// Aop缓存中的key
+		$keyAop = $this->getKeyPrefixAopProxyClass();
 		
 		// 查找哈希表中是否存在AopTarget标识记录
-		$hExist = $this->getRedisObj()->hExists($keyAop, $aopTargetClass);
+		$aopProxyClass = $this->getRedisObj()->hGet($keyAop, $className);
 		
-		// 如果不存在 返回
-		if (!$hExist) {
-			yield [];
-		}
-		
-		// 如果存在获取内容 返回
-		$_name = str_replace('\\', '.', $aopTargetClass);
-		
-		$keyAopC = $this->makeKeyPrefixAopClass([$_name]);
-		
-		// 判断可以是否存在
-		$kExist = $this->getRedisObj()->exists($keyAopC);
-		
-		// 如果不存在 返回空
-		if (!$kExist) {
-			yield [];
-		}
-		
-		// 如果存在 读取监听列表（key是触发者的标识名 value是有序集合存储的是从监听列表中匹配的服务配置json）
-		$zAopClassList = $this->getRedisObj()->zRange($keyAopC, 0, -1, true);
-		
-		foreach ($zAopClassList as $zValue => $zScore) {
-			yield $zValue => $zScore;
-		}
+		yield $aopProxyClass ?? '';
 	}
 	
 	/**
@@ -286,28 +132,13 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
 		$redis = $this->getRedisObj();
 		
-		// 1、清空hash列表
+		// 清空hash列表
 		
 		// 监听者列表缓存中的key
-		$keyAop = $this->makeKeyPrefixAop();
+		$keyAop = $this->getKeyPrefixAopProxyClass();
 		
 		// 清空缓存key
 		$redis->del($keyAop);
-		
-		// 2、清空一堆key
-		
-		// 搜索key
-		$k = $this->makeKeyPrefixAopClass(['*']);
-		
-		$iterator = null;
-		
-		while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
-			if (empty($keys)) {
-				continue;
-			}
-			
-			$redis->del($keys);
-		}
 		
 		return $this;
 	}
@@ -329,14 +160,7 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	public function fromCache() {
 		$this->make();
 		
-		// 获取要触发的AopTarget类
-		$_aopTargetClass = $this->getAopTargetClass();
-		
-		if (empty($_aopTargetClass)) {
-			yield [];
-		}
-		
-		yield from $this->fromCacheAop($_aopTargetClass);
+		yield from $this->fromCacheAop();
 	}
 	
 	/**
@@ -344,10 +168,10 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	 */
 	public function toCache() {
 		// 先清空
-		$this->clearCache();
+		// $this->clearCache();
 		
-		// 加载Aop
-		$this->loadAops();
+		// 写入缓存Aop
+		$this->toCacheAop();
 		
 		return $this;
 	}
@@ -359,7 +183,7 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	 */
 	public function hasCache(): bool {
 		// 获取
-		$keyAop = $this->makeKeyPrefixAop();
+		$keyAop = $this->getKeyPrefixAopProxyClass();
 		
 		return $this->getRedisObj()->exists($keyAop);
 	}
@@ -374,56 +198,6 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 		parent::clearCache();
 		
 		return $this;
-	}
-	
-	/**
-	 * 主列表key前缀
-	 * app:aop -> {#namespace}
-	 *
-	 * @param array $ks
-	 *
-	 * @return string
-	 */
-	public function makeKeyPrefixAop(array $ks = []): string {
-		if (empty($this->_keyPrefixAop) || !empty($ks)) {
-			// 构建key的层级数组
-			// $keys   = [];
-			$keys   = $this->getParent()->getCacheKeyPrefix();
-			$keys[] = AopConstInterface::CACHE_KEY_PREFIX_AOP;
-			
-			// 附加额外key
-			$keys = array_merge($keys, $ks);
-			
-			// key的层级数组转成字符串key
-			if (empty($ks)) {
-				$this->_keyPrefixAop = Arr::arrToStr($keys, ':');
-			} else {
-				return Arr::arrToStr($keys, ':');
-			}
-		}
-		
-		return $this->_keyPrefixAop;
-	}
-	
-	/**
-	 * 拦截者列表key前缀
-	 * app:aopc ->
-	 *
-	 * @param array $ks
-	 *
-	 * @return string
-	 */
-	public function makeKeyPrefixAopClass(array $ks = []): string {
-		// 构建key的层级数组
-		// $keys   = [];
-		$keys   = $this->getParent()->getCacheKeyPrefix();
-		$keys[] = AopConstInterface::CACHE_KEY_PREFIX_AOP_CLASS;
-		
-		// 附加额外key
-		!empty($ks) && $keys = array_merge($keys, $ks);
-		
-		// key的层级数组转成字符串key
-		return Arr::arrToStr($keys, ':');
 	}
 	
 	/**************************************************************
@@ -453,24 +227,46 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	}
 	
 	/**
+	 * 主列表key前缀
+	 * app:aop -> {#namespace}
+	 *
+	 * @param array $ks
+	 *
 	 * @return string
 	 */
-	public function getKeyPrefixAop(): string {
-		return $this->_keyPrefixAop;
+	public function getKeyPrefixAopProxyClass(array $ks = []): string {
+		if (empty($this->_keyPrefixAopProxyClass) || !empty($ks)) {
+			// 构建key的层级数组
+			// $keys   = [];
+			$keys   = $this->getParent()->getCacheKeyPrefix();
+			$keys[] = AopConstInterface::CACHE_KEY_PREFIX_AOP_PROXY_CLASS;
+			
+			// 附加额外key
+			$keys = array_merge($keys, $ks);
+			
+			// key的层级数组转成字符串key
+			if (empty($ks)) {
+				$this->_keyPrefixAopProxyClass = Arr::arrToStr($keys, ':');
+			} else {
+				return Arr::arrToStr($keys, ':');
+			}
+		}
+		
+		return $this->_keyPrefixAopProxyClass;
 	}
 	
 	/**
-	 * @param string $keyPrefixAop
+	 * @param string $keyPrefixAopProxyClass
 	 */
-	public function setKeyPrefixAop(string $keyPrefixAop) {
-		$this->_keyPrefixAop = $keyPrefixAop;
+	public function setKeyPrefixAopProxyClass(string $keyPrefixAopProxyClass) {
+		$this->_keyPrefixAopProxyClass = $keyPrefixAopProxyClass;
 	}
 	
 	/**
 	 * @return string
 	 */
-	public function getClassNameBuf(): string {
-		return $this->_classNameBuf;
+	public function getClassName(): string {
+		return $this->_className;
 	}
 	
 	/**
@@ -478,44 +274,8 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	 *
 	 * @return $this
 	 */
-	public function setClassNameBuf(string $classNameBuf) {
-		$this->_classNameBuf = $classNameBuf;
-		
-		return $this;
-	}
-	
-	/**
-	 * @return ReflectionMethod[]
-	 */
-	public function &getRefMethods(): array {
-		return $this->_refMethods;
-	}
-	
-	/**
-	 * @param ReflectionMethod[] $refMethods
-	 *
-	 * @return $this
-	 */
-	public function setRefMethods(array $refMethods) {
-		$this->_refMethods = $refMethods;
-		
-		return $this;
-	}
-	
-	/**
-	 * @return AopTarget[]
-	 */
-	public function &getAopTargets(): array {
-		return $this->_aopTargets;
-	}
-	
-	/**
-	 * @param AopTarget[] $aopTargets
-	 *
-	 * @return $this
-	 */
-	public function setAopTargets(array $aopTargets) {
-		$this->_aopTargets = $aopTargets;
+	public function setClassName(string $classNameBuf) {
+		$this->_className = $classNameBuf;
 		
 		return $this;
 	}
@@ -523,17 +283,17 @@ abstract class AopProxyCacheDataProvider extends CacheDataProvider {
 	/**
 	 * @return string
 	 */
-	public function getAopTargetClass(): string {
-		return $this->_aopTargetClass;
+	public function getProxyClassNameSpace(): string {
+		return $this->_proxyClassNameSpace ?? '';
 	}
 	
 	/**
-	 * @param string $aopTargetClass
+	 * @param string $proxyClassNameSpace
 	 *
 	 * @return $this
 	 */
-	public function setAopTargetClass(string $aopTargetClass) {
-		$this->_aopTargetClass = $aopTargetClass;
+	public function setProxyClassNameSpace(string $proxyClassNameSpace) {
+		$this->_proxyClassNameSpace = $proxyClassNameSpace;
 		
 		return $this;
 	}

@@ -28,6 +28,7 @@ interface CacheConstInterface {
 	// AOP
 	const DATA_PROVIDER_KEY_AOP = 'aop';
 	
-	
+	// AOPProxyClass
+	const DATA_PROVIDER_KEY_AOP_PROXY_CLASS = 'aop_proxy_class';
 	
 }
