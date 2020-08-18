@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Aop\Vistor;
 
 
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
@@ -73,6 +74,27 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 			return new Namespace_(new Name($this->getProxyClassNameDir()),
 			                      $node->stmts,
 			                      $node->getAttributes());
+		}
+		
+		// 截获uses
+		if ($node instanceof Node\Stmt\Use_) {
+			$a=$node->name;
+		}
+		
+		if ($node instanceof Node\Stmt\GroupUse) {
+			$_usePrefix = $node->prefix->toString();
+			
+			foreach ($node->uses as $use) {
+				$_useItem = $use->name->toString();
+				$_useType = $use->type;
+				$_use     = $_usePrefix . '\\' . $_useItem;
+				
+				$a =
+					new Node\Stmt\Use_([
+						                   new UseUse(new Name($_use), null, $_useType),
+					                   ]);
+				$b = $a;
+			}
 		}
 		
 		// 替换类定义

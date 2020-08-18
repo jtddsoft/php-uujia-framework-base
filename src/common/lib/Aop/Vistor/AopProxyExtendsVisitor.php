@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Aop\Vistor;
 
 
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\Node;
@@ -34,8 +35,24 @@ class AopProxyExtendsVisitor extends NodeVisitorAbstract {
 	
 	public function leaveNode(Node $node) {
 		// 截获uses
-		if ($node instanceof Node\Stmt\Use_) {
+		if ($node instanceof UseUse) {
+			$a = $node->name;
+		}
 		
+		if ($node instanceof Node\Stmt\GroupUse) {
+			$_usePrefix = $node->prefix->toString();
+			
+			foreach ($node->uses as $use) {
+				$_useItem = $use->name->toString();
+				$_useType = $use->type;
+				$_use     = $_usePrefix . '\\' . $_useItem;
+				
+				
+				$this->returnStmts['uses_class'][$_use] =
+					new Node\Stmt\Use_([
+						                   new UseUse(new Name($_use), null, $_useType),
+					                   ]);
+			}
 		}
 		
 		// 重写 public 和 protected 方法，不包括静态方法
@@ -80,7 +97,7 @@ class AopProxyExtendsVisitor extends NodeVisitorAbstract {
 				'stmts'      => $stmts,
 			]);
 			
-			$this->returnStmts[$methodName] = $classMethod;//['classMethod']
+			$this->returnStmts['classMethod'][$methodName] = $classMethod;
 			
 			return $classMethod;
 		}

@@ -35,3 +35,13 @@ class EventTest1 extends EventHandle {
 	}
 	
 }
+const aa = 1;
+const bb = 1;
+
+function a() {
+
+}
+
+function b() {
+
+}

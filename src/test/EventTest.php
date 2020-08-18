@@ -8,6 +8,8 @@ use uujia\framework\base\common\lib\Annotation\{EventTrigger, EventListener};
 // use uujia\framework\base\common\lib\Annotation\EventListener;
 use uujia\framework\base\common\lib\Event\EventHandleInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use function uujia\framework\base\test\{a, b};
+use const uujia\framework\base\test\{aa, bb};
 
 /**
  * Class EventTest
