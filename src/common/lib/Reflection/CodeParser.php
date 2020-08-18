@@ -18,7 +18,7 @@ use uujia\framework\base\common\traits\InstanceTrait;
 use uujia\framework\base\common\traits\ResultTrait;
 
 /**
- * Class CodeParser
+ * Class CodeParser（暂停）
  * Date: 2020/8/14
  * Time: 11:30
  *

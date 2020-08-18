@@ -233,14 +233,14 @@ class Reflection extends BaseClass {
 					// var_dump($this->gsPrivateProperty($this->getRefReaderClass(), 'imports', null, $this->getReader()));
 					
 					$this->_setUseImports($this->getClassUseImports());
-				
+					
 					// 将构造函数解析反射
 					// if ($this->getRefClass()->hasMethod('__construct')) {
 					// 	$this->_setRefMethod($this->getRefClass()->getMethod('__construct'));
-						$this->_setRefMethod($this->getRefClass()->getConstructor());
-						$this->_setRefParameters($this->getRefMethod()->getParameters());
-						
-						$this->_setMethodAnnotations($this->getReader()->getMethodAnnotations($this->getRefMethod()));
+					$this->_setRefMethod($this->getRefClass()->getConstructor());
+					$this->_setRefParameters($this->getRefMethod()->getParameters());
+					
+					$this->_setMethodAnnotations($this->getReader()->getMethodAnnotations($this->getRefMethod()));
 					// }
 					
 					break;
@@ -404,6 +404,32 @@ class Reflection extends BaseClass {
 		}
 		
 		return $this;
+	}
+	
+	/**************************************************
+	 * 类
+	 **************************************************/
+	
+	/**
+	 * 递归获取父类 直到没有父类为止
+	 *
+	 * Date: 2020/8/18
+	 * Time: 9:25
+	 *
+	 * @param string $className
+	 */
+	public function getClassExtends(\ReflectionClass $refClassObj = null, $extends = []) {
+		if (is_null($refClassObj)) {
+			$refClassObj = $this->getRefClass();
+		}
+		
+		$_refClassObj = $refClassObj->getParentClass();
+		if ($_refClassObj === false) {
+			return $extends;
+		}
+		
+		$extends[$_refClassObj->getName()] = $_refClassObj->getFileName();
+		return $this->getClassExtends($_refClassObj, $extends);
 	}
 	
 	/**************************************************

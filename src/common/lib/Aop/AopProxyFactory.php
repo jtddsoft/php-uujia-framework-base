@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common\lib\Aop;
 
 
+use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
@@ -13,6 +14,7 @@ use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Aop\Cache\AopCacheDataProvider;
 use uujia\framework\base\common\lib\Aop\Cache\AopProxyCacheDataProvider;
+use uujia\framework\base\common\lib\Aop\Vistor\AopProxyExtendsVisitor;
 use uujia\framework\base\common\lib\Aop\Vistor\AopProxyVisitor;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
@@ -174,7 +176,9 @@ class AopProxyFactory extends BaseClass {
 		
 		// method
 		$_ref = $this->getReflectionClass();
-		$_refParentClass = $_ref->getRefClass()->getParentClass();
+		
+		// 递归获取父类到数组
+		$_refParentClasses = $_ref->getClassExtends($_ref->getRefClass(), []);
 		// $_refMethods = $_ref->getRefMethods();
 		// $_methodsVar = '';
 		
@@ -189,11 +193,41 @@ class AopProxyFactory extends BaseClass {
 			return false;
 		}
 		
+		$stmtsParentClassMethod = [];
+		foreach ($_refParentClasses as $c => $f) {
+			// c -- class   f -- filename
+			$_code = File::readToText($f);
+			if (empty($_code)) {
+				continue;
+			}
+			
+			$_parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+			$_ast    = $_parser->parse($_code);
+			
+			$_traverser = new NodeTraverser();
+			$_visitor   = new AopProxyExtendsVisitor($c);
+			$_traverser->addVisitor($_visitor);
+			$_proxyAst = $_traverser->traverse($_ast);
+			if (!$_proxyAst) {
+				break;
+			}
+			
+			foreach ($_visitor->getReturnStmts() as $n => $v) {
+				/** @var ClassMethod $v */
+				
+				if (array_key_exists($n, $stmtsParentClassMethod)) {
+					continue;
+				}
+				
+				$stmtsParentClassMethod[$n] = $v;
+			}
+		}
+		
 		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 		$ast    = $parser->parse($_sourceCodeText);
 		
 		$traverser = new NodeTraverser();
-		$visitor   = new AopProxyVisitor($this->getClassName(), $_class);
+		$visitor   = new AopProxyVisitor($this->getClassName(), $_class, $stmtsParentClassMethod);
 		$traverser->addVisitor($visitor);
 		$proxyAst = $traverser->traverse($ast);
 		if (!$proxyAst) {

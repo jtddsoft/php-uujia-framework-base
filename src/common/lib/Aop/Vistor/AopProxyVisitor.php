@@ -23,13 +23,32 @@ use uujia\framework\base\common\lib\Aop\AopProxy;
 
 class AopProxyVisitor extends NodeVisitorAbstract {
 	
-	protected $className;
+	/**
+	 * @var string
+	 */
+	protected $className = '';
 	
-	protected $proxyClassName;
+	/**
+	 * @var string
+	 */
+	protected $proxyClassName = '';
 	
-	public function __construct($className, $proxyClassName) {
-		$this->className      = $className;
-		$this->proxyClassName = $proxyClassName;
+	/**
+	 * @var array
+	 */
+	protected $classMethod = [];
+	
+	/**
+	 * 父类方法添加
+	 *
+	 * @var array
+	 */
+	protected $addParentClassMethod = [];
+	
+	public function __construct($className, $proxyClassName, $addParentClassMethod) {
+		$this->className            = $className;
+		$this->proxyClassName       = $proxyClassName;
+		$this->addParentClassMethod = $addParentClassMethod;
 	}
 	
 	public function getProxyClassNameBaseName(): string {
@@ -100,13 +119,17 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 				$returnType = new Name('\\' . $this->className);
 			}
 			
-			return new ClassMethod($methodName, [
+			$classMethod = new ClassMethod($methodName, [
 				'flags'      => $node->flags,
 				'byRef'      => $node->byRef,
 				'params'     => $node->params,
 				'returnType' => $returnType,
 				'stmts'      => $stmts,
 			]);
+			
+			$this->classMethod[$methodName] = $classMethod;
+			
+			return $classMethod;
 		}
 		
 		return null;
@@ -132,7 +155,85 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 		$classNode = $nodeFinder->findFirstInstanceOf($nodes, Class_::class);
 		$addEnhancementMethods && array_unshift($classNode->stmts, $this->getAopTraitUseNode());
 		
+		foreach ($this->addParentClassMethod as $n => $v) {
+			/** @var ClassMethod $v */
+			
+			if (array_key_exists($n, $this->getClassMethod())) {
+				continue;
+			}
+			
+			array_push($classNode->stmts, $v);
+		}
+		
 		return $nodes;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getClassName(): string {
+		return $this->className;
+	}
+	
+	/**
+	 * @param string $className
+	 */
+	public function setClassName(string $className): void {
+		$this->className = $className;
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getProxyClassName(): string {
+		return $this->proxyClassName;
+	}
+	
+	/**
+	 * @param string $proxyClassName
+	 *
+	 * @return AopProxyVisitor
+	 */
+	public function setProxyClassName(string $proxyClassName) {
+		$this->proxyClassName = $proxyClassName;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getClassMethod(): array {
+		return $this->classMethod;
+	}
+	
+	/**
+	 * @param array $classMethod
+	 *
+	 * @return $this
+	 */
+	public function setClassMethod(array $classMethod) {
+		$this->classMethod = $classMethod;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function getAddParentClassMethod(): array {
+		return $this->addParentClassMethod;
+	}
+	
+	/**
+	 * @param array $addParentClassMethod
+	 *
+	 * @return $this
+	 */
+	public function setAddParentClassMethod(array $addParentClassMethod) {
+		$this->addParentClassMethod = $addParentClassMethod;
+		
+		return $this;
 	}
 }
 
