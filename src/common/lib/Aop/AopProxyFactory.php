@@ -5,6 +5,8 @@ namespace uujia\framework\base\common\lib\Aop;
 
 
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\GroupUse;
+use PhpParser\Node\Stmt\Use_;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
@@ -193,7 +195,10 @@ class AopProxyFactory extends BaseClass {
 			return false;
 		}
 		
-		$stmtsParentClassMethod = [];
+		$stmtsParentNode = [
+			'uses' => [],
+			'classMethod' => [],
+		];
 		foreach ($_refParentClasses as $c => $f) {
 			// c -- class   f -- filename
 			$_code = File::readToText($f);
@@ -212,14 +217,24 @@ class AopProxyFactory extends BaseClass {
 				break;
 			}
 			
-			foreach ($_visitor->getReturnStmts() as $n => $v) {
+			foreach ($_visitor->getReturnStmts()['classMethod'] as $n => $v) {
 				/** @var ClassMethod $v */
 				
-				if (array_key_exists($n, $stmtsParentClassMethod)) {
+				if (array_key_exists($n, $stmtsParentNode['classMethod'])) {
 					continue;
 				}
 				
-				$stmtsParentClassMethod[$n] = $v;
+				$stmtsParentNode['classMethod'][$n] = $v;
+			}
+			
+			foreach ($_visitor->getReturnStmts()['uses'] as $n => $v) {
+				/** @var Use_ $v */
+				
+				if (array_key_exists($n, $stmtsParentNode['uses'])) {
+					continue;
+				}
+				
+				$stmtsParentNode['uses'][$n] = $v;
 			}
 		}
 		
@@ -227,7 +242,7 @@ class AopProxyFactory extends BaseClass {
 		$ast    = $parser->parse($_sourceCodeText);
 		
 		$traverser = new NodeTraverser();
-		$visitor   = new AopProxyVisitor($this->getClassName(), $_class, $stmtsParentClassMethod);
+		$visitor   = new AopProxyVisitor($this->getClassName(), $_class, $stmtsParentNode);
 		$traverser->addVisitor($visitor);
 		$proxyAst = $traverser->traverse($ast);
 		if (!$proxyAst) {

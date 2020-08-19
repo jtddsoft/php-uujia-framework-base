@@ -5,6 +5,7 @@ namespace uujia\framework\base\common\lib\Aop\Vistor;
 
 
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Use_;
 use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\Node;
@@ -37,19 +38,22 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	/**
 	 * @var array
 	 */
-	protected $classMethod = [];
+	protected $classNode = [
+		'classMethod' => [],
+		'uses' => [],
+	];
 	
 	/**
 	 * 父类方法添加
 	 *
 	 * @var array
 	 */
-	protected $addParentClassMethod = [];
+	protected $addParentNode = [];
 	
-	public function __construct($className, $proxyClassName, $addParentClassMethod) {
-		$this->className            = $className;
-		$this->proxyClassName       = $proxyClassName;
-		$this->addParentClassMethod = $addParentClassMethod;
+	public function __construct($className, $proxyClassName, $addParentNode) {
+		$this->className      = $className;
+		$this->proxyClassName = $proxyClassName;
+		$this->addParentNode  = $addParentNode;
 	}
 	
 	public function getProxyClassNameBaseName(): string {
@@ -78,22 +82,24 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 		
 		// 截获uses
 		if ($node instanceof Node\Stmt\Use_) {
-			$a=$node->name;
+			foreach ($node->uses as $use) {
+				$_use     = $use->name->toString();
+				$_useType = $node->type;
+				
+				$this->classNode['uses'][$_use] = $use;
+			}
 		}
 		
 		if ($node instanceof Node\Stmt\GroupUse) {
-			$_usePrefix = $node->prefix->toString();
+			$_useGroupPrefix = $node->prefix->toString();
+			$_useGroupType   = $node->type;
 			
 			foreach ($node->uses as $use) {
 				$_useItem = $use->name->toString();
-				$_useType = $use->type;
-				$_use     = $_usePrefix . '\\' . $_useItem;
+				$_useType = ($use->type == Use_::TYPE_UNKNOWN) ? $_useGroupType : $use->type;
+				$_use     = $_useGroupPrefix . '\\' . $_useItem;
 				
-				$a =
-					new Node\Stmt\Use_([
-						                   new UseUse(new Name($_use), null, $_useType),
-					                   ]);
-				$b = $a;
+				$this->classNode['uses'][$_use] = $use;
 			}
 		}
 		
@@ -149,7 +155,7 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 				'stmts'      => $stmts,
 			]);
 			
-			$this->classMethod[$methodName] = $classMethod;
+			$this->classNode['classMethod'][$methodName] = $classMethod;
 			
 			return $classMethod;
 		}
@@ -158,16 +164,16 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	}
 	
 	public function afterTraverse(array $nodes) {
-		$addEnhancementMethods = true;
-		$nodeFinder            = new NodeFinder();
+		$isAddMethods = true;
+		$nodeFinder   = new NodeFinder();
 		$nodeFinder->find($nodes, function (Node $node) use (
-			&$addEnhancementMethods
+			&$isAddMethods
 		) {
 			if ($node instanceof TraitUse) {
 				foreach ($node->traits as $trait) {
 					// Did AopTrait trait use ?
 					if ($trait instanceof Name && $trait->toString() === AopProxy::class) {
-						$addEnhancementMethods = false;
+						$isAddMethods = false;
 						break;
 					}
 				}
@@ -175,16 +181,28 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 		});
 		// Find Class Node and then Add Aop Enhancement Methods nodes and getOriginalClassName() method
 		$classNode = $nodeFinder->findFirstInstanceOf($nodes, Class_::class);
-		$addEnhancementMethods && array_unshift($classNode->stmts, $this->getAopTraitUseNode());
+		$isAddMethods && array_unshift($classNode->stmts, $this->getAopTraitUseNode());
 		
-		foreach ($this->addParentClassMethod as $n => $v) {
+		foreach ($this->addParentNode['classMethod'] as $n => $v) {
 			/** @var ClassMethod $v */
 			
-			if (array_key_exists($n, $this->getClassMethod())) {
+			if (array_key_exists($n, $this->getClassNode()['classMethod'])) {
 				continue;
 			}
 			
 			array_push($classNode->stmts, $v);
+		}
+		
+		$namespaceNode = $nodeFinder->findFirstInstanceOf($nodes, Namespace_::class);
+		
+		foreach ($this->addParentNode['uses'] as $n => $v) {
+			/** @var ClassMethod $v */
+			
+			if (array_key_exists($n, $this->getClassNode()['uses'])) {
+				continue;
+			}
+			
+			array_unshift($namespaceNode->stmts, $v);
 		}
 		
 		return $nodes;
@@ -225,17 +243,17 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	/**
 	 * @return array
 	 */
-	public function getClassMethod(): array {
-		return $this->classMethod;
+	public function getClassNode(): array {
+		return $this->classNode;
 	}
 	
 	/**
-	 * @param array $classMethod
+	 * @param array $classNode
 	 *
 	 * @return $this
 	 */
-	public function setClassMethod(array $classMethod) {
-		$this->classMethod = $classMethod;
+	public function setClassNode(array $classNode) {
+		$this->classNode = $classNode;
 		
 		return $this;
 	}
@@ -243,17 +261,17 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	/**
 	 * @return array
 	 */
-	public function getAddParentClassMethod(): array {
-		return $this->addParentClassMethod;
+	public function getAddParentNode(): array {
+		return $this->addParentNode;
 	}
 	
 	/**
-	 * @param array $addParentClassMethod
+	 * @param array $addParentNode
 	 *
 	 * @return $this
 	 */
-	public function setAddParentClassMethod(array $addParentClassMethod) {
-		$this->addParentClassMethod = $addParentClassMethod;
+	public function setAddParentNode(array $addParentNode) {
+		$this->addParentNode = $addParentNode;
 		
 		return $this;
 	}

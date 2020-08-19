@@ -1,11 +1,26 @@
 <?php 
 namespace uujia\framework\base\test\cache\proxy;
 
+use uujia\framework\base\common\traits\NameTrait;
+use uujia\framework\base\common\lib\Reflection\Reflection;
+use Psr\Container\ContainerInterface;
+use uujia\framework\base\common\traits\ResultTrait;
+use uujia\framework\base\common\traits\ContainerTrait;
+use uujia\framework\base\common\lib\Utils\Str;
+use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
+use uujia\framework\base\common\lib\Runner\RunnerManager;
+use uujia\framework\base\common\lib\Exception\ExceptionEvent;
+use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Annotation\AutoInjection;
+use uujia\framework\base\common\consts\ServerConst;
+use Psr\EventDispatcher\StoppableEventInterface;
 use uujia\framework\base\common\lib\Event\EventHandle;
 use uujia\framework\base\common\lib\Annotation\{EventTrigger, EventListener};
 // use uujia\framework\base\common\lib\Annotation\EventListener;
 use uujia\framework\base\common\lib\Event\EventHandleInterface;
 use uujia\framework\base\common\lib\Event\Name\EventName;
+use function uujia\framework\base\test\{a, b};
+use const uujia\framework\base\test\{aa, bb};
 class uujia_framework_base_test_EventTest_5f3a9e294ff50 extends \uujia\framework\base\test\EventTest
 {
     use \uujia\framework\base\common\lib\Aop\AopProxy;

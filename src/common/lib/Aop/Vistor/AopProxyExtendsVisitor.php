@@ -27,7 +27,10 @@ class AopProxyExtendsVisitor extends NodeVisitorAbstract {
 	
 	protected $className;
 	
-	protected $returnStmts = [];
+	protected $returnStmts = [
+		'uses' => [],
+		'classMethod' => [],
+	];
 	
 	public function __construct($className) {
 		$this->className = $className;
@@ -35,8 +38,16 @@ class AopProxyExtendsVisitor extends NodeVisitorAbstract {
 	
 	public function leaveNode(Node $node) {
 		// 截获uses
-		if ($node instanceof UseUse) {
-			$a = $node->name;
+		if ($node instanceof Node\Stmt\Use_) {
+			foreach ($node->uses as $use) {
+				$_use     = $use->name->toString();
+				$_useType = $node->type;
+				
+				$this->returnStmts['uses'][$_use] =
+					new Node\Stmt\Use_([
+						                   new UseUse(new Name($_use), null, $_useType),
+					                   ]);
+			}
 		}
 		
 		if ($node instanceof Node\Stmt\GroupUse) {
@@ -48,7 +59,7 @@ class AopProxyExtendsVisitor extends NodeVisitorAbstract {
 				$_use     = $_usePrefix . '\\' . $_useItem;
 				
 				
-				$this->returnStmts['uses_class'][$_use] =
+				$this->returnStmts['uses'][$_use] =
 					new Node\Stmt\Use_([
 						                   new UseUse(new Name($_use), null, $_useType),
 					                   ]);
