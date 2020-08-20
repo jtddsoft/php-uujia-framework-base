@@ -80,12 +80,12 @@ class AopProxyFactory extends BaseClass {
 	 */
 	protected $_proxyClassNameSpace = '';
 	
-	/**
-	 * 代理模板路径 用于生成代理类
-	 *
-	 * @var string
-	 */
-	protected $_proxyTemplatePath = '';
+	// /**
+	//  * 代理模板路径 用于生成代理类
+	//  *
+	//  * @var string
+	//  */
+	// protected $_proxyTemplatePath = '';
 	
 	/**
 	 * 代理模板内容
@@ -93,6 +93,13 @@ class AopProxyFactory extends BaseClass {
 	 * @var string
 	 */
 	protected $_proxyTemplateText = '';
+	
+	/**
+	 * 代理类名（从缓存代理得来）
+	 *
+	 * @var string
+	 */
+	protected $_proxyClassName = '';
 	
 	/**
 	 * AopProxyFactory constructor.
@@ -138,7 +145,7 @@ class AopProxyFactory extends BaseClass {
 	 * Time: 17:53
 	 *
 	 * @return bool|false|string
-	 * @throws \ReflectionException
+	 * @throws ExceptionAop
 	 */
 	public function buildProxyClassCacheFile() {
 		$filePath   = $this->getProxyClassFilePath();
@@ -152,10 +159,10 @@ class AopProxyFactory extends BaseClass {
 		}
 		
 		// 读模板文件内容
-		$_templateText = $this->getProxyTemplateText();
-		if (empty($_templateText)) {
-			return false;
-		}
+		// $_templateText = $this->getProxyTemplateText();
+		// if (empty($_templateText)) {
+		// 	return false;
+		// }
 		
 		// namespace
 		// $_namespaceVar = $_namespace;
@@ -163,6 +170,7 @@ class AopProxyFactory extends BaseClass {
 		// class
 		// $_class = $this->getProxyClassNameSpace() . '\\' . basename($this->getClassName());
 		$_class = $this->getProxyClassFromCache($this->getClassName());
+		$this->setProxyClassName($_class);
 		if (empty($_class)) {
 			return false;
 		}
@@ -509,46 +517,63 @@ class AopProxyFactory extends BaseClass {
 		return $this;
 	}
 	
+	// /**
+	//  * @return string
+	//  */
+	// public function getProxyTemplatePath(): string {
+	// 	return $this->_proxyTemplatePath ?? '';
+	// }
+	//
+	// /**
+	//  * @param string $proxyTemplatePath
+	//  *
+	//  * @return AopProxyFactory
+	//  */
+	// public function setProxyTemplatePath(string $proxyTemplatePath) {
+	// 	$this->_proxyTemplatePath = $proxyTemplatePath;
+	//
+	// 	return $this;
+	// }
+	
+	// /**
+	//  * @return string
+	//  */
+	// public function getProxyTemplateText(): string {
+	// 	if (empty($this->_proxyTemplateText) && file_exists($this->getProxyTemplatePath())) {
+	// 		$this->_proxyTemplateText = File::readToText($this->getProxyTemplatePath());
+	// 	}
+	//
+	// 	return $this->_proxyTemplateText ?? '';
+	// }
+	//
+	// /**
+	//  * @param string $proxyTemplateText
+	//  *
+	//  * @return AopProxyFactory
+	//  */
+	// public function setProxyTemplateText(string $proxyTemplateText) {
+	// 	$this->_proxyTemplateText = $proxyTemplateText;
+	//
+	// 	return $this;
+	// }
+	
 	/**
 	 * @return string
 	 */
-	public function getProxyTemplatePath(): string {
-		return $this->_proxyTemplatePath ?? '';
+	public function getProxyClassName(): string {
+		return $this->_proxyClassName;
 	}
 	
 	/**
-	 * @param string $proxyTemplatePath
+	 * @param string $proxyClassName
 	 *
 	 * @return AopProxyFactory
 	 */
-	public function setProxyTemplatePath(string $proxyTemplatePath) {
-		$this->_proxyTemplatePath = $proxyTemplatePath;
+	public function setProxyClassName(string $proxyClassName) {
+		$this->_proxyClassName = $proxyClassName;
 		
 		return $this;
 	}
-	
-	/**
-	 * @return string
-	 */
-	public function getProxyTemplateText(): string {
-		if (empty($this->_proxyTemplateText) && file_exists($this->getProxyTemplatePath())) {
-			$this->_proxyTemplateText = File::readToText($this->getProxyTemplatePath());
-		}
-		
-		return $this->_proxyTemplateText ?? '';
-	}
-	
-	/**
-	 * @param string $proxyTemplateText
-	 *
-	 * @return AopProxyFactory
-	 */
-	public function setProxyTemplateText(string $proxyTemplateText) {
-		$this->_proxyTemplateText = $proxyTemplateText;
-		
-		return $this;
-	}
-	
 	
 	//private $target;
 	//function __construct($tar){
@@ -565,5 +590,6 @@ class AopProxyFactory extends BaseClass {
 	//		}
 	//	}
 	//}
+	
 	
 }
