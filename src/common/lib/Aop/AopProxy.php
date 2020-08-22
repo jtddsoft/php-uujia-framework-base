@@ -7,6 +7,7 @@ use uujia\framework\base\common\consts\CacheConstInterface;
 use uujia\framework\base\common\lib\Aop\Cache\AopCacheDataProvider;
 use uujia\framework\base\common\lib\Aop\JointPoint\ProceedingJoinPoint;
 use uujia\framework\base\common\lib\Cache\CacheDataManager;
+use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Cache\CacheDataProvider;
 use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Exception\ExceptionAop;
@@ -172,7 +173,9 @@ trait AopProxy {
 		$result = false;
 		
 		if ($generator->valid()) {
-			$result = $this->_aopProcess($generator, $method, $args);
+			$result = $this->_aopProcess($generator, $closure, $method, $args);
+		} else {
+			$result = $closure(...$args);
 		}
 		
 		return $result;
@@ -283,6 +286,10 @@ trait AopProxy {
 	 * @return CacheDataManager
 	 */
 	public function getCacheDataManagerObj(): CacheDataManager {
+		if (empty($this->_cacheDataManagerObj)) {
+			$this->_cacheDataManagerObj = Container::getInstance()->get(CacheDataManagerInterface::class);
+		}
+	
 		return $this->_cacheDataManagerObj;
 	}
 	
@@ -293,7 +300,7 @@ trait AopProxy {
 	 */
 	public function setCacheDataManagerObj(CacheDataManager $cacheDataManagerObj) {
 		$this->_cacheDataManagerObj = $cacheDataManagerObj;
-		
+	
 		return $this;
 	}
 	

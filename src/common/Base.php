@@ -5,6 +5,7 @@ namespace uujia\framework\base\common;
 
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\traits\NameTrait;
+use uujia\framework\base\common\Result;
 
 /**
  * Class Base

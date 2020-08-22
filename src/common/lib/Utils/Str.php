@@ -79,4 +79,32 @@ class Str {
 		return str_replace(' ', '', $value);
 	}
 	
+	/**
+	 * 左上斜杠转右上斜杠
+	 * \转/
+	 *
+	 * Date: 2020/8/23
+	 * Time: 1:08
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	public static function slashLToR(string $value): string {
+		return str_replace('\\', '/', $value);
+	}
+	
+	/**
+	 * 右上斜杠转左上斜杠
+	 * /转\
+	 *
+	 * Date: 2020/8/23
+	 * Time: 1:08
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	public static function slashRToL(string $value): string {
+		return str_replace('/', '\\', $value);
+	}
+	
 }

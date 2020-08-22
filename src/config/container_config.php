@@ -26,7 +26,7 @@ return [
 	],
 	// todo：还未完成
 	'aop' => [
-		'enabled' => false,
+		'enabled' => true,
 		
 		'ignore' => [
 			ConfigManager::class,

@@ -19,6 +19,7 @@ use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\Log;
 use uujia\framework\base\common\Redis;
+use uujia\framework\base\common\Result;
 use uujia\framework\base\common\Runner as Ru;
 use uujia\framework\base\common\traits\InstanceTrait;
 use uujia\framework\base\test\EventTest;
@@ -137,11 +138,14 @@ class Demo extends BaseService {
 		
 		$this->boot();
 		
-		$aopProxyFactoryObj->setClassName(EventTest::class);
-		$refClass = new Reflection($aopProxyFactoryObj->getClassName());
-		$aopProxyFactoryObj->setReflectionClass($refClass);
-		$aopProxyFactoryObj->getReflectionClass()->load();
-		$aopProxyFactoryObj->buildProxyClassCacheFile();
+		$a = UU::C(EventTest::class);
+		$b = $a->ok();
+		
+		// $aopProxyFactoryObj->setClassName(Result::class);
+		// $refClass = new Reflection($aopProxyFactoryObj->getClassName());
+		// $aopProxyFactoryObj->setReflectionClass($refClass);
+		// $aopProxyFactoryObj->getReflectionClass()->load();
+		// $aopProxyFactoryObj->buildProxyClassCacheFile();
 	
 		
 		

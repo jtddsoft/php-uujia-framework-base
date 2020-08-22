@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common\lib\Aop\Vistor;
 
 
+use phpDocumentor\Reflection\Types\Void_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\Node\Stmt\UseUse;
@@ -75,8 +76,20 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	public function leaveNode(Node $node) {
 		// 替换命名空间定义
 		if ($node instanceof Namespace_) {
+			$_stmts = $node->stmts;
+			$_classCount = 0;
+			for ($i = count($_stmts) - 1; $i >= 0; $i--) {
+				if (!($_stmts[$i] instanceof Use_)) {
+					if ($_stmts[$i] instanceof Class_ && $_classCount == 0) {
+						$_classCount++;
+					} else {
+						array_splice($_stmts, $i, 1);
+					}
+				}
+			}
+			
 			return new Namespace_(new Name($this->getProxyClassNameDir()),
-			                      $node->stmts,
+			                      $_stmts, // $node->stmts,
 			                      $node->getAttributes());
 		}
 		
@@ -105,10 +118,17 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 		
 		// 替换类定义
 		if ($node instanceof Class_) {
+			$_stmts = $node->stmts;
+			for ($i = count($_stmts) - 1; $i >= 0; $i--) {
+				if (!($_stmts[$i] instanceof ClassMethod)) {
+					array_splice($_stmts, $i, 1);
+				}
+			}
+			
 			// 创建一个代理类 基于目标类
 			return new Class_($this->getProxyClassNameBaseName(), [
 				'flags'   => $node->flags,
-				'stmts'   => $node->stmts,
+				'stmts'   => $_stmts, // $node->stmts,
 				'extends' => new Name('\\' . $this->className),
 			]);
 		}

@@ -102,6 +102,13 @@ class AopProxyFactory extends BaseClass {
 	protected $_proxyClassName = '';
 	
 	/**
+	 * 临时缓存（获取一次就会暂存进来）
+	 *
+	 * @var AopProxyCacheDataProvider
+	 */
+	protected $_aopProxyCacheDataProviderTmp = null;
+	
+	/**
 	 * AopProxyFactory constructor.
 	 *
 	 * @param CacheDataManagerInterface|null $cacheDataManagerObj
@@ -198,6 +205,11 @@ class AopProxyFactory extends BaseClass {
 			return false;
 		}
 		
+		// 校验是否不需要生成
+		if (file_exists($_fileName) && !$this->isFileModified($_sourceFileName)) {
+			return true;
+		}
+		
 		$_sourceCodeText = File::readToText($_sourceFileName);
 		if (empty($_sourceCodeText)) {
 			return false;
@@ -260,6 +272,9 @@ class AopProxyFactory extends BaseClass {
 		$proxyCode = $printer->prettyPrint($proxyAst);
 		
 		$res = File::writeFromText($_fileName, "<?php \n" . $proxyCode);
+		
+		// 更新缓存中的文件更新时间
+		$this->updateCacheFileMTime($_sourceFileName);
 		
 		// $codeParserObj = CodeParser::getInstance();
 		// $codeParserObj->reset()
@@ -350,30 +365,15 @@ class AopProxyFactory extends BaseClass {
 	 * @param string $className
 	 *
 	 * @return mixed|string
+	 * @throws ExceptionAop
 	 */
 	public function getProxyClassFromCache(string $className) {
-		/**
-		 * 获取AopProxyClass缓存提供商集合
-		 *
-		 * @var CacheDataProvider[] $cdProviders
-		 */
-		$cdProviders = $this->getCacheDataProviderAopProxyClass();
-		if (empty($cdProviders)) {
-			return '';
-		}
-		
-		/** @var TreeFunc $it */
-		$it = $cdProviders['it'];
-		if ($it->count() == 0) {
-			throw new ExceptionAop('未找到AopProxyClass缓存供应商', 1000);
-		}
-		
 		/**
 		 * 只取第一个缓存提供商（获取aop代理类属一对一获取 更多的供应商没有意义 暂时只取我提供的）
 		 *
 		 * @var AopProxyCacheDataProvider $aopProvider
 		 */
-		$aopProvider = $it[0]->getDataValue();
+		$aopProvider = $this->getAopProxyCacheDataProvider();
 		
 		$result = '';
 		// 跑循环其实只是搞生成器 由于是复用缓存供应商 而缓存供应商默认是返回生成器 所以虽然只取一个 也跑一下生成器
@@ -391,17 +391,104 @@ class AopProxyFactory extends BaseClass {
 	}
 	
 	/**
+	 * 判断文件是否修改
+	 *
+	 * Date: 2020/8/23
+	 * Time: 1:19
+	 *
+	 * @param string $file
+	 * @return bool
+	 * @throws ExceptionAop
+	 */
+	public function isFileModified(string $file) {
+		/**
+		 * 只取第一个缓存提供商（获取aop代理类属一对一获取 更多的供应商没有意义 暂时只取我提供的）
+		 *
+		 * @var AopProxyCacheDataProvider $aopProvider
+		 */
+		$aopProvider = $this->getAopProxyCacheDataProvider();
+		
+		return $aopProvider->isFileModified($file);
+	}
+	
+	/**
+	 * 更新文件时间
+	 *
+	 * Date: 2020/8/23
+	 * Time: 1:15
+	 *
+	 * @param string $file
+	 * @return mixed|bool|int
+	 * @throws ExceptionAop
+	 */
+	public function updateCacheFileMTime(string $file) {
+		/**
+		 * 只取第一个缓存提供商（获取aop代理类属一对一获取 更多的供应商没有意义 暂时只取我提供的）
+		 *
+		 * @var AopProxyCacheDataProvider $aopProvider
+		 */
+		$aopProvider = $this->getAopProxyCacheDataProvider();
+		
+		return $aopProvider->updateCacheFileMTime($file);
+	}
+	
+	/**
 	 * 获取AOPProxyClass缓存供应商对象集合
 	 * 我只提供一个 但您可以增加多个
+	 * （注意这是一个特殊供应商类型 即使你添加多个 默认我只取第一个
+	 *   因为这是一对一关系 一个类对应一个代理类 你添加的其他供应商你只能自行使用）
 	 * 这里返回的是个数组 具体看CacheDataManager中的定义
 	 *
 	 * @return CacheDataProvider[]|null
 	 */
-	public function getCacheDataProviderAopProxyClass() {
+	public function getCacheDataProviders() {
 		$cdMgr       = $this->getCacheDataManagerObj();
 		$cdProviders = $cdMgr->getProviderList()->getKeyDataValue(CacheConstInterface::DATA_PROVIDER_KEY_AOP_PROXY_CLASS);
 		
 		return $cdProviders;
+	}
+	
+	/**
+	 * 获取AOPProxyClass缓存供应商对象
+	 *
+	 * Date: 2020/8/23
+	 * Time: 2:36
+	 *
+	 * @return string|AopProxyCacheDataProvider
+	 * @throws ExceptionAop
+	 */
+	public function getAopProxyCacheDataProvider() {
+		if (!empty($this->_aopProxyCacheDataProviderTmp)) {
+			return $this->_aopProxyCacheDataProviderTmp;
+		}
+		
+		/**
+		 * 获取AopProxyClass缓存提供商集合
+		 *
+		 * @var CacheDataProvider[] $cdProviders
+		 */
+		$cdProviders = $this->getCacheDataProviders();
+		if (empty($cdProviders)) {
+			return '';
+		}
+		
+		/** @var TreeFunc $it */
+		$it = $cdProviders['it'];
+		if ($it->count() == 0) {
+			throw new ExceptionAop('未找到AopProxyClass缓存供应商', 1000);
+		}
+		
+		/**
+		 * 只取第一个缓存提供商（获取aop代理类属一对一获取 更多的供应商没有意义 暂时只取我提供的）
+		 *
+		 * @var AopProxyCacheDataProvider $aopProvider
+		 */
+		$aopProvider = $it[0]->getDataValue();
+		
+		// 计入临时变量缓存一下
+		$this->_aopProxyCacheDataProviderTmp = $aopProvider;
+		
+		return $aopProvider;
 	}
 	
 	

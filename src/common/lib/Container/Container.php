@@ -481,7 +481,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		// Aop实现
 		
 		/** @var AopProxyFactory $aopProxyFactory */
-		$aopProxyFactory = $this->invoke(AopProxyFactory::class);
+		$aopProxyFactory = $this->get(AopProxyFactory::class);
 		$aopProxyFactory->setClassName($className)
 		                ->setClassInstance($ins)
 		                ->setReflectionClass($refObj)

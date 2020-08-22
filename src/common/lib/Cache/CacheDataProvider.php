@@ -12,6 +12,9 @@ use uujia\framework\base\common\lib\Exception\ExceptionCache;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
+use uujia\framework\base\common\lib\Utils\Arr;
+use uujia\framework\base\common\lib\Utils\File;
+use uujia\framework\base\common\lib\Utils\Str;
 use uujia\framework\base\common\traits\ResultTrait;
 
 /**
@@ -258,6 +261,83 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 		$this->getRedisObj()->hSet($keyStatus, static::class, $status);
 		
 		return $this;
+	}
+	
+	/**
+	 * 判断文件是否修改
+	 *
+	 * Date: 2020/8/23
+	 * Time: 1:19
+	 *
+	 * @param string $file
+	 * @return bool
+	 */
+	public function isFileModified(string $file) {
+		// 校验文件是否存在
+		if (File::isNotExists($file)) {
+			return false;
+		}
+		
+		// 文件修改时间
+		$fileMTime = File::modifieTime($file);
+		
+		// 获取缓存记录的文件更新时间
+		$cacheFileMTime = $this->getCacheFileMTime($file);
+		
+		// 比对修改时间 判断是否修改
+		return !$cacheFileMTime || $fileMTime != $cacheFileMTime;
+	}
+	
+	/**
+	 * 获取缓存记录的文件更新时间
+	 *
+	 * Date: 2020/8/23
+	 * Time: 1:11
+	 *
+	 * @param string $file
+	 * @return mixed|string
+	 */
+	public function getCacheFileMTime(string $file) {
+		// 获取缓存前缀 一般为应用名称
+		$keyPrefix = $this->getCacheKeyPrefix();
+		
+		// 获取文件更新时间缓存key
+		$keyCache = CacheConstInterface::CACHE_FILE_LAST_WRITE_TIME_KEY;
+		
+		// 合并key
+		$key = Arr::arrToStr([$keyPrefix, $keyCache], ':');
+		
+		return $this->getRedisObj()->hGet($key, Str::slashLToR($file));
+	}
+	
+	/**
+	 * 更新文件时间
+	 *
+	 * Date: 2020/8/23
+	 * Time: 1:15
+	 *
+	 * @param string $file
+	 * @return mixed|bool|int
+	 */
+	public function updateCacheFileMTime(string $file) {
+		// 校验文件是否存在
+		if (File::isNotExists($file)) {
+			return false;
+		}
+		
+		// 获取缓存前缀 一般为应用名称
+		$keyPrefix = $this->getCacheKeyPrefix();
+		
+		// 获取文件更新时间缓存key
+		$keyCache = CacheConstInterface::CACHE_FILE_LAST_WRITE_TIME_KEY;
+		
+		// 合并key
+		$key = Arr::arrToStr([$keyPrefix, $keyCache], ':');
+		
+		// 文件修改时间
+		$fileMTime = File::modifieTime($file);
+		
+		return $this->getRedisObj()->hSet($key, Str::slashLToR($file), $fileMTime);
 	}
 	
 	/**************************************************************

@@ -10,6 +10,32 @@ namespace uujia\framework\base\common\lib\Utils;
 class File {
 	
 	/**
+	 * 文件是否存在
+	 *
+	 * Date: 2020/8/23
+	 * Time: 2:55
+	 *
+	 * @param $file
+	 * @return bool
+	 */
+	public static function isExists($file) {
+		return file_exists($file);
+	}
+	
+	/**
+	 * 文件是否不存在
+	 *
+	 * Date: 2020/8/23
+	 * Time: 2:55
+	 *
+	 * @param $file
+	 * @return bool
+	 */
+	public static function isNotExists($file) {
+		return !file_exists($file);
+	}
+	
+	/**
 	 * 文件内容读取 读取为字符串
 	 *
 	 * Date: 2020/8/13
@@ -52,6 +78,19 @@ class File {
 		} else {
 			return false;
 		}
+	}
+	
+	/**
+	 * 获取文件修改时间
+	 *
+	 * Date: 2020/8/23
+	 * Time: 0:20
+	 *
+	 * @param $file
+	 * @return false|int
+	 */
+	public static function modifieTime($file) {
+		return filemtime($file);
 	}
 	
 	public static function getClassName($path_to_file) {

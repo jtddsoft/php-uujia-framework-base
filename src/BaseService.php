@@ -122,8 +122,8 @@ class BaseService {
 		// $_containerObj = $this->getContainer();
 		// $_containerObj->list()->setAlias($_containerAlias);
 		$this->getContainer()
-		     ->setAopEnabled($_aopEnabled)
-		     ->setAopIgnore($_aopIgnore)
+		     // ->setAopEnabled($_aopEnabled)
+		     // ->setAopIgnore($_aopIgnore)
 		     ->list()
 		     ->setAlias($_containerAlias)
 		     ->setAs($_containerAs);
@@ -149,6 +149,10 @@ class BaseService {
 		$aopProxyCacheDataProvider = UU::C(AopProxyCacheDataProvider::class);
 		
 		$cacheDataMgr->regProvider(CacheConstInterface::DATA_PROVIDER_KEY_AOP_PROXY_CLASS, $aopProxyCacheDataProvider);
+		
+		$this->getContainer()
+		     ->setAopEnabled($_aopEnabled)
+		     ->setAopIgnore($_aopIgnore);
 	}
 	
 	/**

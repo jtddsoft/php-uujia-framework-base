@@ -98,7 +98,7 @@ class AopProxyCacheDataProvider extends CacheDataProvider {
 		$aopProxyClassName = $this->getProxyClassNameSpace() . '\\' . str_replace('\\', '_', $className . '_' . $proxyId);
 		
 		// 写入缓存
-		$this->getRedisObj()->hSet($keyAop, $className, $aopProxyClassName);
+		$this->getRedisObj()->hSet($keyAop, str_replace('\\', '/', $className), $aopProxyClassName);
 		
 		return $this;
 	}
@@ -116,7 +116,7 @@ class AopProxyCacheDataProvider extends CacheDataProvider {
 		$keyAop = $this->getKeyPrefixAopProxyClass();
 		
 		// 查找哈希表中是否存在AopTarget标识记录
-		$aopProxyClass = $this->getRedisObj()->hGet($keyAop, $className);
+		$aopProxyClass = $this->getRedisObj()->hGet($keyAop, str_replace('\\', '/', $className));
 		
 		yield $aopProxyClass ?? '';
 	}
@@ -182,10 +182,13 @@ class AopProxyCacheDataProvider extends CacheDataProvider {
 	 * @return bool
 	 */
 	public function hasCache(): bool {
+		// Aop类名
+		$className = $this->getClassName();
+		
 		// 获取
 		$keyAop = $this->getKeyPrefixAopProxyClass();
 		
-		return $this->getRedisObj()->exists($keyAop);
+		return $this->getRedisObj()->hExists($keyAop, str_replace('\\', '/', $className));
 	}
 	
 	/**

@@ -31,4 +31,13 @@ interface CacheConstInterface {
 	// AOPProxyClass
 	const DATA_PROVIDER_KEY_AOP_PROXY_CLASS = 'aop_proxy_class';
 	
+	/***********************************
+	 * 文件
+	 ***********************************/
+	
+	// 文件最后更新时间缓存key
+	const CACHE_FILE_LAST_WRITE_TIME_KEY = 'file:mtime';
+	
+	
+	
 }
