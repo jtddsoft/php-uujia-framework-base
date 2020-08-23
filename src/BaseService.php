@@ -2,6 +2,7 @@
 
 namespace uujia\framework\base;
 
+use smarket3\extensions\backGroundTask\status;
 use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
 use uujia\framework\base\common\consts\CacheConstInterface;
@@ -100,8 +101,11 @@ class BaseService {
 	
 	/**
 	 * 引导
+	 *
+	 * @param \Closure $aopEnabledBeforeCallBack
+	 * @return bool
 	 */
-	public function boot() {
+	public function boot(\Closure $aopEnabledBeforeCallBack) {
 		/** @var $configObj ConfigManagerInterface */
 		$configObj = $this->getConfig()->getConfigManagerObj();
 		
@@ -123,7 +127,7 @@ class BaseService {
 		// $_containerObj->list()->setAlias($_containerAlias);
 		$this->getContainer()
 		     // ->setAopEnabled($_aopEnabled)
-		     // ->setAopIgnore($_aopIgnore)
+		     ->setAopIgnore($_aopIgnore)
 		     ->list()
 		     ->setAlias($_containerAlias)
 		     ->setAs($_containerAs);
@@ -150,9 +154,21 @@ class BaseService {
 		
 		$cacheDataMgr->regProvider(CacheConstInterface::DATA_PROVIDER_KEY_AOP_PROXY_CLASS, $aopProxyCacheDataProvider);
 		
+		// 忽略boot调用者自身aop
+		$this->getContainer()->addAopIgnore(static::class);
+		
+		if (!empty($aopEnabledBeforeCallBack)) {
+			$res = call_user_func_array($aopEnabledBeforeCallBack, []);
+			if ($res === false) {
+				return false;
+			}
+		}
+		
 		$this->getContainer()
-		     ->setAopEnabled($_aopEnabled)
-		     ->setAopIgnore($_aopIgnore);
+		     ->setAopEnabled($_aopEnabled);
+		     // ->setAopIgnore($_aopIgnore);
+		
+		return true;
 	}
 	
 	/**

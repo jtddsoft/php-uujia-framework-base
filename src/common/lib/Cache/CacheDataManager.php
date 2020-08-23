@@ -89,6 +89,8 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 	 * @return $this
 	 */
 	public function regProvider($key, $itemProvider) {
+		$this->getContainer()->addAopIgnore(get_class($itemProvider));
+		
 		$cachePrefixs = $this->_cacheKeyPrefix;
 		$subItemFunc = function ($data, $it, $params) use ($itemProvider, $key, $cachePrefixs) {
 			/** @var CacheDataProvider $itemProvider */

@@ -27,6 +27,7 @@ use uujia\framework\base\common\lib\Reflection\CodeParser;
 use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Utils\File;
+use uujia\framework\base\common\lib\Utils\Str;
 use uujia\framework\base\common\traits\ResultTrait;
 
 /**
@@ -185,7 +186,8 @@ class AopProxyFactory extends BaseClass {
 		// $_classVar = str_replace('\\', '_', $_class);
 		
 		// filename
-		$_fileName = $filePath . '/' . basename($_class) . '.php';
+		$_classBasename = Str::classBasename($_class);
+		$_fileName = $filePath . '/' . $_classBasename . '.php';
 		
 		// extendsClass
 		// $_extendsClass = $this->getClassName();

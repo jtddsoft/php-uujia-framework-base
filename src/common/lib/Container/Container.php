@@ -4,15 +4,11 @@
 namespace uujia\framework\base\common\lib\Container;
 
 
-use phpDocumentor\Reflection\Types\True_;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use ReflectionMethod;
 use ReflectionParameter;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Aop\AopProxyFactory;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Container\ContainerInterface;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\lib\Reflection\Reflection;
@@ -308,7 +304,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		
 		if (method_exists($className, '__construct') === false) {
 			// todo: 报错类构造函数未找到 我们要求必须有构造函数 可以从基类继承
-			return null;
+			// return null;
 		}
 		
 		// 自动依赖注入
@@ -609,8 +605,8 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	/**
 	 * 设置
 	 *
-	 * @param          $id
-	 * @param \Closure $c
+	 * @param               $id
+	 * @param \Closure|null $c
 	 *
 	 * @return $this
 	 */
@@ -685,7 +681,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	
 	/**
 	 * @param bool $aopEnabled
-	 * @return Container
+	 * @return $this
 	 */
 	public function setAopEnabled(bool $aopEnabled) {
 		$this->_aopEnabled = $aopEnabled;
@@ -702,10 +698,28 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	
 	/**
 	 * @param string[] $aopIgnore
-	 * @return Container
+	 * @return $this
 	 */
 	public function setAopIgnore(array $aopIgnore) {
 		$this->_aopIgnore = $aopIgnore;
+		
+		return $this;
+	}
+	
+	/**
+	 * 添加一条Aop忽略类名
+	 * Date: 2020/8/23
+	 * Time: 17:51
+	 *
+	 * @param string $className
+	 * @return $this
+	 */
+	public function addAopIgnore(string $className) {
+		if (in_array($className, $this->_aopIgnore)) {
+			return $this;
+		}
+		
+		$this->_aopIgnore[] = $className;
 		
 		return $this;
 	}

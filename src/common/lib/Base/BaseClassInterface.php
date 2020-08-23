@@ -2,8 +2,8 @@
 
 namespace uujia\framework\base\common\lib\Base;
 
-use Psr\Container\ContainerInterface;
 use uujia\framework\base\common\interfaces\BaseInterface;
+use uujia\framework\base\common\lib\Container\ContainerInterface;
 
 /**
  * Interface BaseClassInterface

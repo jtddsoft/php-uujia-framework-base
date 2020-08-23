@@ -22,6 +22,7 @@ use uujia\framework\base\common\Redis;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\Runner as Ru;
 use uujia\framework\base\common\traits\InstanceTrait;
+use uujia\framework\base\test\aop\AopCacheDataProviderTest;
 use uujia\framework\base\test\EventTest;
 use uujia\framework\base\UU;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
@@ -136,16 +137,24 @@ class Demo extends BaseService {
 		
 		$cacheDataMgr->setCacheKeyPrefix(['app']);
 		
-		$this->boot();
+		$this->boot(function () {
+			$this->aopProviderReg();
+		});
 		
+		/** @var EventTest $a */
 		$a = UU::C(EventTest::class);
 		$b = $a->ok();
 		
-		// $aopProxyFactoryObj->setClassName(Result::class);
-		// $refClass = new Reflection($aopProxyFactoryObj->getClassName());
-		// $aopProxyFactoryObj->setReflectionClass($refClass);
-		// $aopProxyFactoryObj->getReflectionClass()->load();
-		// $aopProxyFactoryObj->buildProxyClassCacheFile();
+		// echo $a->test() . "\n";
+		 $a->test();
+		
+		
+		
+		$aopProxyFactoryObj->setClassName(EventTest::class);
+		$refClass = new Reflection($aopProxyFactoryObj->getClassName());
+		$aopProxyFactoryObj->setReflectionClass($refClass);
+		$aopProxyFactoryObj->getReflectionClass()->load();
+		$aopProxyFactoryObj->buildProxyClassCacheFile();
 	
 		
 		
@@ -269,6 +278,16 @@ class Demo extends BaseService {
 		$eventTest = UU::C(EventTest::class);
 		$re = $eventTest->addAfter();
 		return $re;
+	}
+	
+	public function aopProviderReg() {
+		/** @var CacheDataManagerInterface $cacheDataMgr */
+		$cacheDataMgr = $this->getCacheDataManager();
+		
+		/** @var AopCacheDataProviderTest $aopCacheDataProvider */
+		$aopCacheDataProvider = UU::C(AopCacheDataProviderTest::class);
+		
+		$cacheDataMgr->regProvider(CacheConstInterface::DATA_PROVIDER_KEY_AOP, $aopCacheDataProvider);
 	}
 	
 }

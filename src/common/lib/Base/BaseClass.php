@@ -3,7 +3,7 @@
 namespace uujia\framework\base\common\lib\Base;
 
 
-use Psr\Container\ContainerInterface;
+use uujia\framework\base\common\lib\Container\ContainerInterface;
 use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\traits\NameTrait;
 

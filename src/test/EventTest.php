@@ -30,9 +30,9 @@ class EventTest extends EventHandle {
 	/**
 	 * @EventName(evt = "app.test.eventTest.add.before")
 	 */
-	public function addBefore($a = [1, 2], $b = 's', $c = 1, $d = true): EventHandle {
-		return parent::addBefore();
-		// return $this->tm(__FUNCTION__)->getLastReturn();
+	public function addBefore($a = [1, 2], $b = 's', $c = 1, $d = true) {
+		// return parent::addBefore();
+		return $this->tm(__FUNCTION__)->getLastReturn();
 	}
 	
 	public function addAfter() {
@@ -42,6 +42,20 @@ class EventTest extends EventHandle {
 	public function onAddBefore() {
 		var_dump($this->error(__METHOD__));
 		return $this->error(__METHOD__);
+	}
+	
+	public function test() {
+		// foreach ($this->tttt() as $t) {
+		// 	echo $t . "\n";
+		// }
+		yield from $this->tttt();
+		return 123456;
+	}
+	
+	public function tttt(): \Generator {
+		$a = 2;
+		yield 'a1';
+		yield 'a2';
 	}
 	
 }

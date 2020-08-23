@@ -304,7 +304,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		$_className = $this->getClassNameListener();
 		
 		if (empty($_listeners)) {
-			yield [];
+			return [];
 		}
 		
 		// todo: 是否之前反射时需要实例化EventHandle 调用一下某个方法自定义一些操作？
@@ -742,7 +742,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		// 如果不存在 返回空
 		if (!$kExist) {
-			yield [];
+			return [];
 		}
 		
 		// 如果存在 读取监听列表（key是触发者的标识名 value是有序集合存储的是从监听列表中匹配的服务配置json）

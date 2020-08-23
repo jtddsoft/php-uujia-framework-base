@@ -107,4 +107,30 @@ class Str {
 		return str_replace('/', '\\', $value);
 	}
 	
+	/**
+	 * 获取类名短名（去除命名空间 只剩最后一级类名）
+	 *
+	 * Date: 2020/8/23
+	 * Time: 22:07
+	 *
+	 * @param string $className
+	 * @return string
+	 */
+	public static function classBasename(string $className): string {
+		return basename(self::slashLToR($className));
+	}
+	
+	/**
+	 * 获取类名的命名空间部分（去除最后一级类名 只留下前面的命名空间）
+	 *
+	 * Date: 2020/8/23
+	 * Time: 22:18
+	 *
+	 * @param string $className
+	 * @return string
+	 */
+	public static function classNamespace(string $className): string {
+		return self::slashRToL(dirname(self::slashLToR($className)));
+	}
+	
 }

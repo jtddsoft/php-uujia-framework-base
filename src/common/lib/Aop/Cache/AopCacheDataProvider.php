@@ -20,6 +20,7 @@ use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Reflection\Reflection;
 use uujia\framework\base\common\lib\Utils\Arr;
 use uujia\framework\base\common\lib\Utils\Json;
+use uujia\framework\base\common\lib\Utils\Str;
 
 /**
  * Class AopCacheDataProvider
@@ -164,7 +165,7 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		$_aopClassName = $this->getClassNameBuf();
 		
 		if (empty($_aopTargets)) {
-			yield [];
+			return [];
 		}
 		
 		// 遍历每一个Aop注解
@@ -213,7 +214,7 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 			
 			// 写入Aop类列表到缓存
 			// 格式：app:aop -> hash表 app\hello\X -> '["app\hello\AopXA", "app\hello\AopXB"]'
-			$classNames = $this->getRedisObj()->hGet($keyAop, $_aopTarget);
+			$classNames = $this->getRedisObj()->hGet($keyAop, Str::slashLToR($_aopTarget));
 			if (!empty($classNames)) {
 				$classNames = Json::jd($classNames);
 			} else {
@@ -224,14 +225,15 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 				$classNames[] = $className;
 			}
 			
-			$this->getRedisObj()->hSet($keyAop, $_aopTarget, Json::je($classNames));
+			$this->getRedisObj()->hSet($keyAop, Str::slashLToR($_aopTarget), Json::je($classNames));
 			
 			// 写AopTarget对应Aop有序集合
 			// 格式：app:aopc:app.hello.X -> zset表 app\hello\AopXA -> 100
 			//                                     app\hello\AopXB -> 100
 			$keyAopC = $this->makeKeyPrefixAopClass([$_name]);
 			
-			$this->getRedisObj()->zAdd($keyAopC, $_weight, $_aopTarget);
+			// $this->getRedisObj()->zAdd($keyAopC, $_weight, Str::slashLToR($_aopTarget));
+			$this->getRedisObj()->zAdd($keyAopC, $_weight, Str::slashLToR($className));
 		}
 		
 		return $this;
@@ -247,11 +249,12 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		$keyAop = $this->makeKeyPrefixAop();
 		
 		// 查找哈希表中是否存在AopTarget标识记录
-		$hExist = $this->getRedisObj()->hExists($keyAop, $aopTargetClass);
+		$_aopTargetClass = Str::slashLToR($aopTargetClass);
+		$hExist = $this->getRedisObj()->hExists($keyAop, $_aopTargetClass);
 		
 		// 如果不存在 返回
 		if (!$hExist) {
-			yield [];
+			return [];
 		}
 		
 		// 如果存在获取内容 返回
@@ -264,14 +267,16 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		
 		// 如果不存在 返回空
 		if (!$kExist) {
-			yield [];
+			return [];
 		}
 		
 		// 如果存在 读取监听列表（key是触发者的标识名 value是有序集合存储的是从监听列表中匹配的服务配置json）
 		$zAopClassList = $this->getRedisObj()->zRange($keyAopC, 0, -1, true);
 		
 		foreach ($zAopClassList as $zValue => $zScore) {
-			yield $zValue => $zScore;
+			$_className = Str::slashRToL($zValue);
+			// yield $_className => $zScore;
+			yield $_className;
 		}
 	}
 	
@@ -333,7 +338,7 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		$_aopTargetClass = $this->getAopTargetClass();
 		
 		if (empty($_aopTargetClass)) {
-			yield [];
+			return [];
 		}
 		
 		yield from $this->fromCacheAop($_aopTargetClass);

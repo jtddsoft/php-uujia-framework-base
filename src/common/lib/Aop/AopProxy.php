@@ -30,12 +30,12 @@ trait AopProxy {
 	 */
 	protected $_cacheDataManagerObj;
 	
-	/**
-	 * 代理的类名（全名）
-	 *
-	 * @var string
-	 */
-	protected $_className;
+	// /**
+	//  * 代理的类名（全名）
+	//  *
+	//  * @var string
+	//  */
+	// protected $_className;
 	
 	/**
 	 * @var ProceedingJoinPoint
@@ -58,7 +58,8 @@ trait AopProxy {
 	public function _aopClass() {
 		foreach ($this->getAopCacheDataProviders() as $item) {
 			/** @var AopCacheDataProvider $item */
-			yield from $item->setAopTargetClass($this->getClassName())->fromCache();
+			// yield from $item->setAopTargetClass($this->getClassName())->fromCache();
+			yield from $item->setAopTargetClass(get_parent_class())->fromCache();
 		}
 	}
 	
@@ -88,7 +89,8 @@ trait AopProxy {
 			return $closure(...$args);
 		};
 		
-		$this->getProceedingJoinPointObj()->className = $this->getClassName();
+		// $this->getProceedingJoinPointObj()->className = $this->getClassName();
+		$this->getProceedingJoinPointObj()->className = get_parent_class();
 		$this->getProceedingJoinPointObj()->methodName = $method;
 		$this->getProceedingJoinPointObj()->args = $args;
 		$this->getProceedingJoinPointObj()->result = Ret::me()->ok();
@@ -264,23 +266,23 @@ trait AopProxy {
 	 * get set
 	 **************************************************************/
 	
-	/**
-	 * @return string
-	 */
-	public function getClassName(): string {
-		return $this->_className;
-	}
-	
-	/**
-	 * @param string $className
-	 *
-	 * @return $this
-	 */
-	public function setClassName(string $className) {
-		$this->_className = $className;
-		
-		return $this;
-	}
+	// /**
+	//  * @return string
+	//  */
+	// public function getClassName(): string {
+	// 	return $this->_className;
+	// }
+	//
+	// /**
+	//  * @param string $className
+	//  *
+	//  * @return $this
+	//  */
+	// public function setClassName(string $className) {
+	// 	$this->_className = $className;
+	//
+	// 	return $this;
+	// }
 	
 	/**
 	 * @return CacheDataManager

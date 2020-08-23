@@ -23,6 +23,7 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\TraitUse;
 use PhpParser\NodeFinder;
 use uujia\framework\base\common\lib\Aop\AopProxy;
+use uujia\framework\base\common\lib\Utils\Str;
 
 class AopProxyVisitor extends NodeVisitorAbstract {
 	
@@ -58,11 +59,13 @@ class AopProxyVisitor extends NodeVisitorAbstract {
 	}
 	
 	public function getProxyClassNameBaseName(): string {
-		return \basename(str_replace('\\', '/', $this->proxyClassName));
+		// return \basename(str_replace('\\', '/', $this->proxyClassName));
+		return Str::classBasename($this->proxyClassName);
 	}
 	
 	public function getProxyClassNameDir(): string {
-		return \dirname($this->proxyClassName);
+		// return \dirname($this->proxyClassName);
+		return Str::classNamespace($this->proxyClassName);
 	}
 	
 	/**

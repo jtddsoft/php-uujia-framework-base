@@ -235,13 +235,13 @@ class Reflection extends BaseClass {
 					$this->_setUseImports($this->getClassUseImports());
 					
 					// 将构造函数解析反射
-					// if ($this->getRefClass()->hasMethod('__construct')) {
-					// 	$this->_setRefMethod($this->getRefClass()->getMethod('__construct'));
-					$this->_setRefMethod($this->getRefClass()->getConstructor());
-					$this->_setRefParameters($this->getRefMethod()->getParameters());
-					
-					$this->_setMethodAnnotations($this->getReader()->getMethodAnnotations($this->getRefMethod()));
-					// }
+					if ($this->getRefClass()->hasMethod('__construct')) {
+						// 	$this->_setRefMethod($this->getRefClass()->getMethod('__construct'));
+						$this->_setRefMethod($this->getRefClass()->getConstructor());
+						$this->_setRefParameters($this->getRefMethod()->getParameters());
+						
+						$this->_setMethodAnnotations($this->getReader()->getMethodAnnotations($this->getRefMethod()));
+					}
 					
 					break;
 				

@@ -48,7 +48,6 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			}
 			
 			$demo->testYield();
-		
 			
 			break;
 		
@@ -102,7 +101,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			// sleep(100);
 			$demo = new \uujia\framework\base\test\Demo();
 			
-			foreach (UU::getContainer() as $key => $item) {
+			foreach (UU::getInstance()->getContainer() as $key => $item) {
 				echo $item->getNameInfo()['name'] . " " . $item->getNameInfo()['intro'] . "\n"; // . dump($item);
 			}
 			

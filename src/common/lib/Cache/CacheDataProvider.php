@@ -182,7 +182,7 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	public function fromCache() {
 		$this->make();
 		
-		yield [];
+		return [];
 	}
 	
 	/**
@@ -305,7 +305,8 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 		$keyCache = CacheConstInterface::CACHE_FILE_LAST_WRITE_TIME_KEY;
 		
 		// 合并key
-		$key = Arr::arrToStr([$keyPrefix, $keyCache], ':');
+		$keys = array_merge($keyPrefix, [$keyCache]);
+		$key = Arr::arrToStr($keys, ':');
 		
 		return $this->getRedisObj()->hGet($key, Str::slashLToR($file));
 	}
@@ -332,7 +333,8 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 		$keyCache = CacheConstInterface::CACHE_FILE_LAST_WRITE_TIME_KEY;
 		
 		// 合并key
-		$key = Arr::arrToStr([$keyPrefix, $keyCache], ':');
+		$keys = array_merge($keyPrefix, [$keyCache]);
+		$key = Arr::arrToStr($keys, ':');
 		
 		// 文件修改时间
 		$fileMTime = File::modifieTime($file);
