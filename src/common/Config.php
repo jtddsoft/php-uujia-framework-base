@@ -5,6 +5,7 @@ namespace uujia\framework\base\common;
 
 
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\Result;
@@ -14,7 +15,7 @@ use uujia\framework\base\common\Result;
  *
  * @package uujia\framework\base\common
  */
-class Config {
+class Config extends BaseClass {
 	
 	/**
 	 * @var ConfigManagerInterface
@@ -30,6 +31,8 @@ class Config {
 	 */
 	public function __construct(ConfigManagerInterface $configManagerObj) {
 		$this->_configManagerObj = $configManagerObj;
+		
+		parent::__construct();
 		
 		$this->initConfig();
 	}

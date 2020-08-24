@@ -11,6 +11,7 @@ use uujia\framework\base\common\lib\MQ\MQCollection;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
+use uujia\framework\base\common\Result;
 
 return [
 	'container' => [
@@ -27,13 +28,18 @@ return [
 	// todo：还未完成
 	'aop' => [
 		'enabled' => true,
+		'scan' => [
+			// 递归扫描父类
+			'parent' => false,
+		],
 		
 		'ignore' => [
-			ConfigManager::class,
-			AopProxyFactory::class,
-			CacheDataManager::class,
-			RedisProvider::class,
-			MQCollection::class,
+			// ConfigManager::class,
+			// AopProxyFactory::class,
+			// CacheDataManager::class,
+			// RedisProvider::class,
+			// MQCollection::class,
+			// Result::class,
 		],
 		
 	]

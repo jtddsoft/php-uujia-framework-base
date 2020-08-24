@@ -110,6 +110,14 @@ class AopProxyFactory extends BaseClass {
 	protected $_aopProxyCacheDataProviderTmp = null;
 	
 	/**
+	 * Aop是否递归扫描父类
+	 *
+	 * @var bool
+	 */
+	protected $_aopScanParent = false;
+	
+	
+	/**
 	 * AopProxyFactory constructor.
 	 *
 	 * @param CacheDataManagerInterface|null $cacheDataManagerObj
@@ -138,7 +146,7 @@ class AopProxyFactory extends BaseClass {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name']  = self::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = '代理类';
 	}
 	
@@ -196,8 +204,6 @@ class AopProxyFactory extends BaseClass {
 		// method
 		$_ref = $this->getReflectionClass();
 		
-		// 递归获取父类到数组
-		$_refParentClasses = $_ref->getClassExtends($_ref->getRefClass(), []);
 		// $_refMethods = $_ref->getRefMethods();
 		// $_methodsVar = '';
 		
@@ -221,42 +227,49 @@ class AopProxyFactory extends BaseClass {
 			'uses' => [],
 			'classMethod' => [],
 		];
-		foreach ($_refParentClasses as $c => $f) {
-			// c -- class   f -- filename
-			$_code = File::readToText($f);
-			if (empty($_code)) {
-				continue;
-			}
+		
+		if ($this->isAopScanParent()) {
+			// 递归获取父类到数组
+			$_refParentClasses = $_ref->getClassExtends($_ref->getRefClass(), []);
 			
-			$_parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
-			$_ast    = $_parser->parse($_code);
-			
-			$_traverser = new NodeTraverser();
-			$_visitor   = new AopProxyExtendsVisitor($c);
-			$_traverser->addVisitor($_visitor);
-			$_proxyAst = $_traverser->traverse($_ast);
-			if (!$_proxyAst) {
-				break;
-			}
-			
-			foreach ($_visitor->getReturnStmts()['classMethod'] as $n => $v) {
-				/** @var ClassMethod $v */
-				
-				if (array_key_exists($n, $stmtsParentNode['classMethod'])) {
+			// 递归扫描父类
+			foreach ($_refParentClasses as $c => $f) {
+				// c -- class   f -- filename
+				$_code = File::readToText($f);
+				if (empty($_code)) {
 					continue;
 				}
 				
-				$stmtsParentNode['classMethod'][$n] = $v;
-			}
-			
-			foreach ($_visitor->getReturnStmts()['uses'] as $n => $v) {
-				/** @var Use_ $v */
+				$_parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+				$_ast    = $_parser->parse($_code);
 				
-				if (array_key_exists($n, $stmtsParentNode['uses'])) {
-					continue;
+				$_traverser = new NodeTraverser();
+				$_visitor   = new AopProxyExtendsVisitor($c);
+				$_traverser->addVisitor($_visitor);
+				$_proxyAst = $_traverser->traverse($_ast);
+				if (!$_proxyAst) {
+					break;
 				}
 				
-				$stmtsParentNode['uses'][$n] = $v;
+				foreach ($_visitor->getReturnStmts()['classMethod'] as $n => $v) {
+					/** @var ClassMethod $v */
+					
+					if (array_key_exists($n, $stmtsParentNode['classMethod'])) {
+						continue;
+					}
+					
+					$stmtsParentNode['classMethod'][$n] = $v;
+				}
+				
+				foreach ($_visitor->getReturnStmts()['uses'] as $n => $v) {
+					/** @var Use_ $v */
+					
+					if (array_key_exists($n, $stmtsParentNode['uses'])) {
+						continue;
+					}
+					
+					$stmtsParentNode['uses'][$n] = $v;
+				}
 			}
 		}
 		
@@ -660,6 +673,23 @@ class AopProxyFactory extends BaseClass {
 	 */
 	public function setProxyClassName(string $proxyClassName) {
 		$this->_proxyClassName = $proxyClassName;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isAopScanParent(): bool {
+		return $this->_aopScanParent;
+	}
+	
+	/**
+	 * @param bool $aopScanParent
+	 * @return AopProxyFactory
+	 */
+	public function setAopScanParent(bool $aopScanParent) {
+		$this->_aopScanParent = $aopScanParent;
 		
 		return $this;
 	}

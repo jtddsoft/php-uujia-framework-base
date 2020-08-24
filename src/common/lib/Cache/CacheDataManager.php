@@ -64,7 +64,7 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name'] = static::class;
 		$this->name_info['intro'] = '缓存供应商管理';
 	}
 	

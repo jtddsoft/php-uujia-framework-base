@@ -88,7 +88,7 @@ class RedisProvider extends BaseClass implements RedisProviderInterface {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name']  = self::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = 'Redis供应商';
 	}
 	

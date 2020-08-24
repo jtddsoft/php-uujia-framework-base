@@ -49,6 +49,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			$demo->testYield();
 			
+			foreach (UU::getInstance()->getContainer() as $key => $item) {
+				echo $item->getNameInfo()['name'] . " " . $item->getNameInfo()['intro'] . "\n"; // . dump($item);
+			}
+			
 			break;
 		
 		case 'mqs':
@@ -99,7 +103,8 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			// }
 			
 			// sleep(100);
-			$demo = new \uujia\framework\base\test\Demo();
+			// $demo = new \uujia\framework\base\test\Demo();
+			$demo = UU::C(\uujia\framework\base\test\Demo::class);
 			
 			foreach (UU::getInstance()->getContainer() as $key => $item) {
 				echo $item->getNameInfo()['name'] . " " . $item->getNameInfo()['intro'] . "\n"; // . dump($item);
@@ -165,15 +170,25 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			break;
 			
 		case 'xxx':
-			$demo = new \uujia\framework\base\test\Demo();
+			/** @var \uujia\framework\base\test\Demo $demo */
+			$demo = UU::C(\uujia\framework\base\test\Demo::class);
+			// $demo = new uujia\framework\base\test\Demo();
 			$demo->xxx();
-			var_dump($demo);
+			// var_dump($demo);
+			// $pipe = $demo->getRedis()->multi(\Redis::PIPELINE);
+			// for($i=0;$i<100000;$i++){
+			// 	if (!$pipe->hExists('a:con', 'aaaa'.$i)) {
+			// 		$pipe->hSet('a:con', 'aaaa'.$i, json_encode(['asdfsd' => '测试', 'bssfdasdf' => '是的']));
+			// 	}
+			// }
+			// $pipe->exec();
+		
 			break;
 			
 		case 'evtreg':
 			/** @var \uujia\framework\base\test\Demo $demo */
 			$demo = UU::C(\uujia\framework\base\test\Demo::class);
-			$demo->eventProviderReg();
+			// $demo->eventProviderReg();
 			
 			// /** @var \uujia\framework\base\test\EventCacheDataProviderTest $evtCDP */
 			// $evtCDP = UU::C(\uujia\framework\base\test\EventCacheDataProviderTest::class);

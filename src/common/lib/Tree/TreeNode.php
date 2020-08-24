@@ -175,7 +175,7 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name']  = self::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = '树节点';
 	}
 	
@@ -850,7 +850,7 @@ class TreeNode extends BaseClass implements \Iterator, \ArrayAccess {
 		foreach ($_p as $key) {
 			if (!$_t->has($key)) {
 				if ($notExistCreate) {
-					$_class = self::class; // todo: 待验证
+					$_class = static::class; // todo: 待验证
 					$_item = new $_class;
 					$this->_setLastSetItem($_item);
 					$_t->set($key, $_item);

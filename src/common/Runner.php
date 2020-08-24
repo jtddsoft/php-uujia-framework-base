@@ -4,6 +4,7 @@ namespace uujia\framework\base\common;
 
 
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
 
@@ -12,7 +13,7 @@ use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
  *
  * @package uujia\framework\base\common
  */
-class Runner {
+class Runner extends BaseClass {
 	
 	/**
 	 * @var RunnerManagerInterface
@@ -26,6 +27,8 @@ class Runner {
 	 */
 	public function __construct(RunnerManagerInterface $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
+		
+		parent::__construct();
 	}
 	
 	/**

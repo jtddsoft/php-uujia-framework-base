@@ -12,7 +12,7 @@ use uujia\framework\base\common\lib\Annotation\AutoInjection;
  *
  * @package uujia\framework\base\common
  */
-class Redis extends BaseClass {
+class RedisDispatcher extends BaseClass {
 	
 	// const KEY_CONTAINER_REDIS_ALIAS = 'redisProvider';
 	
@@ -53,7 +53,7 @@ class Redis extends BaseClass {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name'] = static::class;
 		$this->name_info['intro'] = 'Redis服务';
 	}
 	
@@ -102,7 +102,7 @@ class Redis extends BaseClass {
 	
 	/**
 	 * 获取Redis对象
-	 * @return mixed
+	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedisObj() {
 		return $this->getRedisProviderObj()->getRedisObj();
@@ -117,7 +117,7 @@ class Redis extends BaseClass {
 	
 	/**
 	 * @param Config $configObj
-	 * @return Redis
+	 * @return RedisDispatcher
 	 */
 	public function setConfigObj(Config $configObj) {
 		$this->_configObj = $configObj;
@@ -134,7 +134,7 @@ class Redis extends BaseClass {
 	
 	/**
 	 * @param RedisProviderInterface $redisProviderObj
-	 * @return Redis
+	 * @return RedisDispatcher
 	 */
 	public function setRedisProviderObj(RedisProviderInterface $redisProviderObj) {
 		$this->_redisProviderObj = $redisProviderObj;

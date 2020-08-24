@@ -108,7 +108,7 @@ class ServerParameter extends BaseClass implements ServerParameterInterface {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name']  = self::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = '服务器参数类';
 	}
 	

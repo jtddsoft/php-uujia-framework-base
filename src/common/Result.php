@@ -69,7 +69,7 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name']  = self::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = '返回值管理';
 	}
 	

@@ -12,7 +12,7 @@ trait NameTrait {
 	];
 	
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name'] = static::class;
 	}
 	
 	public function getNameInfo() {

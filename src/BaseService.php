@@ -20,7 +20,7 @@ use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
 use uujia\framework\base\common\Log;
 use uujia\framework\base\common\MQ;
-use uujia\framework\base\common\Redis;
+use uujia\framework\base\common\RedisDispatcher;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\traits\NameTrait;
@@ -95,7 +95,7 @@ class BaseService {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name']  = self::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = '基础服务类';
 	}
 	
@@ -108,7 +108,7 @@ class BaseService {
 	public function boot(\Closure $aopEnabledBeforeCallBack) {
 		/** @var $configObj ConfigManagerInterface */
 		$configObj = $this->getConfig()->getConfigManagerObj();
-		
+		echo microtime(true) . " e1\n";
 		// 获取容器配置container_config
 		$_containerConfig = $configObj->loadValue('container');
 		
@@ -118,32 +118,34 @@ class BaseService {
 		$_containerAs     = $_configContainer['as'] ?? [];
 		
 		// container.aop
-		$_configAop  = $_containerConfig['aop'];
-		$_aopEnabled = $_configAop['enabled'] ?? false;
-		$_aopIgnore  = $_configAop['ignore'] ?? [];
+		$_configAop     = $_containerConfig['aop'];
+		$_aopEnabled    = $_configAop['enabled'] ?? false;
+		$_aopScanParent = $_configAop['scan']['parent'] ?? false;
+		$_aopIgnore     = $_configAop['ignore'] ?? [];
 		
 		// if (!empty($_containerAlias) || !empty($_containerAs)) {
 		// $_containerObj = $this->getContainer();
 		// $_containerObj->list()->setAlias($_containerAlias);
 		$this->getContainer()
-		     // ->setAopEnabled($_aopEnabled)
-		     ->setAopIgnore($_aopIgnore)
+			// ->setAopEnabled($_aopEnabled)
+			 ->setAopScanParent($_aopScanParent)
+			 ->setAopIgnore($_aopIgnore)
 		     ->list()
 		     ->setAlias($_containerAlias)
 		     ->setAs($_containerAs);
 		// }
-		
+		echo microtime(true) . " e2\n";
 		// server_config
 		$_serverConfig = $configObj->loadValue('server');
 		if (!empty($_serverConfig)) {
 			$this->getServerRouteManager()
 			     ->config($_serverConfig);
 		}
-		
-		$this->getRedis()
+		echo microtime(true) . " e3\n";
+		$this->getRedisDispatcher()
 			// ->setRedisProviderObj(new RedisProvider())
 			 ->loadConfig();
-		
+		echo microtime(true) . " e4\n";
 		/** @var CacheDataManagerInterface $cacheDataMgr */
 		$cacheDataMgr = $this->getCacheDataManager();
 		
@@ -153,7 +155,7 @@ class BaseService {
 		$aopProxyCacheDataProvider = UU::C(AopProxyCacheDataProvider::class);
 		
 		$cacheDataMgr->regProvider(CacheConstInterface::DATA_PROVIDER_KEY_AOP_PROXY_CLASS, $aopProxyCacheDataProvider);
-		
+		echo microtime(true) . " e5\n";
 		// 忽略boot调用者自身aop
 		$this->getContainer()->addAopIgnore(static::class);
 		
@@ -163,10 +165,11 @@ class BaseService {
 				return false;
 			}
 		}
-		
+		echo microtime(true) . " e6\n";
 		$this->getContainer()
 		     ->setAopEnabled($_aopEnabled);
-		     // ->setAopIgnore($_aopIgnore);
+		
+		// ->setAopIgnore($_aopIgnore);
 		
 		return true;
 	}
@@ -249,10 +252,17 @@ class BaseService {
 	}
 	
 	/**
-	 * @return Redis
+	 * @return RedisDispatcher
+	 */
+	public function getRedisDispatcher() {
+		return UU::C(RedisDispatcher::class);
+	}
+	
+	/**
+	 * @return \Redis|\Swoole\Coroutine\Redis
 	 */
 	public function getRedis() {
-		return UU::C(Redis::class);
+		return $this->getRedisDispatcher()->getRedisObj();
 	}
 	
 	/**
@@ -286,7 +296,7 @@ class BaseService {
 		return UU::C(AopProxyFactory::class);
 	}
 	
-	public function t(){
+	public function t() {
 		return 112233;
 	}
 }

@@ -121,7 +121,7 @@ abstract class EventHandle extends EventRunStatus implements EventHandleInterfac
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name']  = self::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = '事件处理本地模板类';
 	}
 	

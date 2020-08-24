@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common;
 
 
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Error\ErrorCodeConfig;
 
 /**
@@ -11,7 +12,7 @@ use uujia\framework\base\common\lib\Error\ErrorCodeConfig;
  *
  * @package uujia\framework\base\common
  */
-class ErrorConfig {
+class ErrorConfig extends BaseClass {
 	
 	/**
 	 * @var ErrorCodeConfig
@@ -25,6 +26,8 @@ class ErrorConfig {
 	 */
 	public function __construct(ErrorCodeConfig $_errorCodeConfigObj) {
 		$this->_errorCodeConfigObj = $_errorCodeConfigObj;
+		
+		parent::__construct();
 		
 		$this->initConfig();
 		

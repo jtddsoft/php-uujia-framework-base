@@ -52,6 +52,13 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	protected $_aopEnabled = false;
 	
 	/**
+	 * Aop是否递归扫描父类
+	 *
+	 * @var bool
+	 */
+	protected $_aopScanParent = false;
+	
+	/**
 	 * Aop需要忽略的类
 	 *
 	 * @var string[]
@@ -86,7 +93,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name']  = self::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = '基础容器';
 	}
 	
@@ -481,6 +488,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		$aopProxyFactory->setClassName($className)
 		                ->setClassInstance($ins)
 		                ->setReflectionClass($refObj)
+		                ->setAopScanParent($this->isAopScanParent())
 						->buildProxyClassCacheFile();
 		
 		$proxyClassName = $aopProxyFactory->getProxyClassName();
@@ -690,6 +698,23 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	}
 	
 	/**
+	 * @return bool
+	 */
+	public function isAopScanParent(): bool {
+		return $this->_aopScanParent;
+	}
+	
+	/**
+	 * @param bool $aopScanParent
+	 * @return $this
+	 */
+	public function setAopScanParent(bool $aopScanParent) {
+		$this->_aopScanParent = $aopScanParent;
+		
+		return $this;
+	}
+	
+	/**
 	 * @return string[]
 	 */
 	public function &getAopIgnore(): array {
@@ -786,6 +811,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	// public function removeCache($id) {
 	// 	unset($this->lastObj[$id]);
 	// }
+	
 	/**
 	 * @return TreeFunc
 	 */

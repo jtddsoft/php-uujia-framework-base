@@ -62,7 +62,7 @@ class RabbitMQ extends AbstractMQ {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name'] = static::class;
 		$this->name_info['intro'] = 'RibbitMQ通讯管理';
 	}
 	

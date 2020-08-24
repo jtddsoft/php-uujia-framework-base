@@ -3,6 +3,7 @@
 
 namespace uujia\framework\base\common;
 
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Log\Logger;
 
 /**
@@ -10,7 +11,7 @@ use uujia\framework\base\common\lib\Log\Logger;
  *
  * @package uujia\framework\base\common
  */
-class Log {
+class Log extends BaseClass {
 	
 	/**
 	 * @var Logger
@@ -25,7 +26,7 @@ class Log {
 	public function __construct(Logger $logger) {
 		$this->_loggerObj = $logger;
 		
-		
+		parent::__construct();
 	}
 	
 	/**

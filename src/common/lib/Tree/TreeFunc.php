@@ -2,7 +2,8 @@
 
 namespace uujia\framework\base\common\lib\Tree;
 
-
+use uujia\framework\base\common\lib\Tree\TreeFuncData;
+use uujia\framework\base\common\lib\Tree\TreeNode;
 
 /**
  * Class TreeFunc
@@ -59,7 +60,7 @@ class TreeFunc extends TreeNode {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = self::class;
+		$this->name_info['name'] = static::class;
 		$this->name_info['intro'] = '工厂树管理';
 	}
 	

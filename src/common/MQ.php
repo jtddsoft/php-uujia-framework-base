@@ -3,6 +3,7 @@
 
 namespace uujia\framework\base\common;
 
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\MQ\MQCollection;
 
 /**
@@ -12,7 +13,7 @@ use uujia\framework\base\common\lib\MQ\MQCollection;
  *
  * @package uujia\framework\base\common
  */
-class MQ {
+class MQ extends BaseClass {
 	
 	/**
 	 * @var MQCollection
@@ -27,7 +28,7 @@ class MQ {
 	public function __construct(MQCollection $mqCollectionObj) {
 		$this->_mqCollectionObj = $mqCollectionObj;
 		
-		
+		parent::__construct();
 	}
 	
 	/**
