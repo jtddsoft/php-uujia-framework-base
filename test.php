@@ -15,7 +15,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	$command = trim(fgets(STDIN));
 	
 	$t1 = microtime(true);
-	
+	echo 'mem: ' . memory_get_usage()."\n";
 	switch ($command) {
 		case 'demo':
 			// $demo = new \uujia\framework\base\test\Demo();
@@ -27,12 +27,13 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 				// $demo->test();
 			}
 			
+			echo 'mem: ' . memory_get_usage()."\n";
 			// var_dump(UU::C(Base::class)->rt()->ok());
 			// echo json_encode(UU::C(Base::class)->ok(), JSON_UNESCAPED_UNICODE) . "\n";
 			var_dump(UU::C(Base::class)->ok());
 			// var_dump($demo);
 			// var_dump(UU::C(Config::class));
-			
+			echo 'mem: ' . memory_get_usage()."\n";
 			// echo Str::is('app.order.goods.add.*:*', 'app.order.goods.add.before:cdd64cb6-29b8-4663-b1b5-f4f515ed28ca') ? 'true' : 'false';
 			echo "\n";
 			
@@ -209,3 +210,4 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 $t2 = microtime(true);
 $t0 = $t2 - $t1;
 echo "startTime: {$t1}, endTime: {$t2}. t: {$t0}\n";
+echo 'mem: ' . memory_get_usage()."\n";

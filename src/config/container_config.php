@@ -30,7 +30,7 @@ return [
 		'enabled' => true,
 		'scan' => [
 			// 递归扫描父类
-			'parent' => false,
+			'parent' => true,
 		],
 		
 		'ignore' => [
@@ -38,7 +38,7 @@ return [
 			// AopProxyFactory::class,
 			// CacheDataManager::class,
 			// RedisProvider::class,
-			// MQCollection::class,
+			MQCollection::class,
 			// Result::class,
 		],
 		

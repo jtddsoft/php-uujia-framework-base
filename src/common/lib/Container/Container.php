@@ -253,7 +253,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 				if ($classFullName === false) {
 					return null;
 				}
-			
+				
 				if ($className != $classFullName && !$this->getList()->hasAs($className)) {
 					$this->getList()->setAs($className, $classFullName);
 				}
@@ -268,7 +268,7 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 				if ($classFullName === false) {
 					return null;
 				}
-			
+				
 				if ($className != $classFullName && !$this->getList()->hasAs($className)) {
 					$this->getList()->setAs($className, $classFullName);
 				}
@@ -309,10 +309,10 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			return null;
 		}
 		
-		if (method_exists($className, '__construct') === false) {
-			// todo: 报错类构造函数未找到 我们要求必须有构造函数 可以从基类继承
-			// return null;
-		}
+		// if (method_exists($className, '__construct') === false) {
+		// todo: 报错类构造函数未找到 我们要求必须有构造函数 可以从基类继承
+		// return null;
+		// }
 		
 		// 自动依赖注入
 		// todo: 不能用单例
@@ -321,8 +321,9 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		// $refObj = new Reflection($className, '', Reflection::ANNOTATION_OF_CLASS);
 		// $refObj = $this->getReflectionObj();
 		$refObj = $this->newReflectionObj();
+		echo microtime(true) . " aaa1 {$className} \n";
 		
-		$ins = $refObj
+		$refObj
 			// 设置className
 			->setClassName($className)
 			
@@ -330,10 +331,14 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			->load()
 			
 			// 过滤注解 由于获取注解时是class的 而__construct是默认获取并存入到了method中 因此要获取METHOD
-			->annotation(AutoInjection::class, Reflection::ANNOTATION_OF_METHOD)
+			->annotation(AutoInjection::class, Reflection::ANNOTATION_OF_METHOD);
+		
+		// 注入实例化闭包
+		$funcInjection = function ($refObj, $newInstanceCallBack = null) {
+			/** @var Reflection $refObj */
 			
 			// 注入
-			->injection(
+			$refObj->injection(
 				function (Reflection $me, ReflectionParameter $param, $useImports = []) {
 					$_arg = null;
 					
@@ -402,70 +407,98 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 					}
 					
 					return $_arg;
-				}
-			)
+				},
+				$newInstanceCallBack
+			);
+		};
+		
+		if (!$isNew && $this->isAopEnabled() && !in_array($className, $this->getAopIgnore())) {
+			// Aop实现
 			
-			// 处理类属性的注解注入
-			->classPropertys(
-				function (Reflection $me, \ReflectionProperty $property, $propertyAnno, $useImports) {
-					/** @var AutoInjection[] $propertyAnno */
+			/** @var AopProxyFactory $aopProxyFactory */
+			$aopProxyFactory = $this->get(AopProxyFactory::class);
+			$aopProxyFactory->setClassName($className)
+				// ->setClassInstance($ins)
+				            ->setReflectionClass($refObj)
+			                ->setAopScanParent($this->isAopScanParent())
+			                ->buildProxyClassCacheFile();
+			
+			$proxyClassName = $aopProxyFactory->getProxyClassName();
+			
+			if (!empty($proxyClassName)) {
+				$funcInjection($refObj, function ($args, $refObj) use ($proxyClassName) {
+					$refObj->_setInjectionInstance((new \ReflectionClass($proxyClassName))->newInstanceArgs($args));
 					
-					if (empty($propertyAnno)) {
-						return true;
-					}
-					
-					// 遍历注解 取出AutoInjection注入部分 进行注入
-					foreach ($propertyAnno as $annot) {
-						// $_id    = $annot->name;
-						$_type  = $annot->type;
-						$_value = $annot->value;
-						
-						// if (empty($_id)) {
-						// 	continue;
-						// }
-						
-						// 容器id
-						$_id = $annot->id ?? '';
-						
-						// 如果定义了要实例化的其他类 就将其加入映射表
-						if (!empty($annot->name) && !$this->getList()->hasAs($_id)) {
-							$_class = $annot->name;
-							
-							$classFullName = $this->findClassNameSpace($_class, $useImports);
-							if ($classFullName !== false) {
-								$this->getList()->setAs($_id, $classFullName);
-							}
-						}
-						
-						empty($_id) && $_id = $annot->name ?? '';
-						
-						if (empty($_id)) {
-							continue;
-						}
-						
-						// new class 会处理依赖
-						$_arg = $this->_newClassAnnotation($_id,
-						                                   $_type,
-						                                   $useImports,
-						                                   $_value);
-						
-						if (is_null($_arg)) {
-							continue;
-						}
-						
-						// 注入
-						$me->gsPrivateProperty($me->getRefClass(),
-						                       $property->getName(),
-						                       $_arg,
-						                       $me->getInjectionInstance());
-					}
-					
+					return false;
+				});
+			} else {
+				$funcInjection($refObj, null);
+			}
+		} else {
+			$funcInjection($refObj, null);
+		}
+		
+		// 处理类属性的注解注入
+		$refObj->classPropertys(
+			function (Reflection $me, \ReflectionProperty $property, $propertyAnno, $useImports) {
+				/** @var AutoInjection[] $propertyAnno */
+				
+				if (empty($propertyAnno)) {
 					return true;
-				}, [AutoInjection::class]
-			)
-			
-			// 获取实例
-			->getInjectionInstance();
+				}
+				
+				// 遍历注解 取出AutoInjection注入部分 进行注入
+				foreach ($propertyAnno as $annot) {
+					// $_id    = $annot->name;
+					$_type  = $annot->type;
+					$_value = $annot->value;
+					
+					// if (empty($_id)) {
+					// 	continue;
+					// }
+					
+					// 容器id
+					$_id = $annot->id ?? '';
+					
+					// 如果定义了要实例化的其他类 就将其加入映射表
+					if (!empty($annot->name) && !$this->getList()->hasAs($_id)) {
+						$_class = $annot->name;
+						
+						$classFullName = $this->findClassNameSpace($_class, $useImports);
+						if ($classFullName !== false) {
+							$this->getList()->setAs($_id, $classFullName);
+						}
+					}
+					
+					empty($_id) && $_id = $annot->name ?? '';
+					
+					if (empty($_id)) {
+						continue;
+					}
+					
+					// new class 会处理依赖
+					$_arg = $this->_newClassAnnotation($_id,
+					                                   $_type,
+					                                   $useImports,
+					                                   $_value);
+					
+					if (is_null($_arg)) {
+						continue;
+					}
+					
+					// 注入
+					$me->gsPrivateProperty($me->getRefClass(),
+					                       $property->getName(),
+					                       $_arg,
+					                       $me->getInjectionInstance());
+				}
+				
+				return true;
+			}, [AutoInjection::class]
+		);
+		
+		// 获取实例
+		$ins = $refObj->getInjectionInstance();
 		
 		// 如果存在容器接纳 将自身实例传入
 		if (is_callable([$ins, '_setContainer'])) {
@@ -476,32 +509,9 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		if (is_callable([$ins, '_setReflection'])) {
 			call_user_func_array([$ins, '_setReflection'], [$refObj]);
 		}
+		echo microtime(true) . " aaa2 {$className} \n";
 		
-		if ($isNew || !$this->isAopEnabled() || in_array($className, $this->getAopIgnore())) {
-			return $ins;
-		}
-		
-		// Aop实现
-		
-		/** @var AopProxyFactory $aopProxyFactory */
-		$aopProxyFactory = $this->get(AopProxyFactory::class);
-		$aopProxyFactory->setClassName($className)
-		                ->setClassInstance($ins)
-		                ->setReflectionClass($refObj)
-		                ->setAopScanParent($this->isAopScanParent())
-						->buildProxyClassCacheFile();
-		
-		$proxyClassName = $aopProxyFactory->getProxyClassName();
-		if (empty($proxyClassName)) {
-			return $ins;
-		}
-		
-		$proxyClassObj = $this->invoke($proxyClassName);
-		if (empty($proxyClassObj)) {
-			return $ins;
-		}
-		
-		return $proxyClassObj;
+		return $ins;
 	}
 	
 	/**
@@ -659,6 +669,19 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 	 * @throws \ReflectionException
 	 */
 	public function invoke($className) {
+		return $this->_get($className, false);
+	}
+	
+	/**
+	 * 实例化一个类 可支持依赖注入
+	 * Date: 2020/8/9 22:17
+	 *
+	 * @param $className
+	 *
+	 * @return mixed|object|null
+	 * @throws \ReflectionException
+	 */
+	public function invokeNew($className) {
 		return $this->_get($className, true);
 	}
 	

@@ -439,11 +439,12 @@ class Reflection extends BaseClass {
 	/**
 	 * 实例化注入
 	 *
-	 * @param \Closure $callback
+	 * @param \Closure      $callback
+	 * @param \Closure|null $newInstanceCallBack
 	 *
 	 * @return Reflection|null
 	 */
-	public function injection(\Closure $callback) {
+	public function injection(\Closure $callback, ?\Closure $newInstanceCallBack = null) {
 		$this->_injectionInstance = null;
 		
 		if (is_callable($callback)) {
@@ -453,6 +454,13 @@ class Reflection extends BaseClass {
 				$_arg = call_user_func_array($callback, [$this, $param, $this->getUseImports()]);
 				
 				$_args[$key] = $_arg;
+			}
+			
+			if (!empty($newInstanceCallBack)) {
+				$res = call_user_func_array($newInstanceCallBack, [$_args, $this]);
+				if (!$res) {
+					return $this;
+				}
 			}
 			
 			$reflection               = $this->getRefClass();

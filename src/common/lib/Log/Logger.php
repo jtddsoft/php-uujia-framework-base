@@ -88,7 +88,7 @@ class Logger extends BaseClass implements LoggerInterface {
 	
 	
 	/**
-	 * AbstractLog constructor.
+	 * Logger constructor.
 	 *
 	 * @param ConfigManagerInterface $configObj
 	 * @param MQCollection           $mqObj MQCollection对象依赖
