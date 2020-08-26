@@ -180,7 +180,8 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 				break;
 		}
 		
-		return rsErrCode($code);
+		// return rsErrCode($code);
+		return $_ret;
 	}
 	
 	public function ok() {

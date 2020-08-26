@@ -86,6 +86,11 @@ class Logger extends BaseClass implements LoggerInterface {
 	// MQTT是否连接
 	// protected $_flagMQTTConnected = false;
 	
+	/***************************************************
+	 * 缓存
+	 ***************************************************/
+	
+	protected $_configValueBuf = [];
 	
 	/**
 	 * Logger constructor.
@@ -111,11 +116,11 @@ class Logger extends BaseClass implements LoggerInterface {
 	 */
 	public function init() {
 		parent::init();
-		
+		echo microtime(true) . " ll1\n";
 		$_enabledResponse = $this->getConfigMQ(self::LOG_CONFIG_KEY_MQ['enabled_response']) ?? false;
 		$_enabledMQTT = $this->getConfigMQTT(self::LOG_CONFIG_KEY_MQTT['enabled']) ?? false;
 		$_enabledRabbitMQ = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['enabled']) ?? false;
-		
+		echo microtime(true) . " ll2\n";
 		$this->setEnabledResponse($_enabledResponse);
 		$this->setEnabledMQTT($_enabledMQTT);
 		$this->setEnabledRabbitMQ($_enabledRabbitMQ);
@@ -653,7 +658,12 @@ class Logger extends BaseClass implements LoggerInterface {
 	 * @return array|string|int|null
 	 */
 	public function getConfigValue() {
-		return $this->getConfigObj()->loadValue(self::LOG_CONFIG_NAME);
+		if (!empty($this->_configValueBuf)) {
+			return $this->_configValueBuf;
+		}
+		
+		$this->_configValueBuf = $this->getConfigObj()->loadValue(self::LOG_CONFIG_NAME);
+		return $this->_configValueBuf;
 	}
 	
 	/**

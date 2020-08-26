@@ -184,6 +184,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			// }
 			// $pipe->exec();
 		
+			$array = debug_backtrace();
+			foreach ($array as $row) {
+				var_dump($row['file'] . ':' . $row['line'] . '行,调用方法:' . $row['function']);
+			}
 			break;
 			
 		case 'evtreg':

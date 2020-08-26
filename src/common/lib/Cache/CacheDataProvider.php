@@ -151,7 +151,7 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	 * 构建数据 写入缓存
 	 */
 	public function make() {
-		$this->resetResult();
+		// $this->resetResult();
 		
 		if (!$this->hasCache()) {
 			// 写状态标记为 正在缓存中

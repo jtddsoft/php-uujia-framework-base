@@ -330,6 +330,11 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 	
 	/**
 	 * 从缓存读取
+	 *
+	 * Date: 2020/8/27
+	 * Time: 0:55
+	 *
+	 * @return array|Generator
 	 */
 	public function fromCache() {
 		$this->make();

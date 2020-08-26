@@ -86,7 +86,8 @@ trait AopProxy {
 		// };
 		
 		$callMethod = function () use ($closure, $args) {
-			return $closure(...$args);
+			// return $closure(...$args);
+			return call_user_func_array($closure, $args);
 		};
 		
 		// $this->getProceedingJoinPointObj()->className = $this->getClassName();
@@ -177,7 +178,8 @@ trait AopProxy {
 		if ($generator->valid()) {
 			$result = $this->_aopProcess($generator, $closure, $method, $args);
 		} else {
-			$result = $closure(...$args);
+			// $result = (...$args);
+			$result = call_user_func_array($closure, $args);
 		}
 		
 		return $result;
