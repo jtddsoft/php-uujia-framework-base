@@ -183,6 +183,9 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			// 	}
 			// }
 			// $pipe->exec();
+			
+			// var_dump(UU::C(Base::class)->ok());
+			UU::C(Base::class);
 		
 			$array = debug_backtrace();
 			foreach ($array as $row) {
