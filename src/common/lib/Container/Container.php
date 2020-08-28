@@ -417,26 +417,33 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			
 			/** @var AopProxyFactory $aopProxyFactory */
 			$aopProxyFactory = $this->get(AopProxyFactory::class);
+			$aopProxyFactory->setClassName($className);
 			
-			$res = $aopProxyFactory->setClassName($className)
-				// ->setClassInstance($ins)
-				            ->setReflectionClass($refObj)
-			                ->setAopScanParent($this->isAopScanParent())
-			                ->buildProxyClassCacheFile();
-			
-			if ($res !== false) {
-				$proxyClassName = $aopProxyFactory->getProxyClassName();
+			// 是否有aop切面拦截 如果有就生成动态代理 如果没有就不用生成了
+			$hasAopAdvice = $aopProxyFactory->hasAopAdvice();
+			if ($hasAopAdvice) {
+				$res = $aopProxyFactory
+					// ->setClassInstance($ins)
+					->setReflectionClass($refObj)
+					->setAopScanParent($this->isAopScanParent())
+					->buildProxyClassCacheFile();
 				
-				if (!empty($proxyClassName)) {
-					$funcInjection($refObj, function ($args, $refObj) use ($proxyClassName) {
-						if (!class_exists($proxyClassName)) {
-							return true;
-						}
-						
-						$refObj->_setInjectionInstance((new \ReflectionClass($proxyClassName))->newInstanceArgs($args));
-						
-						return false;
-					});
+				if ($res !== false) {
+					$proxyClassName = $aopProxyFactory->getProxyClassName();
+					
+					if (!empty($proxyClassName)) {
+						$funcInjection($refObj, function ($args, $refObj) use ($proxyClassName) {
+							if (!class_exists($proxyClassName)) {
+								return true;
+							}
+							
+							$refObj->_setInjectionInstance((new \ReflectionClass($proxyClassName))->newInstanceArgs($args));
+							
+							return false;
+						});
+					} else {
+						$funcInjection($refObj, null);
+					}
 				} else {
 					$funcInjection($refObj, null);
 				}

@@ -451,15 +451,92 @@ class AopProxyFactory extends BaseClass {
 	}
 	
 	/**
+	 * 是否存在切面
+	 *
+	 * Date: 2020/8/28
+	 * Time: 23:15
+	 *
+	 * @return bool
+	 * @throws ExceptionAop
+	 */
+	public function hasAopAdvice() {
+		foreach ($this->getAopCacheDataProviders() as $item) {
+			/** @var AopCacheDataProvider $item */
+			$exists = $item->setAopTargetClass($this->getClassName())->hasAopAdvice();
+			if ($exists) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * 获取aop拦截类供应商
+	 * 例如：新建一个切面uujia\framework\base\test\aop\AopEventTest
+	 *      要切uujia\framework\base\test\EventTest类的对应关系
+	 *
+	 * Date: 2020/8/29
+	 * Time: 0:02
+	 *
+	 * @return CacheDataProvider[]|null
+	 */
+	public function getCacheDataProviders() {
+		$cdMgr       = $this->getCacheDataManagerObj();
+		$cdProviders = $cdMgr->getProviderList()->getKeyDataValue(CacheConstInterface::DATA_PROVIDER_KEY_AOP);
+		
+		return $cdProviders;
+	}
+	
+	/**
+	 * 获取Aop缓存供应商对象
+	 *
+	 * @return \Generator
+	 * @throws ExceptionAop
+	 */
+	public function getAopCacheDataProviders() {
+		$cdProviders = $this->getCacheDataProviders();
+		if (empty($cdProviders)) {
+			// throw new ExceptionAop('未找到AOP缓存供应商', 1000);
+			return [];
+		}
+		
+		/** @var TreeFunc $it */
+		$it = $cdProviders['it'];
+		if ($it->count() == 0) {
+			// throw new ExceptionAop('未找到AOP缓存供应商', 1000);
+			return [];
+		}
+		
+		// 遍历寻找AOP缓存供应商 AopCacheDataProvider AOP供应商我只提供一个 但您可以自行增加
+		$found = false;
+		foreach ($it->wForEachIK() as $i => $item) {
+			$data = $item->getDataValue();
+			if ($data instanceof AopCacheDataProvider) {
+				$found = true;
+				yield $data;
+			}
+		}
+		
+		if (!$found) {
+			// throw new ExceptionAop('未找到AOP缓存供应商', 1000);
+			return [];
+		}
+	}
+	
+	/**
 	 * 获取AOPProxyClass缓存供应商对象集合
 	 * 我只提供一个 但您可以增加多个
 	 * （注意这是一个特殊供应商类型 即使你添加多个 默认我只取第一个
 	 *   因为这是一对一关系 一个类对应一个代理类 你添加的其他供应商你只能自行使用）
 	 * 这里返回的是个数组 具体看CacheDataManager中的定义
 	 *
+	 * 例如：uujia\framework\base\test\EventTest
+	 *      应生成的动态代理为uujia\framework\base\test\cache\proxy\uujia_framework_base_test_EventTest_5f487c92d9a4f
+	 *
 	 * @return CacheDataProvider[]|null
 	 */
-	public function getCacheDataProviders() {
+	public function getProxyCacheDataProviders() {
 		$cdMgr       = $this->getCacheDataManagerObj();
 		$cdProviders = $cdMgr->getProviderList()->getKeyDataValue(CacheConstInterface::DATA_PROVIDER_KEY_AOP_PROXY_CLASS);
 		
@@ -485,7 +562,7 @@ class AopProxyFactory extends BaseClass {
 		 *
 		 * @var CacheDataProvider[] $cdProviders
 		 */
-		$cdProviders = $this->getCacheDataProviders();
+		$cdProviders = $this->getProxyCacheDataProviders();
 		if (empty($cdProviders)) {
 			return '';
 		}

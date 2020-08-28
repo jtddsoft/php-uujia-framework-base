@@ -335,6 +335,25 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		return $this;
 	}
 	
+	public function hasAopAdvice() {
+		$this->make();
+		
+		// 获取要触发的AopTarget类
+		$aopTargetClass = $this->getAopTargetClass();
+		
+		if (empty($aopTargetClass)) {
+			return false;
+		}
+		
+		$keyAop = $this->makeKeyPrefixAop();
+		
+		// 查找哈希表中是否存在AopTarget标识记录
+		$_aopTargetClass = Str::slashLToR($aopTargetClass);
+		$hExist = $this->getRedisObj()->hExists($keyAop, $_aopTargetClass);
+		
+		return $hExist;
+	}
+	
 	/**************************************************************
 	 * Cache
 	 **************************************************************/
