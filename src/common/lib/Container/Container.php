@@ -417,20 +417,29 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 			
 			/** @var AopProxyFactory $aopProxyFactory */
 			$aopProxyFactory = $this->get(AopProxyFactory::class);
-			$aopProxyFactory->setClassName($className)
+			
+			$res = $aopProxyFactory->setClassName($className)
 				// ->setClassInstance($ins)
 				            ->setReflectionClass($refObj)
 			                ->setAopScanParent($this->isAopScanParent())
 			                ->buildProxyClassCacheFile();
 			
-			$proxyClassName = $aopProxyFactory->getProxyClassName();
-			
-			if (!empty($proxyClassName)) {
-				$funcInjection($refObj, function ($args, $refObj) use ($proxyClassName) {
-					$refObj->_setInjectionInstance((new \ReflectionClass($proxyClassName))->newInstanceArgs($args));
-					
-					return false;
-				});
+			if ($res !== false) {
+				$proxyClassName = $aopProxyFactory->getProxyClassName();
+				
+				if (!empty($proxyClassName)) {
+					$funcInjection($refObj, function ($args, $refObj) use ($proxyClassName) {
+						if (!class_exists($proxyClassName)) {
+							return true;
+						}
+						
+						$refObj->_setInjectionInstance((new \ReflectionClass($proxyClassName))->newInstanceArgs($args));
+						
+						return false;
+					});
+				} else {
+					$funcInjection($refObj, null);
+				}
 			} else {
 				$funcInjection($refObj, null);
 			}

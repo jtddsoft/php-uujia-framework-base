@@ -260,9 +260,13 @@ class AopProxyCacheDataProvider extends CacheDataProvider {
 	
 	/**
 	 * @param string $keyPrefixAopProxyClass
+	 *
+	 * @return $this
 	 */
 	public function setKeyPrefixAopProxyClass(string $keyPrefixAopProxyClass) {
 		$this->_keyPrefixAopProxyClass = $keyPrefixAopProxyClass;
+		
+		return $this;
 	}
 	
 	/**

@@ -150,13 +150,13 @@ class Demo extends BaseService {
 		 $a->test();
 		
 		
-		echo microtime(true) . " g\n";
-		$aopProxyFactoryObj->setClassName(EventTest::class);
-		$refClass = new Reflection($aopProxyFactoryObj->getClassName());
-		$aopProxyFactoryObj->setReflectionClass($refClass);
-		$aopProxyFactoryObj->getReflectionClass()->load();
-		$aopProxyFactoryObj->buildProxyClassCacheFile();
-		echo microtime(true) . " h\n";
+		// echo microtime(true) . " g\n";
+		// $aopProxyFactoryObj->setClassName(EventTest::class);
+		// $refClass = new Reflection($aopProxyFactoryObj->getClassName());
+		// $aopProxyFactoryObj->setReflectionClass($refClass);
+		// $aopProxyFactoryObj->getReflectionClass()->load();
+		// $aopProxyFactoryObj->buildProxyClassCacheFile();
+		// echo microtime(true) . " h\n";
 		
 		
 		// // $file = APP_PATH . '/Test.php';

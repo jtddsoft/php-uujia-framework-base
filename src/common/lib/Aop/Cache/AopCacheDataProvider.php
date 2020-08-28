@@ -214,13 +214,6 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		// Aop列表缓存中的key
 		$keyAop = $this->makeKeyPrefixAop();
 		
-		$classNames = $this->getRedisObj()->hGet($keyAop, Str::slashLToR($_aopTarget));
-		if (!empty($classNames)) {
-			$classNames = Json::jd($classNames);
-		} else {
-			$classNames = [];
-		}
-		
 		foreach ($this->makeCacheAop() as $item) {
 			$_weight    = $item['weight'] ?? 100;
 			$_name      = $item['name'] ?? '';
@@ -230,9 +223,20 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 				continue;
 			}
 			
+			// 写入Aop类列表到缓存
+			// 格式：app:aop -> hash表 app\hello\X -> '["app\hello\AopXA", "app\hello\AopXB"]'
+			$classNames = $this->getRedisObj()->hGet($keyAop, Str::slashLToR($_aopTarget));
+			if (!empty($classNames)) {
+				$classNames = Json::jd($classNames);
+			} else {
+				$classNames = [];
+			}
+			
 			if (!in_array($className, $classNames)) {
 				$classNames[] = $className;
 			}
+			
+			$this->getRedisObj()->hSet($keyAop, Str::slashLToR($_aopTarget), Json::je($classNames));
 			
 			// 写AopTarget对应Aop有序集合
 			// 格式：app:aopc:app.hello.X -> zset表 app\hello\AopXA -> 100
@@ -242,10 +246,6 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 			// $this->getRedisObj()->zAdd($keyAopC, $_weight, Str::slashLToR($_aopTarget));
 			$this->getRedisObj()->zAdd($keyAopC, $_weight, Str::slashLToR($className));
 		}
-		
-		// 写入Aop类列表到缓存
-		// 格式：app:aop -> hash表 app\hello\X -> '["app\hello\AopXA", "app\hello\AopXB"]'
-		$this->getRedisObj()->hSet($keyAop, Str::slashLToR($_aopTarget), Json::je($classNames));
 		
 		return $this;
 	}

@@ -15,7 +15,7 @@ class AopCacheDataProviderTest extends AopCacheDataProvider {
 	
 	public function getAops(): Generator {
 		// TODO: Implement getAops() method.
-		foreach ([AopEventTest::class] as $item) {
+		foreach ([AopEventTest::class, AopEventTest1::class] as $item) {
 			yield $item;
 		}
 	}

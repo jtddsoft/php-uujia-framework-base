@@ -9,6 +9,7 @@ use Psr\Log\LoggerInterface;
 use uujia\framework\base\common\consts\ResultConstInterface;
 use uujia\framework\base\common\interfaces\ResultInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Error\ErrorCodeConfig;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\Utils\Json;
@@ -23,6 +24,13 @@ use uujia\framework\base\common\traits\ResultTrait;
 class Result extends BaseClass implements ResultInterface, LoggerAwareInterface {
 	use ResultTrait;
 	
+	// 配置文件
+	const RESULT_CONFIG_NAME = 'result_config';
+	const RESULT_CONFIG_ROOT_KEY = 'result';
+	const RESULT_CONFIG_KEY = [
+		'enabled_log' => 'enabled_log',
+	];
+	
 	// 配置对象 依赖于配置管理class 必须事先初始化
 	/** @var ErrorCodeConfig */
 	protected $errObj;
@@ -31,16 +39,28 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	/** @var Logger */
 	protected $logObj;
 	
+	/** @var ConfigManagerInterface $_configObj */
+	protected $_configObj;
+	
 	// 返回类型
-	const RETURN_TYPE = [
-		'arr'  => 1, // 返回数组
-		'json' => 2, // 返回json
-	];
+	const RETURN_TYPE
+		= [
+			'arr'  => 1, // 返回数组
+			'json' => 2, // 返回json
+		];
 	
 	// 返回类型
 	protected $return_type = 1;
 	// 如果出错直接exit返回
 	protected $return_die = true;
+	
+	/***************************************************
+	 * 缓存
+	 ***************************************************/
+	
+	protected $_configValueBuf = [];
+	
+	
 	
 	/**
 	 * 初始化依赖注入
@@ -48,15 +68,17 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	 * @param ErrorCodeConfig $errObj
 	 * @param Logger          $logObj
 	 */
-	public function __construct(ErrorCodeConfig $errObj, Logger $logObj) {
-		$this->errObj = $errObj;
-		$this->logObj = $logObj;
+	public function __construct(ErrorCodeConfig $errObj, Logger $logObj, ConfigManagerInterface $configObj) {
+		$this->errObj     = $errObj;
+		$this->logObj     = $logObj;
+		$this->_configObj = $configObj;
 		
 		parent::__construct();
 	}
 	
 	/**
 	 * 初始化
+	 *
 	 * @return $this
 	 */
 	public function init() {
@@ -128,16 +150,16 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 		$this->setLastReturn($_ret);
 		
 		// 写入日志
-		$this->getLogObj()->errorEx($_ret);
+		$this->isConfigEnabledLog() && $this->getLogObj()->errorEx($_ret);
 		
 		if ($this->isReturnDie()) {
-			$this->getLogObj()->response();
+			$this->isConfigEnabledLog() && $this->getLogObj()->response();
 			exit(Json::je($_ret));
 		}
 		
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
-				$this->getLogObj()->response();
+				$this->isConfigEnabledLog() && $this->getLogObj()->response();
 				// return json($_ret);
 				Response::json($_ret);
 				break;
@@ -165,16 +187,16 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 		$this->setLastReturn($_ret);
 		
 		// 写入日志
-		$this->getLogObj()->errorEx($_ret);
+		$this->isConfigEnabledLog() && $this->getLogObj()->errorEx($_ret);
 		
 		if ($this->isReturnDie()) {
-			$this->getLogObj()->response();
+			$this->isConfigEnabledLog() && $this->getLogObj()->response();
 			exit(Json::je($_ret));
 		}
 		
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
-				$this->getLogObj()->response();
+				$this->isConfigEnabledLog() && $this->getLogObj()->response();
 				// return json($_ret);
 				Response::json($_ret);
 				break;
@@ -191,11 +213,11 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 		$this->setLastReturn($_ret);
 		
 		// 写入日志
-		$this->getLogObj()->infoEx($_ret);
+		$this->isConfigEnabledLog() && $this->getLogObj()->infoEx($_ret);
 		
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
-				$this->getLogObj()->response();
+				$this->isConfigEnabledLog() && $this->getLogObj()->response();
 				// return json($_ret);
 				Response::json($_ret);
 				break;
@@ -213,11 +235,11 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 		$this->setLastReturn($_ret);
 		
 		// 写入日志
-		$this->getLogObj()->infoEx($_ret);
+		$this->isConfigEnabledLog() && $this->getLogObj()->infoEx($_ret);
 		
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
-				$this->getLogObj()->response();
+				$this->isConfigEnabledLog() && $this->getLogObj()->response();
 				// return json($_ret);
 				Response::json($_ret);
 				break;
@@ -233,7 +255,7 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 		
 		switch ($this->getReturnType()) {
 			case self::RETURN_TYPE['json']:
-				$this->getLogObj()->response();
+				$this->isConfigEnabledLog() && $this->getLogObj()->response();
 				// return json($this->getLastReturn());
 				Response::json($this->getLastReturn());
 				break;
@@ -242,8 +264,42 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 		return $this->getLastReturn();
 	}
 	
+	
+	/**
+	 * 获取配置值
+	 *
+	 * @return array|string|int|null
+	 */
+	public function getConfigValue() {
+		if (!empty($this->_configValueBuf)) {
+			return $this->_configValueBuf;
+		}
+		
+		if (empty($this->getConfigObj())) {
+			return [];
+		}
+		
+		$this->_configValueBuf = $this->getConfigObj()->loadValue(self::RESULT_CONFIG_NAME);
+		return $this->_configValueBuf;
+	}
+	
+	/**
+	 * 是否启用日志（配置文件）
+	 *
+	 * @return bool
+	 */
+	public function isConfigEnabledLog() {
+		$config = $this->getConfigValue();
+		if (empty($config)) {
+			return false;
+		}
+		
+		return $config[self::RESULT_CONFIG_ROOT_KEY][self::RESULT_CONFIG_KEY['enabled_log']] ?? false;
+	}
+	
 	/**
 	 * 获取返回类型（1 - 内部使用数组 2 - 直接输出的json）
+	 *
 	 * @return int
 	 */
 	public function getReturnType(): int {
@@ -252,6 +308,7 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	
 	/**
 	 * 设置返回类型
+	 *
 	 * @param int $return_type
 	 */
 	public function setReturnType(int $return_type) {
@@ -260,6 +317,7 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	
 	/**
 	 * 获取出错时是否终止运行
+	 *
 	 * @return bool
 	 */
 	public function isReturnDie(): bool {
@@ -268,6 +326,7 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	
 	/**
 	 * 设置出错时是否终止运行
+	 *
 	 * @param bool $return_die
 	 */
 	public function setReturnDie(bool $return_die) {
@@ -307,6 +366,7 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	 * 设置日志对象
 	 *
 	 * @param Logger|LoggerInterface $logObj
+	 *
 	 * @return Result
 	 */
 	public function _setLogObj($logObj) {
@@ -320,6 +380,20 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 	 */
 	public function setLogger(LoggerInterface $logger) {
 		return $this->_setLogObj($logger);
+	}
+	
+	/**
+	 * @return ConfigManagerInterface
+	 */
+	public function getConfigObj(): ConfigManagerInterface {
+		return $this->_configObj;
+	}
+	
+	/**
+	 * @param ConfigManagerInterface $configObj
+	 */
+	public function _setConfigObj(ConfigManagerInterface $configObj) {
+		$this->_configObj = $configObj;
 	}
 	
 }

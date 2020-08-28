@@ -88,12 +88,12 @@ class AopProxyFactory extends BaseClass {
 	//  */
 	// protected $_proxyTemplatePath = '';
 	
-	/**
-	 * 代理模板内容
-	 *
-	 * @var string
-	 */
-	protected $_proxyTemplateText = '';
+	// /**
+	//  * 代理模板内容
+	//  *
+	//  * @var string
+	//  */
+	// protected $_proxyTemplateText = '';
 	
 	/**
 	 * 代理类名（从缓存代理得来）
@@ -126,7 +126,7 @@ class AopProxyFactory extends BaseClass {
 	 */
 	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null) {
 		$this->_cacheDataManagerObj = $cacheDataManagerObj;
-		$this->_proxyTemplatePath   = __DIR__ . '/Template/_AopProxyTemplate.t';
+		// $this->_proxyTemplatePath   = __DIR__ . '/Template/_AopProxyTemplate.t';
 		
 		parent::__construct();
 	}
@@ -170,9 +170,9 @@ class AopProxyFactory extends BaseClass {
 			return false;
 		}
 		
-		if (!file_exists($filePath)) {
+		//if (!file_exists($filePath)) {
 			// throw new ExceptionAop('路径不存在');
-		}
+		//}
 		
 		// 读模板文件内容
 		// $_templateText = $this->getProxyTemplateText();
@@ -185,8 +185,10 @@ class AopProxyFactory extends BaseClass {
 		
 		// class
 		// $_class = $this->getProxyClassNameSpace() . '\\' . basename($this->getClassName());
+		
 		$_class = $this->getProxyClassFromCache($this->getClassName());
 		$this->setProxyClassName($_class);
+		
 		if (empty($_class)) {
 			return false;
 		}
@@ -286,6 +288,7 @@ class AopProxyFactory extends BaseClass {
 		$printer   = new Standard();
 		$proxyCode = $printer->prettyPrint($proxyAst);
 		
+		File::create_dir($filePath);
 		$res = File::writeFromText($_fileName, "<?php \n" . $proxyCode);
 		
 		// 更新缓存中的文件更新时间

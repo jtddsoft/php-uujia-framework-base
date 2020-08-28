@@ -36,6 +36,16 @@ class File {
 	}
 	
 	/**
+	 * 创建多级目录
+	 * @param string $dir
+	 * @param int    $mode
+	 * @return boolean
+	 */
+	public static function create_dir($dir, $mode = 0777) {
+		return is_dir($dir) or (self::create_dir(dirname($dir)) and mkdir($dir, $mode));
+	}
+	
+	/**
 	 * 文件内容读取 读取为字符串
 	 *
 	 * Date: 2020/8/13
