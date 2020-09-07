@@ -15,7 +15,7 @@ return [
 	],
 	
 	'RabbitMQ' => [
-		'enabled'             => false,              // 启用
+		'enabled'             => true,              // 启用
 		
 		// connect
 		'queue'               => 'Logger_2019.one',
