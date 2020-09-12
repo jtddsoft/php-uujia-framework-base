@@ -145,6 +145,7 @@ class Demo extends BaseService {
 		/** @var EventTest $a */
 		$a = UU::C(EventTest::class);
 		$b = $a->ok();
+		$b = $a->addBefore();
 		
 		// echo $a->test() . "\n";
 		 $a->test();
