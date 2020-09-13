@@ -313,6 +313,8 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		
 		// 监听者列表缓存中的key
 		$keyAop = $this->makeKeyPrefixAop();
+		$names = $this->getRedisObj()->hGetAll($keyAop);
+		$classNames = json_decode($names, true);
 		
 		// 清空缓存key
 		$redis->del($keyAop);
@@ -320,16 +322,24 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		// 2、清空一堆key
 		
 		// 搜索key
-		$k = $this->makeKeyPrefixAopClass(['*']);
+		// $k = $this->makeKeyPrefixAopClass(['*']);
 		
-		$iterator = null;
+		// $iterator = null;
+		//
+		// while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
+		// 	if (empty($keys)) {
+		// 		continue;
+		// 	}
+		//
+		// 	$redis->del($keys);
+		// }
 		
-		while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
-			if (empty($keys)) {
-				continue;
-			}
+		// todo: 待测试
+		foreach ($classNames as $cName) {
+			$name = str_replace('\\', '.', $cName);
 			
-			$redis->del($keys);
+			$k = $this->makeKeyPrefixAopClass([$name]);
+			$redis->del($k);
 		}
 		
 		return $this;
