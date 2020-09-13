@@ -886,7 +886,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @return \Generator
 	 * @throws ExceptionEvent
 	 */
-	public function getEventCacheDataProviders() {
+	public function getEventCacheDataProviders() {// todo: 加缓存
 		$cdProviders = $this->getCacheDataProviders();
 		
 		/** @var TreeFunc $it */
@@ -901,6 +901,7 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 			$data = $item->getDataValue();
 			if ($data instanceof EventCacheDataProvider) {
 				$found = true;
+				// $data->getEventNameObj()->assign($this->getEventNameObj());
 				yield $data;
 			}
 		}

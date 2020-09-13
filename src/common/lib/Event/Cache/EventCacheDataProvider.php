@@ -125,11 +125,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	/**
 	 * EventCacheDataProvider constructor.
 	 *
-	 * @param CacheDataManagerInterface   $parent
-	 * @param RedisProviderInterface|null $redisProviderObj
-	 * @param EventName                   $eventNameObj
-	 * @param EventCacheDataInterface     $eventCacheDataObj
-	 * @param Reflection                  $reflectionObj
+	 * @param CacheDataManagerInterface|null $parent
+	 * @param RedisProviderInterface|null    $redisProviderObj
+	 * @param EventName|null                 $eventNameObj
+	 * @param EventCacheDataInterface|null   $eventCacheDataObj
+	 * @param Reflection|null                $reflectionObj
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 * @AutoInjection(arg = "eventNameObj", type = "cc")
@@ -448,6 +448,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		// 监听者列表缓存中的key
 		$keyTriggerList = $this->getKeyTriggerList();
+		$evtTriggers = $this->getRedisObj()->hGetAll($keyTriggerList);
 		
 		// 清空缓存key
 		$redis->del($keyTriggerList);
@@ -456,16 +457,21 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		// 搜索key
 		// $k = $this->getEventNameObj()->getAppName() . ':' . EventConstInterface::CACHE_KEY_PREFIX_TRIGGER . ':*';
-		$k = $this->getKeyTriggerPrefix(['*']);
+		// $k = $this->getKeyTriggerPrefix(['*']);
+		//
+		// $iterator = null;
+		//
+		// while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
+		// 	if (empty($keys)) {
+		// 		continue;
+		// 	}
+		//
+		// 	$redis->del($keys);
+		// }
 		
-		$iterator = null;
-		
-		while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
-			if (empty($keys)) {
-				continue;
-			}
-			
-			$redis->del($keys);
+		foreach ($evtTriggers as $key => $item) {
+			$k = $this->getKeyTriggerPrefix([$key]);
+			$redis->del($k);
 		}
 		
 		return $this;
@@ -784,8 +790,6 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 	 * 从缓存读取
 	 */
 	public function fromCache() {
-		$this->make();
-		
 		$_evtNameObj = $this->getEventNameObj();
 		
 		$_isParsed = $_evtNameObj->isParsed();
@@ -799,6 +803,13 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			->switchLite()
 			->makeEventName()
 			->getEventName();
+		
+		/**
+		 * 以上先提取eventName 由于fromCache是从EventProvider发起 他传入了eventNameObj
+		 * 但如果先执行make 则会处理监听者 从而覆盖掉eventNameObj
+		 * 所以必须注意make里要处理监听者会覆盖eventNameObj 是不能最先执行的
+		 */
+		$this->make();
 		
 		yield from $this->fromCacheTriggerKeyLocal($eventName, $this->getClassNameTrigger());
 	}
@@ -825,7 +836,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 获取
 		$keyListenList = $this->getKeyListenList();
 		
-		return $this->getRedisObj()->exists($keyListenList);
+		return $this->getRedisObj()->exists($keyListenList)&&false;
 	}
 	
 	/**

@@ -314,7 +314,6 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		// 监听者列表缓存中的key
 		$keyAop = $this->makeKeyPrefixAop();
 		$names = $this->getRedisObj()->hGetAll($keyAop);
-		$classNames = json_decode($names, true);
 		
 		// 清空缓存key
 		$redis->del($keyAop);
@@ -335,12 +334,14 @@ abstract class AopCacheDataProvider extends CacheDataProvider {
 		// }
 		
 		// todo: 待测试
-		foreach ($classNames as $cName) {
-			$name = str_replace('\\', '.', $cName);
+		foreach ($names as $k => $item) {
+			$_name = str_replace('/', '.', $k);
 			
-			$k = $this->makeKeyPrefixAopClass([$name]);
+			$k = $this->makeKeyPrefixAopClass([$_name]);
 			$redis->del($k);
 		}
+		
+		// todo: 是否需要清空app:aoppc 及已生成的aop代理类
 		
 		return $this;
 	}
