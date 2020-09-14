@@ -260,6 +260,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		// 监听者列表缓存中的key
 		$keyListenList = $this->getKeyListenList();
+		$evtListens = $this->getRedisObj()->hGetAll($keyListenList);
 		
 		// 清空缓存key
 		$redis->del($keyListenList);
@@ -268,16 +269,22 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		
 		// 搜索key
 		// $k = $this->getEventNameObj()->getAppName() . ':' . EventConstInterface::CACHE_KEY_PREFIX_LISTENER . ':*';
-		$k = $this->getKeyListenPrefix(['*']);
+		// $k = $this->getKeyListenPrefix(['*']);
+		//
+		// $iterator = null;
+		//
+		// while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
+		// 	if (empty($keys)) {
+		// 		continue;
+		// 	}
+		//
+		// 	$redis->del($keys);
+		// }
 		
-		$iterator = null;
-		
-		while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
-			if (empty($keys)) {
-				continue;
-			}
-			
-			$redis->del($keys);
+		// todo: 待验证
+		foreach ($evtListens as $key => $item) {
+			$k = $this->getKeyListenPrefix([$key]);
+			$redis->del($k);
 		}
 		
 		return $this;
@@ -836,7 +843,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 获取
 		$keyListenList = $this->getKeyListenList();
 		
-		return $this->getRedisObj()->exists($keyListenList)&&false;
+		return $this->getRedisObj()->exists($keyListenList);
 	}
 	
 	/**
