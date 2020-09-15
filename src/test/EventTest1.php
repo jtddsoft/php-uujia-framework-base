@@ -18,7 +18,7 @@ use uujia\framework\base\common\lib\Event\Name\EventName;
  *     namespace = "app.test.eventTest",
  *     uuid = "*",
  *     evt = {
- *          "add.*"
+ *          "add.before"
  *     }
  * )
  */

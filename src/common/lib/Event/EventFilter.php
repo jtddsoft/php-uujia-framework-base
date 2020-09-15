@@ -28,56 +28,56 @@ class EventFilter extends BaseClass {
 	protected $_redisObj;
 	
 	
-	/**
-	 * 缓存是否存在
-	 * @return bool
-	 */
-	public function keyExist(): bool {
-		$k = $this->getJointKey('*');
-		
-		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
-		$redis = $this->getRedisObj();
-		$iterator = null;
-		// $reKeys = $redis->scan($iterator, $k, 1);
-		
-		while(false !== ($keys = $redis->scan($iterator, $k, 1))) {
-			if (!empty($keys)) {
-				return true;
-			}
-			
-			// foreach($keys as $key) {
-			// 	echo $key . PHP_EOL;
-			// }
-		}
-		// return !empty($reKeys);
-		return false;
-	}
+	// /**
+	//  * 缓存是否存在
+	//  * @return bool
+	//  */
+	// public function keyExist(): bool {
+	// 	$k = $this->getJointKey('*');
+	//
+	// 	/** @var \Redis|\Swoole\Coroutine\Redis $redis */
+	// 	$redis = $this->getRedisObj();
+	// 	$iterator = null;
+	// 	// $reKeys = $redis->scan($iterator, $k, 1);
+	//
+	// 	while(false !== ($keys = $redis->scan($iterator, $k, 1))) {
+	// 		if (!empty($keys)) {
+	// 			return true;
+	// 		}
+	//
+	// 		// foreach($keys as $key) {
+	// 		// 	echo $key . PHP_EOL;
+	// 		// }
+	// 	}
+	// 	// return !empty($reKeys);
+	// 	return false;
+	// }
 	
-	/**
-	 * key搜索
-	 *
-	 * @param string $keywords
-	 * @param int    $count
-	 * @return \Generator
-	 */
-	public function keyScan($keywords = '*', $count = 20) {
-		$k = $this->getJointKey($keywords);
-		
-		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
-		$redis = $this->getRedisObj();
-		
-		$iterator = null;
-		while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
-			if (empty($keys)) {
-				continue;
-			}
-			
-			// foreach($keys as $key) {
-			// 	echo $key . PHP_EOL;
-			// }
-			yield $keys;
-		}
-	}
+	// /**
+	//  * key搜索
+	//  *
+	//  * @param string $keywords
+	//  * @param int    $count
+	//  * @return \Generator
+	//  */
+	// public function keyScan($keywords = '*', $count = 20) {
+	// 	$k = $this->getJointKey($keywords);
+	//
+	// 	/** @var \Redis|\Swoole\Coroutine\Redis $redis */
+	// 	$redis = $this->getRedisObj();
+	//
+	// 	$iterator = null;
+	// 	while(false !== ($keys = $redis->scan($iterator, $k, 20))) {
+	// 		if (empty($keys)) {
+	// 			continue;
+	// 		}
+	//
+	// 		// foreach($keys as $key) {
+	// 		// 	echo $key . PHP_EOL;
+	// 		// }
+	// 		yield $keys;
+	// 	}
+	// }
 	
 	/**
 	 * 获取拼接后的缓存key

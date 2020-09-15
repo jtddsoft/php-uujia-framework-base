@@ -122,6 +122,13 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	//  */
 	// protected $_lastKeys = [];
 	
+	/**
+	 * 事件缓存数据供应商的缓存
+	 *
+	 * @var null|EventCacheDataProvider[]
+	 */
+	protected $_eventCacheDataProvidersBuf = null;
+	
 	
 	/**
 	 * EventProvider constructor.
@@ -185,6 +192,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 *  写入时 写的是监听者列表
 	 *  获取时 获取的是针对要触发的触发者相匹配的监听者有序集合列表
 	 *        其中保存的就是server参数json（如果触发者列表未构建不存在 会自动构建匹配）
+	 *
+	 * @throws ExceptionEvent
 	 */
 	public function _make() {
 		/**
@@ -626,20 +635,20 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		            ->getJointKey($currKey);
 	}
 	
-	/**
-	 * 遍历符合条件的缓存key
-	 *
-	 * @param string $currKey 当前key
-	 *
-	 * @return \Generator
-	 */
-	public function scanCacheKey($currKey = '*') {
-		foreach ($this->getEventFilterObj()
-		              ->setPrefix($this->getCacheKeyListenPrefix())
-		              ->keyScan($currKey, 0) as $_key) {
-			yield $_key;
-		}
-	}
+	// /**
+	//  * 遍历符合条件的缓存key
+	//  *
+	//  * @param string $currKey 当前key
+	//  *
+	//  * @return \Generator
+	//  */
+	// public function scanCacheKey($currKey = '*') {
+	// 	foreach ($this->getEventFilterObj()
+	// 	              ->setPrefix($this->getCacheKeyListenPrefix())
+	// 	              ->keyScan($currKey, 0) as $_key) {
+	// 		yield $_key;
+	// 	}
+	// }
 	
 	/**
 	 * 清空返回值
@@ -887,6 +896,14 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 * @throws ExceptionEvent
 	 */
 	public function getEventCacheDataProviders() {// todo: 加缓存
+		if (!is_null($this->getEventCacheDataProvidersBuf())) {
+			foreach ($this->getEventCacheDataProvidersBuf() as $item) {
+				yield $item;
+			}
+			
+			return [];
+		}
+		
 		$cdProviders = $this->getCacheDataProviders();
 		
 		/** @var TreeFunc $it */
@@ -897,18 +914,22 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		
 		// 遍历寻找事件缓存供应商 EventCacheDataProvider 事件供应商我只提供一个 但您可以自行增加
 		$found = false;
+		$_evtProvider = [];
 		foreach ($it->wForEachIK() as $i => $item) {
 			$data = $item->getDataValue();
 			if ($data instanceof EventCacheDataProvider) {
 				$found = true;
 				// $data->getEventNameObj()->assign($this->getEventNameObj());
 				yield $data;
+				$_evtProvider[] = $data;
 			}
 		}
 		
 		if (!$found) {
 			throw new ExceptionEvent('未找到事件缓存供应商', 1000);
 		}
+		
+		$this->setEventCacheDataProvidersBuf($_evtProvider);
 	}
 	
 	/**
@@ -925,6 +946,24 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	 */
 	public function setEventFilterObj(EventFilter $eventFilterObj) {
 		$this->_eventFilterObj = $eventFilterObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return EventCacheDataProvider[]|null
+	 */
+	public function &getEventCacheDataProvidersBuf(): ?array {
+		return $this->_eventCacheDataProvidersBuf;
+	}
+	
+	/**
+	 * @param EventCacheDataProvider[]|null $eventCacheDataProvidersBuf
+	 *
+	 * @return $this
+	 */
+	public function setEventCacheDataProvidersBuf(?array $eventCacheDataProvidersBuf) {
+		$this->_eventCacheDataProvidersBuf = $eventCacheDataProvidersBuf;
 		
 		return $this;
 	}

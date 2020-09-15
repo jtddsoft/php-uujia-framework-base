@@ -374,6 +374,10 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 监听者列表缓存中的key
 		$keyListenList = $this->getKeyListenList();
 		
+		$_dataClassNames = [];
+		
+		$pipeRedis = $this->getRedisObj()->multi(\Redis::PIPELINE);
+		
 		foreach ($this->makeCacheEventListenLocal() as $item) {
 			$_weight = $item['weight'] ?? 100;
 			$_name   = $item['name'] ?? '';
@@ -384,7 +388,20 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			
 			// 写入监听列表到缓存
 			// $this->getRedisObj()->zAdd($keyListenList, $_weight, $_name);
-			$classNames = $this->getRedisObj()->hGet($keyListenList, $_name);
+			// $classNames = $this->getRedisObj()->hGet($keyListenList, $_name);
+			$pipeRedis->hGet($keyListenList, $_name);
+		}
+		
+		$_dataClassNames = $pipeRedis->exec();
+		
+		if (empty($_dataClassNames)) {
+			return $this;
+		}
+		
+		$pipeRedis = $this->getRedisObj()->multi(\Redis::PIPELINE);
+		
+		// 管道写入
+		foreach ($_dataClassNames as $classNames) {
 			if (!empty($classNames)) {
 				$classNames = Json::jd($classNames);
 			} else {
@@ -395,7 +412,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 				$classNames[] = $className;
 			}
 			
-			$this->getRedisObj()->hSet($keyListenList, $_name, Json::je($classNames));
+			// $this->getRedisObj()->hSet($keyListenList, $_name, Json::je($classNames));
+			$pipeRedis->hSet($keyListenList, $_name, Json::je($classNames));
 			
 			// 构建缓存数据 并转json 【本地】
 			$jsonData = $this->getEventCacheDataObj()
@@ -412,8 +430,8 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			                    ->setModeName(EventConstInterface::CACHE_KEY_PREFIX_LISTENER)
 			                    ->switchLite()
 			                    ->parse($_name, EventNameInterface::PCRE_NAME_FULL_LIKE)
-								->switchFull()
-								->setIgnoreTmp(true)
+			                    ->switchFull()
+			                    ->setIgnoreTmp(true)
 			                    ->makeEventName();
 			
 			if ($_evtNameObj->isErr()) {
@@ -423,8 +441,11 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 			$_evtKey = $_evtNameObj->getEventName();
 			
 			// 写入缓存key
-			$this->getRedisObj()->zAdd($_evtKey, $_weight, $jsonData);
+			// $this->getRedisObj()->zAdd($_evtKey, $_weight, $jsonData);
+			$pipeRedis->zAdd($_evtKey, $_weight, $jsonData);
 		}
+		
+		$pipeRedis->exec();
 		
 		return $this;
 	}
@@ -836,7 +857,7 @@ abstract class EventCacheDataProvider extends CacheDataProvider {
 		// 获取
 		$keyListenList = $this->getKeyListenList();
 		
-		return $this->getRedisObj()->exists($keyListenList)&&false;
+		return $this->getRedisObj()->exists($keyListenList);
 	}
 	
 	/**
