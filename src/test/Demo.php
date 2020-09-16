@@ -123,6 +123,9 @@ class Demo extends BaseService {
 		$paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
 		$configObj->path($paths);
 		echo microtime(true) . " b\n";
+		
+		$this->getRunner()->runnerObj()->_setAppName('app');
+		
 		/** @var AopProxyFactory $aopProxyFactoryObj */
 		$aopProxyFactoryObj = $this->getAopProxyFactory();
 		echo microtime(true) . " c\n";

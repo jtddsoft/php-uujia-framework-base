@@ -16,7 +16,7 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 	 * 应用名称
 	 * @var string $_app_name
 	 */
-	protected $_app_name = '';
+	protected $_app_name = 'app';
 	
 	/**
 	 * Debug
@@ -36,7 +36,7 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 	 * @param string $app_name
 	 * @param bool   $debug
 	 */
-	public function __construct($app_name = '', $debug = false) {
+	public function __construct($app_name = 'app', $debug = false) {
 		$this->_app_name = $app_name;
 		$this->_debug = $debug;
 		

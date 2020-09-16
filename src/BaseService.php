@@ -15,6 +15,7 @@ use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Event\EventDispatcher;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\MQ\MQCollection;
+use uujia\framework\base\common\lib\Reflection\CachedReader;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
 use uujia\framework\base\common\lib\Tree\TreeFuncData;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
@@ -146,6 +147,10 @@ class BaseService {
 		$this->getRedisDispatcher()
 			// ->setRedisProviderObj(new RedisProvider())
 			 ->loadConfig();
+		
+		$this->getContainer()
+		     ->invoke(CachedReader::class);
+		
 		echo microtime(true) . " e4\n";
 		/** @var CacheDataManagerInterface $cacheDataMgr */
 		$cacheDataMgr = $this->getCacheDataManager();
@@ -291,7 +296,7 @@ class BaseService {
 	 * Date: 2020/8/13
 	 * Time: 23:58
 	 *
-	 * @return mixed|Container
+	 * @return AopProxyFactory
 	 */
 	public function getAopProxyFactory() {
 		return UU::C(AopProxyFactory::class);
@@ -301,7 +306,7 @@ class BaseService {
 	 * Date: 2020/9/16
 	 * Time: 11:13
 	 *
-	 * @return mixed|Container
+	 * @return Runner
 	 */
 	public function getRunner() {
 		return UU::C(Runner::class);

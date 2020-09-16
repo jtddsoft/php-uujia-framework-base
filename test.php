@@ -1,6 +1,7 @@
 <?php
 
 use uujia\framework\base\common\Base;
+use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Event\Name\EventName;
 use uujia\framework\base\common\lib\Utils\Json;
 use uujia\framework\base\common\lib\Reflection\Reflection as UUReflection;
@@ -51,6 +52,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			$demo->testYield();
 			
 			foreach (UU::getInstance()->getContainer() as $key => $item) {
+				if (!($item instanceof BaseClass)) {
+					continue;
+				}
+				
 				echo $item->getNameInfo()['name'] . " " . $item->getNameInfo()['intro'] . "\n"; // . dump($item);
 			}
 			
@@ -108,6 +113,10 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			$demo = UU::C(\uujia\framework\base\test\Demo::class);
 			
 			foreach (UU::getInstance()->getContainer() as $key => $item) {
+				if (!($item instanceof BaseClass)) {
+					continue;
+				}
+				
 				echo $item->getNameInfo()['name'] . " " . $item->getNameInfo()['intro'] . "\n"; // . dump($item);
 			}
 			

@@ -315,6 +315,15 @@ class TreeFunc extends TreeNode {
 	}
 	
 	/**
+	 * 获取缓存数据值
+	 *
+	 * @return mixed
+	 */
+	public function getDataCache() {
+		return $this->getData()->cache();
+	}
+	
+	/**
 	 * 获取指定key项数据值
 	 *
 	 * @param       $key
@@ -328,6 +337,21 @@ class TreeFunc extends TreeNode {
 		}
 		
 		return $item->getDataValue($param);
+	}
+	
+	/**
+	 * 获取指定key项缓存数据值
+	 *
+	 * @param       $key
+	 * @return mixed
+	 */
+	public function getKeyDataCache($key) {
+		$item = $this->get($key);
+		if ($item === null) {
+			return null;
+		}
+		
+		return $item->getDataCache();
 	}
 	
 	/**************************************************

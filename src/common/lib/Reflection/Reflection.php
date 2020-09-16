@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\traits\InstanceTrait;
 
 /**
@@ -26,9 +27,14 @@ class Reflection extends BaseClass {
 	const METHOD_OF_PRIVATE = 4;
 	
 	/**
-	 * @var AnnotationReader
+	 * @var AnnotationReader|CachedReader
 	 */
 	protected $_reader = null;
+	
+	/**
+	 * @var AnnotationReader
+	 */
+	protected $_readerAnnot = null;
 	
 	/**
 	 * @var \ReflectionClass
@@ -87,19 +93,19 @@ class Reflection extends BaseClass {
 	protected $_refPropertys = [];
 	
 	/**
-	 * @var array $_classAnnotations
+	 * @var array
 	 */
-	protected $_classAnnotations;
+	protected $_classAnnotations = [];
 	
 	/**
-	 * @var array $_methodAnnotations
+	 * @var array
 	 */
-	protected $_methodAnnotations;
+	protected $_methodAnnotations = [];
 	
 	/**
-	 * @var array $_propertyAnnotations
+	 * @var array
 	 */
-	protected $_propertyAnnotations;
+	protected $_propertyAnnotations = [];
 	
 	
 	/**
@@ -355,7 +361,7 @@ class Reflection extends BaseClass {
 		$useImports = $this->gsPrivateProperty($this->getRefReaderClass(),
 		                                       'imports',
 		                                       null,
-		                                       $this->getReader());
+		                                       $this->getReaderAnnot());
 		
 		return $useImports[$this->getClassName()] ?? [];
 	}
@@ -802,13 +808,19 @@ class Reflection extends BaseClass {
 	}
 	
 	/**
-	 * @return AnnotationReader
+	 * @return AnnotationReader|CachedReader
 	 */
 	public function getReader() {
 		try {
 			if (is_null($this->_reader)) {
 				// $this->_reader = new AnnotationReader();
-				$this->_reader = $this->getRefReaderClass()->newInstance();
+				if (Container::getInstance()->getList()->getKeyDataCache(CachedReader::class)) {
+					$this->_reader = Container::getInstance()->get(CachedReader::class);
+					$this->_readerAnnot = $this->_reader->getDelegate();
+				} else {
+					$this->_reader = $this->getRefReaderClass()->newInstance();
+					$this->_readerAnnot = $this->_reader;
+				}
 			}
 			
 			return $this->_reader;
@@ -824,6 +836,36 @@ class Reflection extends BaseClass {
 	 */
 	public function _setReader($reader) {
 		$this->_reader = $reader;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return AnnotationReader
+	 */
+	public function getReaderAnnot() {
+		try {
+			if (is_null($this->_readerAnnot)) {
+				if (Container::getInstance()->getList()->getKeyDataCache(CachedReader::class)) {
+					$this->_reader = Container::getInstance()->get(CachedReader::class);
+					$this->_readerAnnot = $this->_reader->getDelegate();
+				} else {
+					$this->_reader = $this->getRefReaderClass()->newInstance();
+					$this->_readerAnnot = $this->_reader;
+				}
+			}
+			
+			return $this->_readerAnnot;
+		} catch (AnnotationException $e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * @param AnnotationReader $readerAnnot
+	 */
+	public function _setReaderAnnot(AnnotationReader $readerAnnot) {
+		$this->_readerAnnot = $readerAnnot;
 		
 		return $this;
 	}

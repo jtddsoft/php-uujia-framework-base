@@ -23,9 +23,11 @@ class Runner extends BaseClass {
 	/**
 	 * Runner constructor.
 	 *
-	 * @param RunnerManagerInterface $runnerManagerObj
+	 * @param RunnerManagerInterface|null $runnerManagerObj
+	 *
+	 * @AutoInjection(arg = "runnerManagerObj", name = "RunnerManager")
 	 */
-	public function __construct(RunnerManagerInterface $runnerManagerObj) {
+	public function __construct(?RunnerManagerInterface $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
 		
 		parent::__construct();

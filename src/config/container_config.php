@@ -12,6 +12,7 @@ use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\MQ\MQCollection;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
+use uujia\framework\base\common\lib\Reflection\CachedReader;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
 use uujia\framework\base\common\Result;
@@ -48,6 +49,7 @@ return [
 			ErrorCodeConfig::class,
 			Base::class,
 			Runner::class,
+			CachedReader::class,
 		],
 		
 	]
