@@ -122,6 +122,10 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 	//  */
 	// protected $_lastKeys = [];
 	
+	/***************************************************
+	 * 缓存
+	 ***************************************************/
+	
 	/**
 	 * 事件缓存数据供应商的缓存
 	 *

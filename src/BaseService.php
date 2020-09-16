@@ -23,6 +23,7 @@ use uujia\framework\base\common\MQ;
 use uujia\framework\base\common\RedisDispatcher;
 use uujia\framework\base\common\Result;
 use uujia\framework\base\common\lib\Container\Container;
+use uujia\framework\base\common\Runner;
 use uujia\framework\base\common\traits\NameTrait;
 
 class BaseService {
@@ -294,6 +295,16 @@ class BaseService {
 	 */
 	public function getAopProxyFactory() {
 		return UU::C(AopProxyFactory::class);
+	}
+	
+	/**
+	 * Date: 2020/9/16
+	 * Time: 11:13
+	 *
+	 * @return mixed|Container
+	 */
+	public function getRunner() {
+		return UU::C(Runner::class);
 	}
 	
 	public function t() {

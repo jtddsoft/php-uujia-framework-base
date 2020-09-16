@@ -19,6 +19,12 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 	protected $_app_name = '';
 	
 	/**
+	 * Debug
+	 * @var bool
+	 */
+	protected $_debug = false;
+	
+	/**
 	 * 其他自定义参数
 	 * @var array $param
 	 */
@@ -28,9 +34,11 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 	 * RunnerManager constructor.
 	 *
 	 * @param string $app_name
+	 * @param bool   $debug
 	 */
-	public function __construct($app_name = '') {
+	public function __construct($app_name = '', $debug = false) {
 		$this->_app_name = $app_name;
+		$this->_debug = $debug;
 		
 		parent::__construct();
 	}
@@ -85,6 +93,24 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 	 */
 	public function setParam(array $param) {
 		$this->param = $param;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public function isDebug(): bool {
+		return $this->_debug;
+	}
+	
+	/**
+	 * @param bool $debug
+	 *
+	 * @return $this
+	 */
+	public function setDebug(bool $debug) {
+		$this->_debug = $debug;
 		
 		return $this;
 	}

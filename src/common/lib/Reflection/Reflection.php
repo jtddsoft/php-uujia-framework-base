@@ -416,7 +416,10 @@ class Reflection extends BaseClass {
 	 * Date: 2020/8/18
 	 * Time: 9:25
 	 *
-	 * @param string $className
+	 * @param \ReflectionClass|null $refClassObj
+	 * @param array                 $extends
+	 *
+	 * @return array
 	 */
 	public function getClassExtends(\ReflectionClass $refClassObj = null, $extends = []) {
 		if (is_null($refClassObj)) {

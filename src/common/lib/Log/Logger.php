@@ -74,13 +74,15 @@ class Logger extends BaseClass implements LoggerInterface {
 	// 	'logs' => [], // log_info的集合
 	// ];
 	
-	/** @var ConfigManagerInterface $_configObj */
+	/** @var ConfigManagerInterface */
 	protected $_configObj;
 	
-	/** @var $mqObj MQCollection */
+	/** @var MQCollection */
 	protected $_mqObj;
 	
 	// protected $_enabledMQTT = false;
+	
+	/** @var bool */
 	protected $_enabledResponse = false;
 	
 	// MQTT是否连接
@@ -90,6 +92,7 @@ class Logger extends BaseClass implements LoggerInterface {
 	 * 缓存
 	 ***************************************************/
 	
+	/** @var array */
 	protected $_configValueBuf = [];
 	
 	/**
