@@ -11,7 +11,7 @@ use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
 
 class CachedReader implements Reader {
 	
-	const CACHE_KEY = 'cached_reader:annot';
+	const CACHE_KEY = 'cache:reader:annot';
 	
 	/**
 	 * @var Reader
@@ -53,9 +53,9 @@ class CachedReader implements Reader {
 	 * @param RedisProviderInterface|null $redisProviderObj
 	 *
 	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
-	 * @AutoInjection(arg = "reader", name = "AnnotationReader")
+	 * @AutoInjection(arg = "reader")
 	 */
-	public function __construct(Reader $reader,
+	public function __construct(?Reader $reader,
 	                            RunnerManagerInterface $runnerManagerObj,
 	                            RedisProviderInterface $redisProviderObj) {
 		$this->delegate = $reader;
@@ -166,17 +166,19 @@ class CachedReader implements Reader {
 	}
 	
 	private function fetchFromCache($cacheKey, ReflectionClass $class) {
-		if ((!$this->debug || $this->isCacheFresh($cacheKey, $class)) && $this->cache->hExists($this->getCacheKey(), $cacheKey)) {
-			return json_decode($this->cache->hGet($this->getCacheKey(), $cacheKey));
+		$_cacheKey = str_replace('\\', '/', $cacheKey);
+		if ((!$this->debug || $this->isCacheFresh($cacheKey, $class)) && $this->cache->hExists($this->getCacheKey(), $_cacheKey)) {
+			return unserialize($this->cache->hGet($this->getCacheKey(), $_cacheKey));
 		}
 		
 		return false;
 	}
 	
 	private function saveToCache($cacheKey, $value) {
-		$this->cache->hSet($this->getCacheKey(), $cacheKey, json_encode($value, JSON_UNESCAPED_UNICODE));
+		$_cacheKey = str_replace('\\', '/', $cacheKey);
+		$this->cache->hSet($this->getCacheKey(), $_cacheKey, serialize($value));
 		if ($this->debug) {
-			$this->cache->hSet($this->getCacheKey(), '[C]' . $cacheKey, time());
+			$this->cache->hSet($this->getCacheKey(), '[C]' . $_cacheKey, time());
 		}
 	}
 	
@@ -185,7 +187,8 @@ class CachedReader implements Reader {
 			return true;
 		}
 		
-		return $this->cache->hGet($this->getCacheKey(), '[C]' . $cacheKey) >= $lastModification;
+		$_cacheKey = str_replace('\\', '/', $cacheKey);
+		return $this->cache->hGet($this->getCacheKey(), '[C]' . $_cacheKey) >= $lastModification;
 	}
 	
 	private function getLastModification(ReflectionClass $class) {
@@ -263,6 +266,24 @@ class CachedReader implements Reader {
 	 */
 	public function setRunnerManagerObj(RunnerManagerInterface $runnerManagerObj) {
 		$this->_runnerManagerObj = $runnerManagerObj;
+		
+		return $this;
+	}
+	
+	/**
+	 * @return \Redis
+	 */
+	public function getCache() {
+		return $this->cache;
+	}
+	
+	/**
+	 * @param \Redis $cache
+	 *
+	 * @return CachedReader
+	 */
+	public function setCache(\Redis $cache) {
+		$this->cache = $cache;
 		
 		return $this;
 	}

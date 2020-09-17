@@ -26,6 +26,8 @@ class Reflection extends BaseClass {
 	const METHOD_OF_PROTECTED = 2;
 	const METHOD_OF_PRIVATE = 4;
 	
+	const CACHE_KEY_USE_IMPORTS = 'cache:reader:uses';
+	
 	/**
 	 * @var AnnotationReader|CachedReader
 	 */
@@ -358,10 +360,31 @@ class Reflection extends BaseClass {
 	 * @throws \ReflectionException
 	 */
 	public function getClassUseImports() {
+		$_redisObj = null;
+		if (!empty(Container::getInstance()->getList()->getKeyDataCache(CachedReader::class))) {
+			if ($this->_reader && $this->_reader instanceof CachedReader) {
+				$_redisObj = $this->_reader->getCache();
+			}
+		}
+		
+		if (!empty($_redisObj)) {
+			$key = $this->_reader->getRunnerManagerObj()->getAppName() . ':' . self::CACHE_KEY_USE_IMPORTS;
+			$_cacheKey = str_replace('\\', '/', $this->getClassName());
+			$res = $_redisObj->hGet($key, $_cacheKey);
+			if ($res !== false) {
+				$useImports = unserialize($res);
+				return $useImports[$this->getClassName()] ?? [];
+			}
+		}
+		
 		$useImports = $this->gsPrivateProperty($this->getRefReaderClass(),
 		                                       'imports',
 		                                       null,
 		                                       $this->getReaderAnnot());
+		
+		if (!empty($_redisObj)) {
+			$_redisObj->hSet($key, $_cacheKey, serialize($useImports));
+		}
 		
 		return $useImports[$this->getClassName()] ?? [];
 	}
@@ -814,9 +837,11 @@ class Reflection extends BaseClass {
 		try {
 			if (is_null($this->_reader)) {
 				// $this->_reader = new AnnotationReader();
-				if (Container::getInstance()->getList()->getKeyDataCache(CachedReader::class)) {
+				if (!empty(Container::getInstance()->getList()->getKeyDataCache(CachedReader::class))) {
+					$this->_readerAnnot = $this->getRefReaderClass()->newInstance();
 					$this->_reader = Container::getInstance()->get(CachedReader::class);
-					$this->_readerAnnot = $this->_reader->getDelegate();
+					$this->_reader->setDelegate($this->_readerAnnot);
+					// $this->_readerAnnot = $this->_reader->getDelegate();
 				} else {
 					$this->_reader = $this->getRefReaderClass()->newInstance();
 					$this->_readerAnnot = $this->_reader;
@@ -847,8 +872,10 @@ class Reflection extends BaseClass {
 		try {
 			if (is_null($this->_readerAnnot)) {
 				if (Container::getInstance()->getList()->getKeyDataCache(CachedReader::class)) {
+					$this->_readerAnnot = $this->getRefReaderClass()->newInstance();
 					$this->_reader = Container::getInstance()->get(CachedReader::class);
-					$this->_readerAnnot = $this->_reader->getDelegate();
+					$this->_reader->setDelegate($this->_readerAnnot);
+					// $this->_readerAnnot = $this->_reader->getDelegate();
 				} else {
 					$this->_reader = $this->getRefReaderClass()->newInstance();
 					$this->_readerAnnot = $this->_reader;
