@@ -321,7 +321,6 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		// $refObj = new Reflection($className, '', Reflection::ANNOTATION_OF_CLASS);
 		// $refObj = $this->getReflectionObj();
 		$refObj = $this->newReflectionObj();
-		echo microtime(true) . " aaa1 {$className} \n";
 		
 		$refObj
 			// 设置className
@@ -525,7 +524,6 @@ class Container extends BaseClass implements ContainerInterface, \Iterator, \Arr
 		if (is_callable([$ins, '_setReflection'])) {
 			call_user_func_array([$ins, '_setReflection'], [$refObj]);
 		}
-		echo microtime(true) . " aaa2 {$className} \n";
 		
 		return $ins;
 	}

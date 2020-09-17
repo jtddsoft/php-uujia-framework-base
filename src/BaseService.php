@@ -106,11 +106,12 @@ class BaseService {
 	 *
 	 * @param \Closure $aopEnabledBeforeCallBack
 	 * @return bool
+	 * @throws \ReflectionException
 	 */
 	public function boot(\Closure $aopEnabledBeforeCallBack) {
 		/** @var $configObj ConfigManagerInterface */
 		$configObj = $this->getConfig()->getConfigManagerObj();
-		echo microtime(true) . " e1\n";
+		
 		// 获取容器配置container_config
 		$_containerConfig = $configObj->loadValue('container');
 		
@@ -136,14 +137,14 @@ class BaseService {
 		     ->setAlias($_containerAlias)
 		     ->setAs($_containerAs);
 		// }
-		echo microtime(true) . " e2\n";
+		
 		// server_config
 		$_serverConfig = $configObj->loadValue('server');
 		if (!empty($_serverConfig)) {
 			$this->getServerRouteManager()
 			     ->config($_serverConfig);
 		}
-		echo microtime(true) . " e3\n";
+		
 		$this->getRedisDispatcher()
 			// ->setRedisProviderObj(new RedisProvider())
 			 ->loadConfig();
@@ -151,7 +152,7 @@ class BaseService {
 		$this->getContainer()
 		     ->invoke(CachedReader::class);
 		
-		echo microtime(true) . " e4\n";
+		
 		/** @var CacheDataManagerInterface $cacheDataMgr */
 		$cacheDataMgr = $this->getCacheDataManager();
 		
@@ -161,7 +162,7 @@ class BaseService {
 		$aopProxyCacheDataProvider = UU::C(AopProxyCacheDataProvider::class);
 		
 		$cacheDataMgr->regProvider(CacheConstInterface::DATA_PROVIDER_KEY_AOP_PROXY_CLASS, $aopProxyCacheDataProvider);
-		echo microtime(true) . " e5\n";
+		
 		// 忽略boot调用者自身aop
 		$this->getContainer()->addAopIgnore(static::class);
 		
@@ -171,7 +172,7 @@ class BaseService {
 				return false;
 			}
 		}
-		echo microtime(true) . " e6\n";
+		
 		$this->getContainer()
 		     ->setAopEnabled($_aopEnabled);
 		

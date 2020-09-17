@@ -6,7 +6,7 @@ use oliverlorenz\reactphpmqtt\packet\QoS\Levels;
 
 return [
 	'MQTT' => [
-		'enabled' => true,              // 启用
+		'enabled' => false,              // 启用
 		
 		'server'          => "59.110.217.60",     // change if necessary
 		// 'server'          => "mq.tongxinmao.com",     // change if necessary
@@ -53,7 +53,7 @@ return [
 	],
 	
 	'RabbitMQ' => [
-		'enabled' => true,              // 启用
+		'enabled' => false,              // 启用
 		
 		'server'           => '59.110.217.60',//localhost"59.110.217.60",     // change if necessary
 		'port'             => 5672,            // change if necessary

@@ -373,7 +373,7 @@ class Reflection extends BaseClass {
 			$res = $_redisObj->hGet($key, $_cacheKey);
 			if ($res !== false) {
 				$useImports = unserialize($res);
-				return $useImports[$this->getClassName()] ?? [];
+				return $useImports ?? [];
 			}
 		}
 		
@@ -383,7 +383,7 @@ class Reflection extends BaseClass {
 		                                       $this->getReaderAnnot());
 		
 		if (!empty($_redisObj)) {
-			$_redisObj->hSet($key, $_cacheKey, serialize($useImports));
+			$_redisObj->hSet($key, $_cacheKey, serialize($useImports[$this->getClassName()] ?? []));
 		}
 		
 		return $useImports[$this->getClassName()] ?? [];

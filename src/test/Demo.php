@@ -119,32 +119,32 @@ class Demo extends BaseService {
 		/** @var $configObj ConfigManagerInterface */
 		$configObj = $this->getConfig()->getConfigManagerObj(); //UU::C(Config::class);
 		$configObj->path(__DIR__ . '/config/error_code.php', '', 99);
-		echo microtime(true) . " a\n";
+		
 		$paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
 		$configObj->path($paths);
-		echo microtime(true) . " b\n";
+		
 		
 		$this->getRunner()->runnerObj()->_setAppName('app');
 		
 		/** @var AopProxyFactory $aopProxyFactoryObj */
 		$aopProxyFactoryObj = $this->getAopProxyFactory();
-		echo microtime(true) . " c\n";
+		
 		$aopConfig = $configObj->loadValue('aop.aop');
 		if (!empty($aopConfig['cache_path']) && !empty($aopConfig['cache_namespace'])) {
 			$aopProxyFactoryObj->setProxyClassFilePath($aopConfig['cache_path']);
 			$aopProxyFactoryObj->setProxyClassNameSpace($aopConfig['cache_namespace']);
 		}
-		echo microtime(true) . " d\n";
+		
 		/** @var CacheDataManagerInterface $cacheDataMgr */
 		$cacheDataMgr = $this->getCacheDataManager();
 		
 		$cacheDataMgr->setCacheKeyPrefix(['app']);
-		echo microtime(true) . " e\n";
+		
 		$this->boot(function () {
 			$this->aopProviderReg();
 			$this->eventProviderReg();
 		});
-		echo microtime(true) . " f\n";
+		
 		/** @var EventTest $a */
 		$a = UU::C(EventTest::class);
 		$b = $a->ok();
@@ -197,9 +197,7 @@ class Demo extends BaseService {
 			return $this->getResult()->rt()->return_error();
 		}
 		echo $this->tt('t') . "\n";
-		echo microtime(true) . " aa1\n";
-		$redis->set('aaa', 'cccc');
-		echo microtime(true) . " aa2\n";
+		
 		return UU::C(Base::class)->ok();
 	}
 	
