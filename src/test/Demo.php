@@ -116,31 +116,36 @@ class Demo extends BaseService {
 		// 	      Event::class,
 		//       ]);
 		
-		/** @var $configObj ConfigManagerInterface */
-		$configObj = $this->getConfig()->getConfigManagerObj(); //UU::C(Config::class);
-		$configObj->path(__DIR__ . '/config/error_code.php', '', 99);
+		// /** @var $configObj ConfigManagerInterface */
+		// $configObj = $this->getConfig()->getConfigManagerObj(); //UU::C(Config::class);
+		// $configObj->path(__DIR__ . '/config/error_code.php', '', 99);
+		//
+		// $paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
+		// $configObj->path($paths);
+		//
+		//
+		// $this->getRunner()->runnerObj()->_setAppName('app');
+		//
+		// /** @var AopProxyFactory $aopProxyFactoryObj */
+		// $aopProxyFactoryObj = $this->getAopProxyFactory();
+		//
+		// $aopConfig = $configObj->loadValue('aop.aop');
+		// if (!empty($aopConfig['cache_path']) && !empty($aopConfig['cache_namespace'])) {
+		// 	$aopProxyFactoryObj->setProxyClassFilePath($aopConfig['cache_path']);
+		// 	$aopProxyFactoryObj->setProxyClassNameSpace($aopConfig['cache_namespace']);
+		// }
+		//
+		// /** @var CacheDataManagerInterface $cacheDataMgr */
+		// $cacheDataMgr = $this->getCacheDataManager();
+		//
+		// $cacheDataMgr->setCacheKeyPrefix([$this->getRunner()->runnerObj()->getAppName()]);
 		
-		$paths = glob(__DIR__ . "/config/*_config.php", GLOB_BRACE);
-		$configObj->path($paths);
+		$configs = [
+			99 => [__DIR__ . '/config/error_code.php'],
+			100 => glob(__DIR__ . "/config/*_config.php", GLOB_BRACE),
+		];
 		
-		
-		$this->getRunner()->runnerObj()->_setAppName('app');
-		
-		/** @var AopProxyFactory $aopProxyFactoryObj */
-		$aopProxyFactoryObj = $this->getAopProxyFactory();
-		
-		$aopConfig = $configObj->loadValue('aop.aop');
-		if (!empty($aopConfig['cache_path']) && !empty($aopConfig['cache_namespace'])) {
-			$aopProxyFactoryObj->setProxyClassFilePath($aopConfig['cache_path']);
-			$aopProxyFactoryObj->setProxyClassNameSpace($aopConfig['cache_namespace']);
-		}
-		
-		/** @var CacheDataManagerInterface $cacheDataMgr */
-		$cacheDataMgr = $this->getCacheDataManager();
-		
-		$cacheDataMgr->setCacheKeyPrefix(['app']);
-		
-		$this->boot(function () {
+		UU::boot('app', $configs, function () {
 			$this->aopProviderReg();
 			$this->eventProviderReg();
 		});
