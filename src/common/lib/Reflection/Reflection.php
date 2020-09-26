@@ -172,6 +172,14 @@ class Reflection extends BaseClass {
 	}
 	
 	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = static::class;
+		$this->name_info['intro'] = '反射助手类';
+	}
+	
+	/**
 	 * 复位 属性归零
 	 *
 	 * @param array $exclude
@@ -180,6 +188,7 @@ class Reflection extends BaseClass {
 	 */
 	public function reset($exclude = []) {
 		(!in_array('reader', $exclude)) && $this->_reader = null;
+		(!in_array('readerAnnot', $exclude)) && $this->_readerAnnot = null;
 		(!in_array('refReaderClass', $exclude)) && $this->_refReaderClass = null;
 		(!in_array('className', $exclude)) && $this->_className = '';
 		(!in_array('methodName', $exclude)) && $this->_methodName = '';
