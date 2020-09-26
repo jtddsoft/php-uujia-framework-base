@@ -34,6 +34,14 @@ class Runner extends BaseClass {
 	}
 	
 	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = static::class;
+		$this->name_info['intro'] = '运行时管理类';
+	}
+	
+	/**
 	 * 获取运行时管理对象
 	 *
 	 * @return RunnerManagerInterface

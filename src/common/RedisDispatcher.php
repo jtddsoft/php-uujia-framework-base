@@ -54,7 +54,7 @@ class RedisDispatcher extends BaseClass {
 	 */
 	public function initNameInfo() {
 		$this->name_info['name'] = static::class;
-		$this->name_info['intro'] = 'Redis服务';
+		$this->name_info['intro'] = 'Redis调度类';
 	}
 	
 	/**

@@ -34,6 +34,14 @@ class ErrorConfig extends BaseClass {
 	}
 	
 	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = static::class;
+		$this->name_info['intro'] = '错误代码配置管理类';
+	}
+	
+	/**
 	 * 加载初始化配置文件
 	 * @return $this
 	 */

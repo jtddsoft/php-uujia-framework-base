@@ -32,6 +32,14 @@ class MQ extends BaseClass {
 	}
 	
 	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = static::class;
+		$this->name_info['intro'] = 'MQ管理类';
+	}
+	
+	/**
 	 * 魔术方法
 	 *  可直接访问MQCollection中方法
 	 *

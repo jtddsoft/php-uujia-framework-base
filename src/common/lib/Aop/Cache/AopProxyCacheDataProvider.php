@@ -75,6 +75,14 @@ class AopProxyCacheDataProvider extends CacheDataProvider {
 		parent::__construct($parent, $redisProviderObj);
 	}
 	
+	/**
+	 * 类说明初始化
+	 */
+	public function initNameInfo() {
+		$this->name_info['name'] = static::class;
+		$this->name_info['intro'] = 'Aop代理缓存数据提供商类';
+	}
+	
 	/**************************************************************
 	 * data
 	 **************************************************************/
