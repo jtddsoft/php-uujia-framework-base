@@ -220,9 +220,13 @@ class UU {
 	 *
 	 * @return mixed
 	 */
-	public static function C($objName, $obj = null) {
+	public static function C($objName = '', $obj = null) {
 		/** @var UU $me */
 		$me = static::getInstance();
+		
+		if (empty($objName) && empty($obj)) {
+			return $me->getContainer();
+		}
 		
 		// 【注意】如果为数组 则批量注入（并非是获取 只有为字符串类名时才是获取）
 		if (is_array($objName)) {
