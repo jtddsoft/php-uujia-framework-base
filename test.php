@@ -51,6 +51,8 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 			
 			$demo->testYield();
 			
+			// var_dump(Config::getList());
+			
 			foreach (UU::getInstance()->getContainer() as $key => $item) {
 				if (!($item instanceof BaseClass)) {
 					continue;

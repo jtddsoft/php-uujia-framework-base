@@ -8,6 +8,7 @@ use uujia\framework\base\common\lib\Annotation\AutoInjection;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\Result;
 
 /**
@@ -75,6 +76,32 @@ class Config extends BaseClass {
 		$this->getConfigManagerObj()->error('方法不存在', 1000);
 		
 		return $this;
+	}
+	
+	/**
+	 * 魔术方法
+	 *  可直接访问ConfigManager中方法
+	 *
+	 * Date: 2020/9/28
+	 * Time: 1:43
+	 *
+	 * @param $method
+	 * @param $args
+	 * @return mixed|object|Config|null
+	 */
+	public static function __callStatic($method, $args) {
+		$di = Container::getInstance();
+		$me = $di->get(static::class);
+		
+		// 从ConfigManager中查找方法
+		if (is_callable([$me->getConfigManagerObj(), $method])) {
+			return call_user_func_array([$me->getConfigManagerObj(), $method], $args);
+		}
+		
+		// todo: 方法不存在
+		$me->getConfigManagerObj()->error('方法不存在', 1000);
+		
+		return $me;
 	}
 	
 	/**

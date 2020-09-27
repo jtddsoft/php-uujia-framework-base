@@ -5,6 +5,7 @@ namespace uujia\framework\base\common;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Error\ErrorCodeConfig;
 
 /**
@@ -105,6 +106,32 @@ class ErrorConfig extends BaseClass {
 		// $this->getErrorCodeConfigObj()->error('方法不存在', 1000);
 		
 		return $this;
+	}
+	
+	/**
+	 * 魔术方法
+	 *  可直接访问ErrorCodeConfig中方法
+	 *
+	 * Date: 2020/9/28
+	 * Time: 1:43
+	 *
+	 * @param $method
+	 * @param $args
+	 * @return mixed|object|Config|null
+	 */
+	public static function __callStatic($method, $args) {
+		$di = Container::getInstance();
+		$me = $di->get(static::class);
+		
+		// 从ErrorCodeConfig中查找方法
+		if (is_callable([$me->getErrorCodeConfigObj(), $method])) {
+			return call_user_func_array([$me->getErrorCodeConfigObj(), $method], $args);
+		}
+		
+		// todo: 方法不存在
+		// $me->getConfigManagerObj()->error('方法不存在', 1000);
+		
+		return $me;
 	}
 	
 	/**

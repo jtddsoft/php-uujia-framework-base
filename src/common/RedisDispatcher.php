@@ -4,6 +4,7 @@ namespace uujia\framework\base\common;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Annotation\AutoInjection;
 
@@ -55,6 +56,53 @@ class RedisDispatcher extends BaseClass {
 	public function initNameInfo() {
 		$this->name_info['name'] = static::class;
 		$this->name_info['intro'] = 'Redis调度类';
+	}
+	
+	/**
+	 * 魔术方法
+	 *  可直接访问redisProviderObj中方法
+	 *
+	 * @param $method
+	 * @param $args
+	 *
+	 * @return $this|mixed
+	 */
+	public function __call($method, $args) {
+		// 从redisProviderObj中查找方法
+		if (is_callable([$this->getRedisProviderObj(), $method])) {
+			return call_user_func_array([$this->getRedisProviderObj(), $method], $args);
+		}
+		
+		// todo: 方法不存在
+		// $this->getRedisProviderObj()->error('方法不存在', 1000);
+		
+		return $this;
+	}
+	
+	/**
+	 * 魔术方法
+	 *  可直接访问redisProviderObj中方法
+	 *
+	 * Date: 2020/9/28
+	 * Time: 1:43
+	 *
+	 * @param $method
+	 * @param $args
+	 * @return mixed|object|Config|null
+	 */
+	public static function __callStatic($method, $args) {
+		$di = Container::getInstance();
+		$me = $di->get(static::class);
+		
+		// 从redisProviderObj中查找方法
+		if (is_callable([$me->getRedisProviderObj(), $method])) {
+			return call_user_func_array([$me->getRedisProviderObj(), $method], $args);
+		}
+		
+		// todo: 方法不存在
+		// $me->getRedisProviderObj()->error('方法不存在', 1000);
+		
+		return $me;
 	}
 	
 	/**

@@ -4,6 +4,7 @@
 namespace uujia\framework\base\common;
 
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Container\Container;
 use uujia\framework\base\common\lib\Log\Logger;
 
 /**
@@ -39,7 +40,7 @@ class Log extends BaseClass {
 	
 	/**
 	 * 魔术方法
-	 *  可直接访问MQCollection中方法
+	 *  可直接访问loggerObj中方法
 	 *
 	 * @param $method
 	 * @param $args
@@ -47,7 +48,7 @@ class Log extends BaseClass {
 	 * @return $this|mixed
 	 */
 	public function __call($method, $args) {
-		// 从MQCollection中查找方法
+		// 从loggerObj中查找方法
 		if (is_callable([$this->getLoggerObj(), $method])) {
 			return call_user_func_array([$this->getLoggerObj(), $method], $args);
 		}
@@ -56,6 +57,32 @@ class Log extends BaseClass {
 		// $this->getLoggerObj()->error('方法不存在', 1000);
 		
 		return $this;
+	}
+	
+	/**
+	 * 魔术方法
+	 *  可直接访问loggerObj中方法
+	 *
+	 * Date: 2020/9/28
+	 * Time: 1:43
+	 *
+	 * @param $method
+	 * @param $args
+	 * @return mixed|object|Config|null
+	 */
+	public static function __callStatic($method, $args) {
+		$di = Container::getInstance();
+		$me = $di->get(static::class);
+		
+		// 从loggerObj中查找方法
+		if (is_callable([$me->getLoggerObj(), $method])) {
+			return call_user_func_array([$me->getLoggerObj(), $method], $args);
+		}
+		
+		// todo: 方法不存在
+		// $me->getLoggerObj()->error('方法不存在', 1000);
+		
+		return $me;
 	}
 	
 	/**
