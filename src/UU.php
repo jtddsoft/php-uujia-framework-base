@@ -94,7 +94,9 @@ class UU {
 	 * @return bool
 	 * @throws \ReflectionException
 	 */
-	public static function boot(string $appName = 'app', array $configPaths = [], \Closure $aopEnabledBeforeCallBack = null) {
+	public static function boot(string $appName = 'app',
+	                            array $configPaths = [],
+	                            \Closure $aopEnabledBeforeCallBack = null) {
 		/** @var UU $me */
 		$me = static::getInstance();
 		
