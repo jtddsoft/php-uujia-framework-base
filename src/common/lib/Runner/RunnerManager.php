@@ -4,6 +4,7 @@ namespace uujia\framework\base\common\lib\Runner;
 
 
 use uujia\framework\base\common\lib\Base\BaseClass;
+use uujia\framework\base\common\lib\Base\BaseClassInterface;
 
 /**
  * Class RunnerManager
@@ -60,6 +61,41 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 		$this->name_info['name'] = static::class;
 		$this->name_info['intro'] = '运行时类';
 	}
+	
+	/**
+	 * 获取容器中class信息
+	 * （实现了BaseClassInterface接口的class）
+	 *
+	 * Date: 2020/10/12
+	 * Time: 1:21
+	 *
+	 * @return \Generator
+	 */
+	public function getDIClassInfo() {
+		foreach ($this->getContainer() as $key => $item) {
+			if (!($item instanceof BaseClassInterface)) {
+				continue;
+			}
+			
+			yield $item->getNameInfo();
+		}
+	}
+	
+	/**
+	 * 打印容器中class信息
+	 *
+	 * Date: 2020/10/12
+	 * Time: 1:25
+	 */
+	public function echoDIClassInfo() {
+		foreach ($this->getDIClassInfo() as $itemNameInfo) {
+			echo $itemNameInfo->getNameInfo()['name'] . " " . $itemNameInfo->getNameInfo()['intro'] . "\n";
+		}
+	}
+	
+	/**************************************************************
+	 * get set
+	 **************************************************************/
 	
 	/**
 	 * @return string

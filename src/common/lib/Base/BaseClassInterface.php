@@ -54,4 +54,11 @@ interface BaseClassInterface extends BaseInterface {
 	 */
 	public function _setContainer(ContainerInterface $container);
 	
+	/**
+	 * 获取信息
+	 *
+	 * @return array
+	 */
+	public function getNameInfo();
+	
 }

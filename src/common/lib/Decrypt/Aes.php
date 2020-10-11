@@ -39,7 +39,7 @@ class Aes {
 	 * @param string $iv      iv向量
 	 * @param mixed  $options 还不是很清楚
 	 */
-	public function __construct($key, $method = 'AES-128-ECB', $iv = '', $options = 0) {
+	public function __construct($key = 'uujia.net', $method = 'AES-128-ECB', $iv = '', $options = 0) {
 		// key是必须要设置的
 		$this->_secret_key = isset($key) ? $key : 'uujia.net';
 		

@@ -98,6 +98,10 @@ class Runner extends BaseClass {
 		return $this->getRunnerManagerObj();
 	}
 	
+	/**************************************************************
+	 * get set
+	 **************************************************************/
+	
 	/**
 	 * @return RunnerManagerInterface
 	 */

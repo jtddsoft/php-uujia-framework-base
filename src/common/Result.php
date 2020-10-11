@@ -297,6 +297,10 @@ class Result extends BaseClass implements ResultInterface, LoggerAwareInterface 
 		return $config[self::RESULT_CONFIG_ROOT_KEY][self::RESULT_CONFIG_KEY['enabled_log']] ?? false;
 	}
 	
+	/**************************************************************
+	 * get set
+	 **************************************************************/
+	
 	/**
 	 * 获取返回类型（1 - 内部使用数组 2 - 直接输出的json）
 	 *
