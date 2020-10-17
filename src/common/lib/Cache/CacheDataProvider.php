@@ -110,8 +110,6 @@ abstract class CacheDataProvider extends BaseClass implements CacheDataProviderI
 	 *
 	 * @param null|CacheDataManagerInterface $parent
 	 * @param RedisProviderInterface|null    $redisProviderObj
-	 *
-	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
 	public function __construct(CacheDataManagerInterface $parent = null,
 	                            RedisProviderInterface $redisProviderObj = null) {

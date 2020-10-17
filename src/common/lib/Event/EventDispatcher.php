@@ -53,7 +53,6 @@ class EventDispatcher extends BaseClass implements EventDispatcherInterface {
 	 * @param ServerRouteManager|null     $serverRouteManagerObj
 	 *
 	 * @AutoInjection(arg = "cacheDataManagerObj", name = "CacheDataManager")
-	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
 	public function __construct(CacheDataManagerInterface $cacheDataManagerObj = null,
 	                            RedisProviderInterface $redisProviderObj = null,

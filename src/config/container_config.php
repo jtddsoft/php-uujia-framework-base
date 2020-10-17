@@ -12,6 +12,7 @@ use uujia\framework\base\common\lib\Event\Cache\EventCacheDataInterface;
 use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\MQ\MQCollection;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
+use uujia\framework\base\common\lib\Redis\RedisProviderInterface;
 use uujia\framework\base\common\lib\Reflection\CachedReader;
 use uujia\framework\base\common\lib\Runner\RunnerManager;
 use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
@@ -21,13 +22,14 @@ use uujia\framework\base\common\Runner;
 return [
 	'container' => [
 		'alias' => [
-			'redisProvider' => RedisProvider::class
+			// 'redisProvider' => RedisProvider::class
 		],
 		'as' => [
 			ConfigManagerInterface::class => ConfigManager::class,
 			CacheDataManagerInterface::class => CacheDataManager::class,
 			EventCacheDataInterface::class => EventCacheData::class,
 			RunnerManagerInterface::class => RunnerManager::class,
+			RedisProviderInterface::class => RedisProvider::class,
 		],
 	],
 	// todo：还未完成

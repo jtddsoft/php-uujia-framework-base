@@ -909,11 +909,16 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		}
 		
 		$cdProviders = $this->getCacheDataProviders();
+		if (empty($cdProviders)) {
+			// throw new ExceptionEvent('未找到事件缓存供应商', 1000);
+			return [];
+		}
 		
 		/** @var TreeFunc $it */
 		$it = $cdProviders['it'];
 		if ($it->count() == 0) {
-			throw new ExceptionEvent('未找到事件缓存供应商', 1000);
+			// throw new ExceptionEvent('未找到事件缓存供应商', 1000);
+			return [];
 		}
 		
 		// 遍历寻找事件缓存供应商 EventCacheDataProvider 事件供应商我只提供一个 但您可以自行增加
@@ -930,7 +935,8 @@ class EventProvider extends BaseClass implements ListenerProviderInterface, Cach
 		}
 		
 		if (!$found) {
-			throw new ExceptionEvent('未找到事件缓存供应商', 1000);
+			// throw new ExceptionEvent('未找到事件缓存供应商', 1000);
+			return [];
 		}
 		
 		$this->setEventCacheDataProvidersBuf($_evtProvider);

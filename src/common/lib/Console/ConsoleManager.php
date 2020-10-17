@@ -9,6 +9,9 @@
 namespace uujia\framework\base\common\lib\Console;
 
 
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableSeparator;
+use Symfony\Component\Console\Output\OutputInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 
@@ -19,7 +22,7 @@ use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
  *
  * @package uujia\framework\base\common\lib\Console
  */
-class ConsoleManager extends BaseClass {
+class ConsoleManager extends BaseClass implements ConsoleManagerInterface {
 	
 	/** @var ConfigManagerInterface */
 	protected $_configObj;
@@ -37,6 +40,7 @@ class ConsoleManager extends BaseClass {
 	
 	/**
 	 * 初始化
+	 *
 	 * @return $this
 	 */
 	public function init() {
@@ -49,9 +53,35 @@ class ConsoleManager extends BaseClass {
 	 * 类说明初始化
 	 */
 	public function initNameInfo() {
-		$this->name_info['name'] = static::class;
+		$this->name_info['name']  = static::class;
 		$this->name_info['intro'] = '控制台管理';
 	}
 	
+	/**
+	 * 输出打印表格
+	 *
+	 * Date: 2020/10/15
+	 * Time: 9:33
+	 *
+	 * @param array           $rows
+	 * @param OutputInterface $output
+	 */
+	public function printTable(array $rows, OutputInterface $output) {
+		$_rows = [];
+		foreach ($rows['data'] as $row) {
+			$_rows[] = $row;
+			$_rows[] = new TableSeparator();
+		}
+		$_rows  = array_slice($_rows, 0, count($_rows) - 1);
+		$table = new Table($output);
+		$table
+			->setHeaders($rows['header'] ?? [])
+			->setRows($_rows);
+		$table->render();
+	}
+	
+	/**************************************************************
+	 * get set
+	 **************************************************************/
 	
 }

@@ -13,6 +13,7 @@ use uujia\framework\base\common\lib\Aop\AopProxyFactory;
 use uujia\framework\base\common\lib\Aop\Vistor\AopProxyVisitor;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
+use uujia\framework\base\common\lib\Log\Logger;
 use uujia\framework\base\common\lib\Redis\RedisProvider;
 use uujia\framework\base\common\lib\Reflection\CodeParser;
 use uujia\framework\base\common\lib\Reflection\Reflection;
@@ -148,7 +149,7 @@ class Demo extends BaseService {
 		UU::boot('app', $configs, function () {
 			$this->aopProviderReg();
 			$this->eventProviderReg();
-		});
+		})::bootAfter();
 		
 		/** @var EventTest $a */
 		$a = UU::C(EventTest::class);
@@ -196,10 +197,10 @@ class Demo extends BaseService {
 		// return UU::C(Base::class)->rt()->ok();
 		
 		/** @var \Redis|\Swoole\Coroutine\Redis $redis */
-		$redis = $this->getRedisDispatcher()->getRedisObj();
-		if ($this->getRedisDispatcher()->getRedisProviderObj()->isErr()) {
-			$this->getResult()->setLastReturn($this->getRedisDispatcher()->getRedisProviderObj()->getLastReturn());
-			return $this->getResult()->rt()->return_error();
+		$redis = UU::getRedisDispatcher()->getRedisObj();
+		if (UU::getRedisDispatcher()->getRedisProviderObj()->isErr()) {
+			UU::getResult()->setLastReturn(UU::getRedisDispatcher()->getRedisProviderObj()->getLastReturn());
+			return UU::getResult()->rt()->return_error();
 		}
 		echo $this->tt('t') . "\n";
 		
@@ -207,12 +208,12 @@ class Demo extends BaseService {
 	}
 	
 	public function subscribeRabbitMQ() {
-		$mq = $this->getMQCollection()->getRabbitMQObj();
+		$mq = UU::getMQCollection()->getRabbitMQObj();
 		$mq->connect()
-		   ->queue(Log::RABBITMQ_QUEUE)
-		   ->exchange(Log::RABBITMQ_EXCHANGE)
-		   ->routingKey(Log::RABBITMQ_ROUTING_KEY)
-		   ->routingKeyBinding(Log::RABBITMQ_ROUTING_KEY_BINDING)
+		   ->queue(Logger::RABBITMQ_QUEUE)
+		   ->exchange(Logger::RABBITMQ_EXCHANGE)
+		   ->routingKey(Logger::RABBITMQ_ROUTING_KEY)
+		   ->routingKeyBinding(Logger::RABBITMQ_ROUTING_KEY_BINDING)
 		   ->setCallbackSubscribe(function ($body, $envelope, $queue) {
 			   /** @var $envelope \AMQPEnvelope */
 			   /** @var $queue \AMQPQueue */
@@ -223,7 +224,7 @@ class Demo extends BaseService {
 	}
 	
 	public function subscribeMQTT() {
-		$mq = $this->getMQCollection()->getMQTTObj();
+		$mq = UU::getMQCollection()->getMQTTObj();
 		$mq->topics('Logger_2019')
 		   ->clientId('Logger2019')
 		   ->connect()
@@ -236,7 +237,7 @@ class Demo extends BaseService {
 	}
 	
 	public function publishMQTT() {
-		$mq = $this->getMQCollection()->getMQTTObj();
+		$mq = UU::getMQCollection()->getMQTTObj();
 		$mq->topics('Logger_2019')
 		   ->clientId('Logger20191')
 			// ->connect()
@@ -246,11 +247,11 @@ class Demo extends BaseService {
 	}
 	
 	public function event() {
-		$event = $this->getEvent();
+		$event = UU::getEvent();
 		$event->listen('a#*', function ($param) {
 			// echo Json::je($param);
 			
-			return $this->getResult()->ok();
+			return UU::getResult()->ok();
 		});
 		
 		return $event->trigger('a', [1]);
@@ -271,7 +272,7 @@ class Demo extends BaseService {
 	
 	public function eventProviderReg() {
 		/** @var CacheDataManagerInterface $cacheDataMgr */
-		$cacheDataMgr = $this->getCacheDataManager();
+		$cacheDataMgr = UU::getCacheDataManager();
 		
 		// $cacheDataMgr->setCacheKeyPrefix(['app']);
 		
@@ -292,7 +293,7 @@ class Demo extends BaseService {
 	
 	public function aopProviderReg() {
 		/** @var CacheDataManagerInterface $cacheDataMgr */
-		$cacheDataMgr = $this->getCacheDataManager();
+		$cacheDataMgr = UU::getCacheDataManager();
 		
 		/** @var AopCacheDataProviderTest $aopCacheDataProvider */
 		$aopCacheDataProvider = UU::C(AopCacheDataProviderTest::class);

@@ -64,8 +64,6 @@ class AopProxyCacheDataProvider extends CacheDataProvider {
 	 *
 	 * @param CacheDataManagerInterface|null $parent
 	 * @param RedisProviderInterface|null    $redisProviderObj
-	 *
-	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
 	public function __construct(CacheDataManagerInterface $parent = null,
 	                            RedisProviderInterface $redisProviderObj = null,

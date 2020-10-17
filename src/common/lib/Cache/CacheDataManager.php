@@ -39,7 +39,6 @@ class CacheDataManager extends BaseClass implements CacheDataManagerInterface {
 	 * CacheDataManager constructor.
 	 *
 	 * @param RedisProviderInterface|null $redisProviderObj
-	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
 	public function __construct(RedisProviderInterface $redisProviderObj = null) {
 		$this->_redisProviderObj = $redisProviderObj;

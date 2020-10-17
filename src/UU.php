@@ -3,18 +3,31 @@
 namespace uujia\framework\base;
 
 
+use uujia\framework\base\common\Base;
 use uujia\framework\base\common\Config;
+use uujia\framework\base\common\Console;
 use uujia\framework\base\common\consts\CacheConstInterface;
+use uujia\framework\base\common\ErrorConfig;
+use uujia\framework\base\common\Event;
+use uujia\framework\base\common\event\EventRunnerStatus;
 use uujia\framework\base\common\lib\Aop\AopProxyFactory;
 use uujia\framework\base\common\lib\Aop\Cache\AopProxyCacheDataProvider;
 use uujia\framework\base\common\lib\Cache\CacheDataManagerInterface;
+use uujia\framework\base\common\lib\Config\ConfigManager;
 use uujia\framework\base\common\lib\Config\ConfigManagerInterface;
 use uujia\framework\base\common\lib\Container\Container;
+use uujia\framework\base\common\lib\Event\EventDispatcher;
+use uujia\framework\base\common\lib\Log\Logger;
+use uujia\framework\base\common\lib\MQ\MQCollection;
 use uujia\framework\base\common\lib\Reflection\CachedReader;
 use uujia\framework\base\common\lib\Runner\RunnerManagerInterface;
 use uujia\framework\base\common\lib\Server\ServerRouteManager;
 use uujia\framework\base\common\lib\Tree\TreeFunc;
+use uujia\framework\base\common\lib\Tree\TreeFuncData;
+use uujia\framework\base\common\Log;
+use uujia\framework\base\common\MQ;
 use uujia\framework\base\common\RedisDispatcher;
+use uujia\framework\base\common\Result;
 use uujia\framework\base\common\Runner;
 use uujia\framework\base\common\traits\InstanceTrait;
 use uujia\framework\base\common\traits\NameTrait;
@@ -91,7 +104,7 @@ class UU {
 	 * @param array    $configPaths ['100' => [__DIR__ . '/config/error_code.php'], '99' => [...], ...]
 	 * @param \Closure $aopEnabledBeforeCallBack
 	 *
-	 * @return bool
+	 * @return UU
 	 * @throws \ReflectionException
 	 */
 	public static function boot(string $appName = 'app',
@@ -99,6 +112,20 @@ class UU {
 	                            \Closure $aopEnabledBeforeCallBack = null) {
 		/** @var UU $me */
 		$me = static::getInstance();
+		
+		/**
+		 * Config应为最先加载项 不能让容器去创建 否则容器本身还有一些隐式依赖
+		 * 而这些依赖需要加载配置项 而Config还没创建 只能使用默认配置 这就造成一部分无法使用正确的配置
+		 */
+		$me->getContainer()->set(ConfigManagerInterface::class, function (TreeFuncData $data, TreeFunc $it, Container $c) {
+			$obj = new ConfigManager();
+			return $obj;
+		});
+		
+		$me->getContainer()->set(Config::class, function (TreeFuncData $data, TreeFunc $it, Container $c) {
+			$obj = new Config($c->get(ConfigManagerInterface::class));
+			return $obj;
+		});
 		
 		/**
 		 * 配置加载
@@ -202,7 +229,7 @@ class UU {
 		if (!empty($aopEnabledBeforeCallBack)) {
 			$res = call_user_func_array($aopEnabledBeforeCallBack, []);
 			if ($res === false) {
-				return false;
+				return $me;
 			}
 		}
 		
@@ -211,7 +238,24 @@ class UU {
 		
 		// ->setAopIgnore($_aopIgnore);
 		
-		return true;
+		return $me;
+	}
+	
+	/**
+	 * Date: 2020/10/17
+	 * Time: 16:26
+	 *
+	 * @return UU
+	 */
+	public static function bootAfter() {
+		/** @var UU $me */
+		$me = static::getInstance();
+		
+		// event bootAfter
+		$eventRunnerStatus = $me->getContainer()->get(EventRunnerStatus::class);
+		$eventRunnerStatus->bootAfter();
+		
+		return $me;
 	}
 	
 	/**
@@ -246,6 +290,142 @@ class UU {
 			// 设置
 			return $me->getContainer()->set($objName, $obj);
 		}
+	}
+	
+	
+	/**
+	 * @return ErrorConfig
+	 */
+	public static function getErrorCodeList() {
+		return self::C(ErrorConfig::class);
+	}
+	
+	/**
+	 * @return MQCollection
+	 */
+	public static function getMQCollection() {
+		return self::C(MQCollection::class);
+	}
+	
+	/**
+	 * @return MQ
+	 */
+	public static function getMQ() {
+		return self::C(MQ::class);
+	}
+	
+	/**
+	 * @return Logger
+	 */
+	public static function getLogger() {
+		return self::C(Logger::class);
+	}
+	
+	/**
+	 * @return Log
+	 */
+	public static function getLog() {
+		return self::C(Log::class);
+	}
+	
+	/**
+	 * @return Result
+	 */
+	public static function getResult() {
+		return self::C(Result::class);
+	}
+	
+	/**
+	 * @return ConfigManagerInterface
+	 */
+	public static function getConfigManager() {
+		return self::C(ConfigManagerInterface::class);
+	}
+	
+	/**
+	 * @return Config
+	 */
+	public static function getConfig() {
+		return self::C(Config::class);
+	}
+	
+	/**
+	 * @return Base
+	 */
+	public static function getBase() {
+		return self::C(Base::class);
+	}
+	
+	/**
+	 * @return Event
+	 */
+	public static function getEvent() {
+		return self::C(Event::class);
+	}
+	
+	/**
+	 * @return RedisDispatcher
+	 */
+	public static function getRedisDispatcher() {
+		return self::C(RedisDispatcher::class);
+	}
+	
+	/**
+	 * @return \Redis|\Swoole\Coroutine\Redis
+	 */
+	public static function getRedis() {
+		return self::getRedisDispatcher()->getRedisObj();
+	}
+	
+	/**
+	 * @return CacheDataManagerInterface
+	 */
+	public static function getCacheDataManager() {
+		return self::C(CacheDataManagerInterface::class);
+	}
+	
+	/**
+	 * @return EventDispatcher
+	 */
+	public static function getEventDispatcher() {
+		return self::C(EventDispatcher::class);
+	}
+	
+	/**
+	 * @return ServerRouteManager
+	 */
+	public static function getServerRouteManager() {
+		return self::C(ServerRouteManager::class);
+	}
+	
+	/**
+	 * Date: 2020/8/13
+	 * Time: 23:58
+	 *
+	 * @return AopProxyFactory
+	 */
+	public static function getAopProxyFactory() {
+		return self::C(AopProxyFactory::class);
+	}
+	
+	/**
+	 * Date: 2020/9/16
+	 * Time: 11:13
+	 *
+	 * @return Runner
+	 */
+	public static function getRunner() {
+		return self::C(Runner::class);
+	}
+	
+	/**
+	 * Date: 2020/10/15
+	 * Time: 10:33
+	 *
+	 * @return Console
+	 */
+	public static function getConsole() {
+		return self::C(Console::class);
 	}
 	
 	/**

@@ -5,6 +5,7 @@ namespace uujia\framework\base\test;
 
 use Generator;
 use uujia\framework\base\common\lib\Event\Cache\EventCacheDataProvider;
+use uujia\framework\base\test\event\EventRunnerStatusListener;
 
 /**
  * Class EventCacheDataProviderTest
@@ -14,7 +15,7 @@ use uujia\framework\base\common\lib\Event\Cache\EventCacheDataProvider;
 class EventCacheDataProviderTest extends EventCacheDataProvider {
 	
 	public function getEventClassNames(): Generator {
-		foreach ([EventTest::class, EventTest1::class] as $item) {
+		foreach ([EventTest::class, EventTest1::class, EventRunnerStatusListener::class] as $item) {
 			yield $item;
 		}
 		

@@ -3,8 +3,10 @@
 namespace uujia\framework\base\common\lib\Runner;
 
 
+use Symfony\Component\Console\Output\OutputInterface;
 use uujia\framework\base\common\lib\Base\BaseClass;
 use uujia\framework\base\common\lib\Base\BaseClassInterface;
+use uujia\framework\base\common\lib\Console\ConsoleManager;
 
 /**
  * Class RunnerManager
@@ -89,8 +91,27 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 	 */
 	public function echoDIClassInfo() {
 		foreach ($this->getDIClassInfo() as $itemNameInfo) {
-			echo $itemNameInfo->getNameInfo()['name'] . " " . $itemNameInfo->getNameInfo()['intro'] . "\n";
+			echo $itemNameInfo['name'] . " " . $itemNameInfo['intro'] . "\n";
 		}
+	}
+	
+	/**
+	 * 打印容器中class信息
+	 *
+	 * Date: 2020/10/12
+	 * Time: 1:25
+	 */
+	public function printTableDIClassInfo(OutputInterface $output) {
+		$rows = [
+			'header' => ['class name', 'intro'],
+			'data' => [],
+		];
+		
+		foreach ($this->getDIClassInfo() as $itemNameInfo) {
+			$rows['data'][] = [$itemNameInfo['name'], $itemNameInfo['intro']];
+		}
+		
+		$this->getContainer()->get(ConsoleManager::class)->printTable($rows, $output);
 	}
 	
 	/**************************************************************

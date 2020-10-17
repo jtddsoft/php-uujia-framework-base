@@ -119,11 +119,11 @@ class Logger extends BaseClass implements LoggerInterface {
 	 */
 	public function init() {
 		parent::init();
-		echo microtime(true) . " ll1\n";
+		
 		$_enabledResponse = $this->getConfigMQ(self::LOG_CONFIG_KEY_MQ['enabled_response']) ?? false;
 		$_enabledMQTT = $this->getConfigMQTT(self::LOG_CONFIG_KEY_MQTT['enabled']) ?? false;
 		$_enabledRabbitMQ = $this->getConfigRabbitMQ(self::LOG_CONFIG_KEY_RABBITMQ['enabled']) ?? false;
-		echo microtime(true) . " ll2\n";
+		
 		$this->setEnabledResponse($_enabledResponse);
 		$this->setEnabledMQTT($_enabledMQTT);
 		$this->setEnabledRabbitMQ($_enabledRabbitMQ);

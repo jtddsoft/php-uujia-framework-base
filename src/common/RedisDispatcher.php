@@ -30,8 +30,6 @@ class RedisDispatcher extends BaseClass {
 	 *
 	 * @param Config                 $configObj
 	 * @param RedisProviderInterface $redisProviderObj
-	 *
-	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 */
 	public function __construct(Config $configObj, RedisProviderInterface $redisProviderObj = null) {
 		$this->_configObj = $configObj;

@@ -51,8 +51,6 @@ class CachedReader implements Reader {
 	 * @param Reader                      $reader
 	 * @param RunnerManagerInterface      $runnerManagerObj
 	 * @param RedisProviderInterface|null $redisProviderObj
-	 *
-	 * @AutoInjection(arg = "redisProviderObj", name = "redisProvider")
 	 * @AutoInjection(arg = "reader")
 	 */
 	public function __construct(?Reader $reader,

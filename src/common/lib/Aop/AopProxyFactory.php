@@ -147,7 +147,7 @@ class AopProxyFactory extends BaseClass {
 	 */
 	public function initNameInfo() {
 		$this->name_info['name']  = static::class;
-		$this->name_info['intro'] = '代理类';
+		$this->name_info['intro'] = '代理工厂类';
 	}
 	
 	/**************************************************************
