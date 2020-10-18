@@ -100,6 +100,8 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 	 *
 	 * Date: 2020/10/12
 	 * Time: 1:25
+	 *
+	 * @param OutputInterface $output
 	 */
 	public function printTableDIClassInfo(OutputInterface $output) {
 		$rows = [
@@ -111,7 +113,9 @@ class RunnerManager extends BaseClass implements RunnerManagerInterface {
 			$rows['data'][] = [$itemNameInfo['name'], $itemNameInfo['intro']];
 		}
 		
-		$this->getContainer()->get(ConsoleManager::class)->printTable($rows, $output);
+		$this->getContainer()
+		     ->get(ConsoleManager::class)
+		     ->printTable($rows, $output);
 	}
 	
 	/**************************************************************
